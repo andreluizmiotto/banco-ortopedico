@@ -50,24 +50,28 @@ Representa o conceito visivel a comunidade. Campos: nome, sigla, descricao curta
 
 Configuracao opcional por entidade e tipo de equipamento, com a quantidade minima que o banco quer manter disponivel. O painel usa essa configuracao para destacar estoque baixo sem associar o alerta a pessoas ou emprestimos individuais.
 
-### Equipamento ou lote de inventario
+### Unidade fisica de equipamento
 
-Representa unidade fisica ou contagem agregada durante a fase de implantacao. Conceitos necessarios:
+O acervo operacional representa cada peca fisica por uma unidade individual, inclusive na Fase 1. Cada unidade tem identidade interna unica. O codigo visivel da etiqueta ou QR pode ser nulo e ser preenchido depois.
+
+Conceitos associados:
 
 - entidade proprietaria;
-- local atual;
-- tipo;
-- codigo individual opcional antes do inventario;
-- quantidade agregada apenas enquanto o inventario for por contagem;
+- local atual de guarda, distinto da propriedade;
+- tipo de equipamento;
 - situacao e condicao;
 - largura, origem, doador e observacoes quando aplicaveis;
 - fotos privadas ou publicas conforme classificacao.
 
-O desenho fisico final deve escolher explicitamente como representar contagem inicial e unidade individual. A migracao para inventario individual precisa preservar contagens e historico.
+A carga inicial de saldo N cria N registros individuais sem codigo visivel. Na Fase 2, a conferencia fisica atribui codigos as mesmas unidades, sem converter uma contagem agregada ou duplicar registros. O saldo informado deve ser preservado e as divergencias registradas, sem correcao silenciosa. A regra operacional para tratar a diferenca entre N informado e a quantidade fisica encontrada, inclusive unidades em emprestimos abertos, continua em aberto.
+
+### Disponibilidade agregada
+
+A disponibilidade publica e um agregado de consulta derivado da contagem de unidades por tipo, entidade proprietaria e situacao. Somente unidades em situacao `em_casa` contam como disponiveis; `separado` nao conta. Nao existe saldo agregado editavel como fonte de verdade paralela. O minimo opcional por entidade e tipo e um limite de referencia, nao uma quantidade de acervo.
 
 ### Movimentacao
 
-Evento imutavel ou append-only que registra equipamento, origem, destino, ator, data, motivo e contexto. A situacao atual pode ser materializada, mas o historico nao deve ser sobrescrito.
+Evento imutavel ou append-only que registra a unidade fisica, origem, destino, ator, data, motivo e contexto. A situacao atual pode ser materializada, mas o historico nao deve ser sobrescrito.
 
 ## 4. Emprestimos e contatos
 
@@ -77,7 +81,7 @@ Representa a operacao com entidade, responsavel, nome do paciente quando diferen
 
 ### Linha de emprestimo
 
-Liga emprestimo a equipamento ou tipo agregado, quantidade, condicao na saida e devolucao, data de devolucao e responsavel por receber.
+Liga um emprestimo a uma unidade fisica individual, com condicao na saida e devolucao, data de devolucao e responsavel por receber. Emprestimo e unidade continuam conceitos separados; cada linha referencia a unidade emprestada.
 
 ### Contato
 
@@ -99,8 +103,8 @@ Representa uma acao de acompanhamento de devolucao: emprestimo, ator, data, cana
 
 ## 6. Invariantes de integridade
 
-- Um equipamento individual nao pode estar em mais de um emprestimo ativo.
-- Quantidades nunca podem ficar negativas.
+- Uma unidade fisica nao pode estar em mais de um emprestimo ativo.
+- As quantidades agregadas sao contagens derivadas das unidades, nao um saldo operacional editavel.
 - A autorizacao de linha precisa validar o vinculo ativo entre usuario, papel e entidade.
 - Um registro de outro banco nao pode ser recuperado por ID quando o ator nao tem permissao.
 - Dados pessoais nao devem ser incluidos em payloads de companheiro, catalogo publico, logs ou URLs.

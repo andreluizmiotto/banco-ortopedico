@@ -1,0 +1,981 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [
+    {
+      "id": "actors",
+      "type": "rectangle",
+      "x": -2.7585119756820404,
+      "y": 307.88176304530316,
+      "width": 400,
+      "height": 400,
+      "angle": 0,
+      "strokeColor": "#e67700",
+      "backgroundColor": "#ffec99",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a0",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910001,
+      "version": 36,
+      "versionNonce": 529017245,
+      "updated": 1791582532852,
+      "roundness": {
+        "type": 3
+      },
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "text-actors"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-actors-app"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-human-conversation"
+        }
+      ],
+      "created": null
+    },
+    {
+      "id": "text-actors",
+      "type": "text",
+      "x": 2.2414880243179596,
+      "y": 312.88176304530316,
+      "width": 338.859375,
+      "height": 240,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a0V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910023,
+      "version": 41,
+      "versionNonce": 1533734397,
+      "updated": 1791582532852,
+      "text": "\nPESSOAS E ENTIDADES\nVisitante - catalogo publico, sem contato\nComunidade - contato e dados proprios\nPaciente pode ser outra pessoa\nCompanheiro - somente agregados, sem dados\npessoais\nAdmin. banco - seu escopo autorizado\nAdmin. geral - global e auditavel\n\n4 bancos no MVP; entidades futuras\n3 locais compartilhados ou de apoio",
+      "originalText": "\nPESSOAS E ENTIDADES\nVisitante - catalogo publico, sem contato\nComunidade - contato e dados proprios\nPaciente pode ser outra pessoa\nCompanheiro - somente agregados, sem dados pessoais\nAdmin. banco - seu escopo autorizado\nAdmin. geral - global e auditavel\n\n4 bancos no MVP; entidades futuras\n3 locais compartilhados ou de apoio",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": "actors",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "application",
+      "type": "rectangle",
+      "x": 660,
+      "y": 380,
+      "width": 360,
+      "height": 240,
+      "angle": 0,
+      "strokeColor": "#1971c2",
+      "backgroundColor": "#a5d8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a1",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910003,
+      "version": 1,
+      "versionNonce": 910004,
+      "updated": 1791500000000,
+      "roundness": {
+        "type": 3
+      },
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "text-application"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-actors-app"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-app-channels"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-app-supabase"
+        }
+      ],
+      "created": null
+    },
+    {
+      "id": "text-application",
+      "type": "text",
+      "x": 684,
+      "y": 404,
+      "width": 312,
+      "height": 192,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a1V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910025,
+      "version": 3,
+      "versionNonce": 707303677,
+      "updated": 1791582481457,
+      "text": "NEXT.JS\nWeb responsiva e instalavel (PWA)\nCatalogo publico e contato\nCadastro e fluxos da Comunidade\nOperacao e paineis administrativos\nValidacao sensivel no servidor/banco\nCodigo atual: scaffold inicial",
+      "originalText": "NEXT.JS\nWeb responsiva e instalavel (PWA)\nCatalogo publico e contato\nCadastro e fluxos da Comunidade\nOperacao e paineis administrativos\nValidacao sensivel no servidor/banco\nCodigo atual: scaffold inicial",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": "application",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "supabase",
+      "type": "rectangle",
+      "x": 602.2004043344441,
+      "y": 802.4629195889396,
+      "width": 700,
+      "height": 380,
+      "angle": 0,
+      "strokeColor": "#0c8599",
+      "backgroundColor": "#96f2d7",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a2",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910005,
+      "version": 55,
+      "versionNonce": 1209646941,
+      "updated": 1791582582298,
+      "roundness": {
+        "type": 3
+      },
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "text-supabase"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-app-supabase"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-supabase-sms"
+        }
+      ],
+      "created": null
+    },
+    {
+      "id": "text-supabase",
+      "type": "text",
+      "x": 607.2004043344441,
+      "y": 807.4629195889396,
+      "width": 314.8671875,
+      "height": 340,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a2V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910027,
+      "version": 60,
+      "versionNonce": 974049885,
+      "updated": 1791582588010,
+      "text": "\nSUPABASE\nAUTH - identidade/sessao; confirmacao\ne recuperacao; estrategia CPF em aberto\nPOSTGRESQL + RLS\nPerfil/papeis, entidades/locais, tipos,\nacervo, contatos/emprestimos, auditoria\nRLS isola escopos no banco\nCompanheiro: publico/agregado; sem dados\npessoais ou linhas de emprestimo\nPropriedade != local atual\nContagem/unidades: desenho fisico aberto\nConsulta cruzada de emprestimos depende\nde aprovacao juridica\nSTORAGE PRIVADO\nDocumentos/fotos; links temporarios\napos autorizacao",
+      "originalText": "\nSUPABASE\nAUTH - identidade/sessao; confirmacao\ne recuperacao; estrategia CPF em aberto\nPOSTGRESQL + RLS\nPerfil/papeis, entidades/locais, tipos,\nacervo, contatos/emprestimos, auditoria\nRLS isola escopos no banco\nCompanheiro: publico/agregado; sem dados\npessoais ou linhas de emprestimo\nPropriedade != local atual\nContagem/unidades: desenho fisico aberto\nConsulta cruzada de emprestimos depende\nde aprovacao juridica\nSTORAGE PRIVADO\nDocumentos/fotos; links temporarios\napos autorizacao",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": "supabase",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "channels",
+      "type": "rectangle",
+      "x": 1498.686372825783,
+      "y": 300,
+      "width": 420,
+      "height": 400,
+      "angle": 0,
+      "strokeColor": "#868e96",
+      "backgroundColor": "#e9ecef",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a3",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910007,
+      "version": 2,
+      "versionNonce": 1910487229,
+      "updated": 1791582564775,
+      "roundness": {
+        "type": 3
+      },
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "text-channels"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-human-conversation"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-app-channels"
+        },
+        {
+          "type": "arrow",
+          "id": "arrow-supabase-sms"
+        }
+      ],
+      "created": null
+    },
+    {
+      "id": "text-channels",
+      "type": "text",
+      "x": 1503.686372825783,
+      "y": 305,
+      "width": 265.9296875,
+      "height": 220,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a3V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910029,
+      "version": 7,
+      "versionNonce": 652644595,
+      "updated": 1791582566874,
+      "text": "\nCANAIS EXTERNOS\nWhatsApp\nApp abre link revisavel.\nPessoa ou responsavel envia;\nsistema nao envia nem le conversas.\nSMS\nCodigos de confirmacao/recuperacao\nFornecedor a definir\nMAPAS\nLink externo para rota",
+      "originalText": "\nCANAIS EXTERNOS\nWhatsApp\nApp abre link revisavel.\nPessoa ou responsavel envia;\nsistema nao envia nem le conversas.\nSMS\nCodigos de confirmacao/recuperacao\nFornecedor a definir\nMAPAS\nLink externo para rota",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": "channels",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "arrow-actors-app",
+      "type": "arrow",
+      "x": 403.24148802431796,
+      "y": 505.3910561478738,
+      "width": 250.75851197568204,
+      "height": 3.081162826985519,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a4",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910009,
+      "version": 37,
+      "versionNonce": 1927051901,
+      "updated": 1791582554259,
+      "roundness": {
+        "type": 2
+      },
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          250.75851197568204,
+          -3.081162826985519
+        ]
+      ],
+      "startBinding": {
+        "mode": "orbit",
+        "elementId": "actors",
+        "fixedPoint": [
+          0.5001,
+          0.5001
+        ]
+      },
+      "endBinding": {
+        "mode": "orbit",
+        "elementId": "application",
+        "fixedPoint": [
+          0.5001,
+          0.5001
+        ]
+      },
+      "lastCommittedPoint": null,
+      "startArrowhead": "arrow",
+      "endArrowhead": "arrow",
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "label-actors-app"
+        }
+      ],
+      "created": null,
+      "moveMidPointsWithElement": false
+    },
+    {
+      "id": "label-actors-app",
+      "type": "text",
+      "x": 463.245744012159,
+      "y": 493.85047473438107,
+      "width": 130.75,
+      "height": 20,
+      "angle": 0,
+      "strokeColor": "#495057",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a4V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910031,
+      "version": 5,
+      "versionNonce": 341771709,
+      "updated": 1791582552909,
+      "text": "acesso / operacao",
+      "originalText": "acesso / operacao",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "arrow-actors-app",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "arrow-human-conversation",
+      "type": "arrow",
+      "x": 249.25523337501906,
+      "y": 301.88176304530316,
+      "width": 1460.744766624981,
+      "height": 121.88176304530316,
+      "angle": 0,
+      "strokeColor": "#e67700",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a5",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910011,
+      "version": 38,
+      "versionNonce": 549828115,
+      "updated": 1791582617695,
+      "roundness": {
+        "type": 2
+      },
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          30.74476662498094,
+          -121.88176304530316
+        ],
+        [
+          1460.744766624981,
+          -121.88176304530316
+        ],
+        [
+          1460.2918060642362,
+          -7.88176304530316
+        ]
+      ],
+      "startBinding": {
+        "mode": "orbit",
+        "elementId": "actors",
+        "fixedPoint": [
+          0.5001,
+          0.5001
+        ]
+      },
+      "endBinding": {
+        "mode": "orbit",
+        "elementId": "channels",
+        "fixedPoint": [
+          0.5001,
+          0.5001
+        ]
+      },
+      "lastCommittedPoint": null,
+      "startArrowhead": "arrow",
+      "endArrowhead": "arrow",
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "label-human-conversation"
+        }
+      ],
+      "created": null,
+      "moveMidPointsWithElement": false
+    },
+    {
+      "id": "label-human-conversation",
+      "type": "text",
+      "x": 879.8183292055655,
+      "y": 155.2563785964281,
+      "width": 230.34375,
+      "height": 20,
+      "angle": 0,
+      "strokeColor": "#e67700",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a5V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910033,
+      "version": 5,
+      "versionNonce": 930287315,
+      "updated": 1791582616811,
+      "text": "conversa humana via WhatsApp",
+      "originalText": "conversa humana via WhatsApp",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "arrow-human-conversation",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "arrow-app-channels",
+      "type": "arrow",
+      "x": 1026,
+      "y": 500.0274251756928,
+      "width": 466.6863728257829,
+      "height": 0.008595657333671625,
+      "angle": 0,
+      "strokeColor": "#7048e8",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a6",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910013,
+      "version": 3,
+      "versionNonce": 645641693,
+      "updated": 1791582564778,
+      "roundness": {
+        "type": 2
+      },
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          466.6863728257829,
+          0.008595657333671625
+        ]
+      ],
+      "startBinding": {
+        "mode": "orbit",
+        "elementId": "application",
+        "fixedPoint": [
+          0.5001,
+          0.5001
+        ]
+      },
+      "endBinding": {
+        "mode": "orbit",
+        "elementId": "channels",
+        "fixedPoint": [
+          0.5001,
+          0.5001
+        ]
+      },
+      "lastCommittedPoint": null,
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "label-app-channels"
+        }
+      ],
+      "created": null,
+      "moveMidPointsWithElement": false
+    },
+    {
+      "id": "label-app-channels",
+      "type": "text",
+      "x": 1159.953125,
+      "y": 490,
+      "width": 200.09375,
+      "height": 20,
+      "angle": 0,
+      "strokeColor": "#7048e8",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a6V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910035,
+      "version": 5,
+      "versionNonce": 1826720829,
+      "updated": 1791582551098,
+      "text": "abre link WhatsApp / mapas",
+      "originalText": "abre link WhatsApp / mapas",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "arrow-app-channels",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "arrow-app-supabase",
+      "type": "arrow",
+      "x": 785.6332948678078,
+      "y": 626.0000000000001,
+      "width": 2.1453252926297637,
+      "height": 170.46291958893949,
+      "angle": 0,
+      "strokeColor": "#0c8599",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 3,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a7",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910015,
+      "version": 56,
+      "versionNonce": 623725597,
+      "updated": 1791582582298,
+      "roundness": {
+        "type": 2
+      },
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -2.1453252926297637,
+          170.46291958893949
+        ]
+      ],
+      "startBinding": {
+        "mode": "orbit",
+        "elementId": "application",
+        "fixedPoint": [
+          0.35214569999322787,
+          0.6478543000067726
+        ]
+      },
+      "endBinding": {
+        "mode": "orbit",
+        "elementId": "supabase",
+        "fixedPoint": [
+          0.25711773005226973,
+          0.2571177300522696
+        ]
+      },
+      "lastCommittedPoint": null,
+      "startArrowhead": "arrow",
+      "endArrowhead": "arrow",
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "label-app-supabase"
+        }
+      ],
+      "created": null,
+      "moveMidPointsWithElement": false
+    },
+    {
+      "id": "label-app-supabase",
+      "type": "text",
+      "x": 758.171875,
+      "y": 650,
+      "width": 163.65625,
+      "height": 20,
+      "angle": 0,
+      "strokeColor": "#0c8599",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a7V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910037,
+      "version": 5,
+      "versionNonce": 2037915325,
+      "updated": 1791582578616,
+      "text": "Auth / dados / arquivos",
+      "originalText": "Auth / dados / arquivos",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "arrow-app-supabase",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "arrow-supabase-sms",
+      "type": "arrow",
+      "x": 1306.7605854873138,
+      "y": 821.5653048934134,
+      "width": 379.5507395905256,
+      "height": 115.56530489341344,
+      "angle": 0,
+      "strokeColor": "#868e96",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dotted",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a8",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910017,
+      "version": 57,
+      "versionNonce": 1699201149,
+      "updated": 1791582582298,
+      "roundness": {
+        "type": 2
+      },
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          173.23941451268615,
+          -61.56530489341344
+        ],
+        [
+          379.5507395905256,
+          -115.56530489341344
+        ]
+      ],
+      "startBinding": {
+        "mode": "orbit",
+        "elementId": "supabase",
+        "fixedPoint": [
+          0.8421052631578946,
+          0.15789473684210525
+        ]
+      },
+      "endBinding": {
+        "mode": "orbit",
+        "elementId": "channels",
+        "fixedPoint": [
+          0.8924914675767814,
+          0.8924914675767812
+        ]
+      },
+      "lastCommittedPoint": null,
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "label-supabase-sms"
+        }
+      ],
+      "created": null,
+      "moveMidPointsWithElement": false
+    },
+    {
+      "id": "label-supabase-sms",
+      "type": "text",
+      "x": 1401.75,
+      "y": 750,
+      "width": 156.5,
+      "height": 20,
+      "angle": 0,
+      "strokeColor": "#868e96",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a8V",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910039,
+      "version": 5,
+      "versionNonce": 909265117,
+      "updated": 1791582574458,
+      "text": "codigos OTP via SMS",
+      "originalText": "codigos OTP via SMS",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "arrow-supabase-sms",
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "x": 80,
+      "y": 40,
+      "width": 1500,
+      "height": 40,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "a9",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910019,
+      "version": 1,
+      "versionNonce": 910020,
+      "updated": 1791500000000,
+      "text": "Banco Ortopedico | Overview do projeto",
+      "originalText": "Banco Ortopedico | Overview do projeto",
+      "fontSize": 30,
+      "fontFamily": 5,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    },
+    {
+      "id": "subtitle",
+      "type": "text",
+      "x": 80,
+      "y": 90,
+      "width": 1720,
+      "height": 24,
+      "angle": 0,
+      "strokeColor": "#495057",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "aA",
+      "isDeleted": false,
+      "link": null,
+      "locked": false,
+      "seed": 910021,
+      "version": 2,
+      "versionNonce": 229788563,
+      "updated": 1791582481456,
+      "text": "Arquitetura alvo baseada na documentacao; o codigo atual ainda e um scaffold. Decisoes em aberto aparecem nos blocos.",
+      "originalText": "Arquitetura alvo baseada na documentacao; o codigo atual ainda e um scaffold. Decisoes em aberto aparecem nos blocos.",
+      "fontSize": 16,
+      "fontFamily": 2,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "roundness": null,
+      "boundElements": [],
+      "created": null,
+      "labelPosition": null,
+      "baseFontSize": null
+    }
+  ],
+  "appState": {
+    "gridSize": 20,
+    "gridStep": 5,
+    "gridModeEnabled": false,
+    "viewBackgroundColor": "#ffffff",
+    "lockedMultiSelections": {}
+  },
+  "files": {}
+}

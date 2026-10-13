@@ -1,0 +1,35 @@
+%% Modelo conceitual do acervo, movimentacoes e emprestimos; nao e esquema fisico.
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#17458F', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#12386F', 'lineColor': '#94a3b8', 'secondaryColor': '#F7A81B', 'tertiaryColor': '#EEF3FA', 'background': '#ffffff', 'mainBkg': '#f8fafc', 'nodeBorder': '#cbd5e1', 'clusterBkg': '#f1f5f9', 'clusterBorder': '#e2e8f0', 'titleColor': '#17458F', 'edgeLabelBackground': '#ffffff', 'textColor': '#54565A'}}}%%
+classDiagram
+    direction TB
+
+    class TipoEquipamento {
+        <<conceito global do catalogo>>
+    }
+    class Entidade {
+        <<mantenedora ou vinculadora>>
+    }
+    class Local {
+        <<local fisico>>
+    }
+    class UnidadeFisica {
+        <<uma peca individual do acervo>>
+    }
+    class Movimentacao {
+        <<evento append-only>>
+    }
+    class Emprestimo
+    class LinhaEmprestimo
+
+    TipoEquipamento "1" --> "0..*" UnidadeFisica : classifica
+    Entidade "1" --> "0..*" UnidadeFisica : proprietaria
+    UnidadeFisica "0..*" --> "0..1" Local : local atual de guarda
+    Entidade "0..*" --> "0..*" Local : atendimento ou apoio compartilhavel
+    Movimentacao "0..*" --> "1" UnidadeFisica : registra evento da unidade
+    Emprestimo "0..*" --> "1" Entidade : entidade da operacao
+    Emprestimo "1" --> "1..*" LinhaEmprestimo : organiza linhas
+    LinhaEmprestimo "0..*" --> "1" UnidadeFisica : referencia a unidade emprestada
+
+    note for UnidadeFisica "Identidade interna unica; codigo visivel de etiqueta ou QR pode ser nulo.<br/>Fase 1: saldo N cria N unidades. Fase 2: atribui codigos as mesmas unidades apos conferencia.<br/>Preservar o saldo e registrar divergencias; regra de tratamento, inclusive para emprestimos abertos, permanece em aberto."
+    note for LinhaEmprestimo "Cada linha referencia uma unidade fisica. A unidade nao pode estar em mais de um emprestimo ativo."
+    note for TipoEquipamento "Disponibilidade agregada e derivada da contagem por tipo, entidade proprietaria e situacao. Unidades em em_casa contam como disponiveis; separado e espera informal, sem ciclo automatico de reserva. Nao ha saldo agregado editavel."

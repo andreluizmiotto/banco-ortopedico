@@ -13,8 +13,8 @@ Os testes devem usar dados sinteticos e contas de teste. Nenhum nome, CPF, telef
 
 ## 2. Criterios funcionais
 
-- **AC-001**: o visitante consegue listar equipamentos, abrir um detalhe e ver disponibilidade agregada sem autenticar.
-- **AC-002**: antes da autenticacao, a tela e a API nao revelam telefone, endereco, mapa, nome de responsavel ou link de WhatsApp.
+- **AC-001**: o visitante consegue listar equipamentos, abrir um detalhe e ver disponibilidade agregada sem autenticar; a quantidade e derivada da contagem de unidades fisicas em `em_casa`, por tipo e entidade proprietaria. O cartao de um banco permanece visivel com quantidade zero e mostra `Todos emprestados no momento`; bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos demais. A acao para conversar permanece visivel com quantidade zero: `Entrar para conversar` para visitante sem sessao aponta para `/entrar`; `Conversar no WhatsApp` fica para pessoa autenticada com papel Comunidade.
+- **AC-002**: a consulta anonima de disponibilidade retorna somente nome do banco e quantidade disponivel; nao revela identificadores de unidades, movimentacoes, emprestimos, dados pessoais, telefone, endereco, mapa ou link/destino de WhatsApp.
 - **AC-003**: uma pessoa consegue criar cadastro com CPF valido, confirmar telefone, criar senha de pelo menos oito caracteres sem informar endereco residencial e voltar ao equipamento originalmente escolhido.
 - **AC-004**: uma pessoa consegue entrar com CPF com e sem pontuacao, desde que a senha esteja correta.
 - **AC-005**: pelo menos tres das cinco pessoas de teste com mais de 60 anos conseguem recuperar a senha pelo codigo, sem intervencao de administrador, em ate tres minutos e dentro do limite operacional definido pelo provedor.

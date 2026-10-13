@@ -83,8 +83,8 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 ### Catalogo e descoberta
 
 - **FR-001**: o visitante deve conseguir consultar a lista de tipos de equipamento ativos.
-- **FR-002**: cada tipo deve exibir nome, foto opcional, descricao curta e disponibilidade em linguagem simples.
-- **FR-003**: o detalhe do tipo deve mostrar um cartao por banco que possua aquele tipo, com quantidade agregada e situacao.
+- **FR-002**: cada tipo deve exibir nome, foto opcional, descricao curta e disponibilidade em linguagem simples; a disponibilidade agregada e derivada da contagem de unidades fisicas em `em_casa`, por tipo e entidade proprietaria.
+- **FR-003**: o detalhe do tipo deve mostrar um cartao por banco que possua aquele tipo, inclusive quando a quantidade disponivel for zero; nesse caso, exibe exatamente `Todos emprestados no momento`. Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos cartoes sem disponibilidade. A API anonima de disponibilidade retorna somente o nome do banco e a quantidade disponivel, sem identificadores individuais.
 - **FR-004**: o catalogo deve permitir busca textual simples por equipamento, sem filtros avancados no MVP.
 - **FR-005**: a comunidade deve retornar ao equipamento originalmente solicitado depois de concluir cadastro ou entrada.
 
@@ -100,7 +100,7 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 
 ### Contato com bancos
 
-- **FR-013**: o sistema deve mostrar o botao de contato somente para pessoa autenticada com papel Comunidade.
+- **FR-013**: a acao para conversar deve permanecer visivel mesmo com disponibilidade zero. Visitante sem sessao ve `Entrar para conversar`, com destino `/entrar`; pessoa autenticada com papel Comunidade ve `Conversar no WhatsApp`, que abre o contato direto. Endereco, telefone e acao/link direto de WhatsApp so podem ser obtidos por pessoa autenticada e autorizada.
 - **FR-014**: o toque no botao deve criar ou reutilizar um contato conforme a regra de deduplicacao de [regras de negocio](regras-de-negocio.md).
 - **FR-015**: o sistema deve montar um link oficial do WhatsApp com mensagem pre-preenchida e editavel, sem envio automatico e sem incluir CPF, nome do paciente, endereco, diagnostico ou motivo de saude; os textos iniciais estao em [mensagens padrao](mensagens-padrao.md).
 - **FR-016**: o destinatario deve ser o responsavel ativo ou o substituto quando o modo substituto estiver ligado.
@@ -115,7 +115,7 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 - **FR-022**: o administrador deve registrar devolucao total ou parcial, estado na devolucao e destino posterior do equipamento.
 - **FR-023**: o sistema deve registrar doacao definitiva separadamente de emprestimo.
 - **FR-024**: o administrador deve registrar tentativas de contato e nova data de revisao.
-- **FR-025**: o estoque deve exibir, por tipo, quantidades em casa, emprestadas, em conserto, doadas em definitivo e baixadas, e destacar indisponibilidade ou estoque abaixo do minimo configurado.
+- **FR-025**: o estoque deve exibir, por tipo, contagens derivadas das unidades fisicas em casa, emprestadas, em conserto, doadas em definitivo e baixadas, e destacar indisponibilidade ou estoque abaixo do minimo configurado; nao ha quantidade agregada editavel paralela.
 
 ### Organizacao e administracao
 
@@ -159,8 +159,8 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 
 ## 7. Implantacao
 
-1. **Versao previa**: cadastrar entidades, locais, responsaveis e modelos; carregar estoque por contagem; treinar administradores e revisar fluxos com os bancos.
-2. **Inventario individual**: conferir cada equipamento, registrar medidas/fotos quando aplicavel, atribuir codigo e importar emprestimos ainda abertos.
+1. **Fase 1 - carga do saldo inicial**: cadastrar entidades, locais, responsaveis e modelos; representar o saldo informado N por N registros individuais de unidades, cada um com identidade interna unica e sem codigo visivel; treinar administradores e revisar fluxos com os bancos.
+2. **Fase 2 - conferencia fisica**: conferir as unidades e atribuir codigos visiveis as mesmas unidades da Fase 1, registrando medidas/fotos quando aplicavel; importar emprestimos ainda abertos com cada linha ligada a unidade emprestada. Preservar o saldo inicial e registrar divergencias, sem definir neste requisito como resolver diferencas entre N e a quantidade encontrada, inclusive para unidades em emprestimos abertos.
 3. **Divulgacao**: ampliar a divulgacao publica depois de confirmar os dados e concluir o inventario planejado.
 4. **Evolucao**: priorizar itens marcados FASE 2 apos o MVP.
 

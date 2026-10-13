@@ -43,12 +43,16 @@ Muletas devem ser controladas como par no catalogo e no termo. Se parte do par f
 
 ## 3. Controle inicial e inventario
 
-O sistema deve suportar dois modos de controle:
+O controle operacional e individual desde a Fase 1: cada peca fisica tem seu proprio registro, situacao e historico. Nao existe uma quantidade agregada editavel como fonte de verdade paralela.
 
-1. **Contagem por tipo**: uma linha representa uma quantidade agregada antes do inventario individual.
-2. **Controle individual**: cada unidade possui codigo, fotos opcionais, situacao e historico.
+- O saldo inicial informado como N cria N registros de unidades fisicas, ainda que nenhuma tenha etiqueta.
+- Cada unidade tem identidade interna unica. O codigo visivel da etiqueta ou QR pode ser nulo e receber valor depois.
+- Na Fase 2, a conferencia fisica atribui codigos as mesmas unidades registradas na Fase 1; nao converte uma linha agregada nem duplica unidades.
+- Uma peca recebida por devolucao antes de ser etiquetada tambem recebe um registro individual com codigo visivel nulo.
+- A carga inicial deve preservar o saldo informado e registrar divergencias observadas na conferencia, nunca apagar ou corrigir silenciosamente o saldo anterior.
+- A regra operacional para tratar a diferenca entre N informado e a quantidade fisica encontrada permanece em aberto, inclusive quando houver itens associados a emprestimos abertos.
 
-A carga inicial pode usar contagem por tipo. Na fase de inventario, cada unidade deve ser identificada, fotografada quando aplicavel, medida quando necessario e receber codigo. A migracao deve preservar o total e registrar divergencias, nunca apagar silenciosamente a contagem anterior.
+A disponibilidade publica e agregada para consulta, mas derivada da contagem das unidades por tipo, entidade proprietaria e situacao. Somente unidades em `em_casa` contam como disponiveis; `separado` nao conta.
 
 Cada banco pode definir um minimo opcional de unidades disponiveis por tipo. O painel indica um tipo como indisponivel quando nenhum banco tem unidades disponiveis e indica estoque baixo para o banco cuja quantidade esteja abaixo do proprio minimo. Sem minimo configurado, so se aplica o alerta de indisponibilidade total.
 
@@ -59,7 +63,7 @@ Formato sugerido para codigo individual: `SIGLA_ENTIDADE + SIGLA_TIPO + SEQUENCI
 | Situacao | Significado | Conta como disponivel? |
 |---|---|---|
 | `em_casa` | Disponivel no local do banco | Sim |
-| `separado` | Reservado informalmente, aguardando retirada | Nao |
+| `separado` | Em espera informal, aguardando retirada; nao e reserva automatica nem define um ciclo de reservas | Nao |
 | `emprestado` | Em posse de um responsavel | Nao |
 | `em_conserto` | Quebrado, incompleto ou aguardando reparo | Nao |
 | `doado_definitivo` | Saiu do acervo sem previsao de retorno | Nao |
@@ -85,7 +89,8 @@ Toda transicao deve registrar ator, data, situacao anterior, situacao nova e mot
 - No fluxo de emprestimo ou devolucao do proprio banco, o administrador pode localizar por nome ou CPF e reutilizar a conta global existente, sem criar uma conta duplicada. A busca retorna apenas os dados minimos para a operacao e o historico do proprio banco; nunca revela o historico detalhado de outro banco.
 - Quando a pessoa nao consegue se cadastrar sozinha, o administrador pode iniciar um cadastro assistido. A pessoa confirma o telefone com um codigo e recebe o aviso de privacidade; o administrador nao define nem visualiza a senha.
 - Um emprestimo pode conter mais de um tipo ou unidade.
-- Um equipamento individual nao pode estar em dois emprestimos ativos.
+- Emprestimo e unidade fisica sao registros distintos; cada linha de emprestimo referencia exatamente uma unidade emprestada.
+- Uma unidade fisica nao pode estar em mais de um emprestimo ativo.
 - O prazo nao e global: cada banco configura uma sugestao e o administrador pode altera-la.
 - Os valores iniciais de prazo sao configuracao de cada banco, nao uma regra global. As propostas atuais sao seis meses para a Casa da Amizade, 90 dias para Tres Vendas, data negociada para Boa Vista e definicao pendente para Erechim; cada banco deve confirmar seu valor antes do uso real.
 - A opcao sem data definida exige uma data de revisao. O formulario pode sugerir 90 dias, mas a data e editavel; a revisao gera lembrete, nao cobranca automatica.
@@ -95,8 +100,11 @@ Toda transicao deve registrar ator, data, situacao anterior, situacao nova e mot
 
 ## 6. Contato por WhatsApp
 
-- O botao aparece mesmo quando a quantidade disponivel e zero; o responsavel pode orientar sobre alternativa ou fila informal.
-- Bancos com disponibilidade aparecem antes dos demais. A ordenacao entre bancos disponiveis pode variar para evitar favorecimento sistematico.
+- A consulta anonima de disponibilidade retorna somente o nome publico do banco e a quantidade disponivel para o tipo consultado. Nao retorna endereco, telefone, link/destino de WhatsApp, identificador de unidade, movimentacao, emprestimo ou dados pessoais.
+- O detalhe do tipo mostra cartao para cada banco que possui o tipo, mesmo quando a quantidade em `em_casa` e zero. Nesse caso, o cartao exibe exatamente `Todos emprestados no momento`.
+- Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta; os cartoes sem disponibilidade aparecem depois.
+- A acao para conversar continua visivel com disponibilidade zero. Visitante sem sessao ve `Entrar para conversar`, direcionado a `/entrar`; pessoa autenticada com papel Comunidade ve `Conversar no WhatsApp`. A acao direta do WhatsApp exige esse papel autenticado.
+- Quando a quantidade disponivel e zero, o responsavel ainda pode orientar sobre alternativa ou fila informal.
 - O numero de destino vem da configuracao autorizada da entidade ou do responsavel ativo; a comunidade nao o digita.
 - O sistema abre WhatsApp ou WhatsApp Web, mas nao envia mensagem nem le conversas.
 - A mensagem pre-preenchida deve conter apenas os dados necessarios para o atendimento e um codigo de contato. Nunca deve conter CPF, nome do paciente, endereco, diagnostico ou motivo de saude; a pessoa ou o administrador pode revisar o texto antes de enviar.
@@ -159,8 +167,8 @@ Retirar acesso nao exclui a conta de comunidade nem o historico legalmente neces
 
 ## 11. Integridade
 
-- Quantidade disponivel nunca pode ser negativa.
-- Equipamento individual so pode estar em um emprestimo ativo.
+- A disponibilidade e uma contagem derivada de unidades em situacao disponivel, nao um saldo editavel separado.
+- Uma unidade fisica so pode estar em um emprestimo ativo.
 - Devolucao parcial deve deixar o emprestimo com situacao `parcial` ate encerramento.
 - Uma entidade inativa nao pode receber novos emprestimos, mas seu historico deve permanecer consultavel por perfis autorizados.
 - Alteracoes de situacao, dono, local, permissao e documento devem ser auditaveis.

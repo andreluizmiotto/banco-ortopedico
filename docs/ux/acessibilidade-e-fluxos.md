@@ -29,11 +29,13 @@ O vocabulario interno do codigo e do banco pode usar termos tecnicos, mas nao de
 
 1. Inicio mostra objetivo do servico, botao para ver equipamentos, criar cadastro e entrar, com acesso a perguntas frequentes e politica de privacidade.
 2. Lista mostra nome, foto opcional e disponibilidade em texto.
-3. Detalhe mostra largura quando aplicavel e um cartao por banco.
-4. Visitante sem sessao ve apenas nome do banco, quantidade agregada e botao para entrar e conversar.
-5. Depois de entrar ou criar conta, retornar ao mesmo detalhe.
-6. Pessoa autenticada pode abrir WhatsApp com mensagem pronta para aquele banco.
-7. Se WhatsApp nao estiver disponivel, apresentar alternativa de ligacao somente quando autorizada.
+3. Detalhe mostra largura quando aplicavel e um cartao por banco que possui o tipo.
+4. Cartoes com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta; cartoes sem disponibilidade aparecem depois.
+5. Quando um banco tem zero unidades em `em_casa`, seu cartao permanece visivel e mostra `Todos emprestados no momento`.
+6. Visitante sem sessao ve apenas nome do banco, quantidade agregada e a acao `Entrar para conversar`, com destino `/entrar`; essa acao nao abre WhatsApp.
+7. Depois de entrar ou criar conta, retornar ao mesmo detalhe.
+8. Pessoa autenticada com papel Comunidade pode abrir WhatsApp com mensagem pronta para aquele banco, mesmo quando a disponibilidade e zero.
+9. Se WhatsApp nao estiver disponivel, apresentar alternativa de ligacao somente quando autorizada.
 
 Na ordem inicial, priorizar cadeira de rodas, cama hospitalar, cadeira de banho, andador e muletas. Os demais tipos seguem a ordem configurada.
 
