@@ -5,19 +5,14 @@ import {
   useEffect,
   useState,
   type Dispatch,
-  type ReactNode,
   type SetStateAction,
 } from "react";
-import {
-  orderAvailability,
-  type BankAvailability,
-  type EquipmentType,
-} from "../../lib/availability";
+import type { EquipmentType } from "../../lib/availability";
 import {
   readEquipmentAvailability,
-  readEquipmentType,
   readEquipmentTypes,
 } from "../../lib/public-supabase";
+import { PublicLayout } from "./public-layout";
 
 type RemoteState<T> =
   | { kind: "loading" }
@@ -28,53 +23,6 @@ type CatalogEntry = {
   equipment: EquipmentType;
   availableQuantity: number;
 };
-
-function PublicPage({
-  title,
-  introduction,
-  backLink,
-  children,
-}: {
-  title: string;
-  introduction: string;
-  backLink?: { href: string; label: string };
-  children: ReactNode;
-}) {
-  return (
-    <div className="public-page">
-      <a className="skip-link" href="#conteudo-principal">
-        Ir para o conteúdo
-      </a>
-      <div className="page-frame">
-        <header className="public-header">
-          <Link className="brand-link" href="/">
-            <span className="brand-mark" aria-hidden="true" />
-            <span>Banco Ortopédico</span>
-          </Link>
-          <p className="brand-note">Acervo comunitário</p>
-        </header>
-        <main id="conteudo-principal">
-          {backLink ? (
-            <Link className="back-link" href={backLink.href}>
-              {backLink.label}
-            </Link>
-          ) : null}
-          <div className="page-heading">
-            <p className="eyebrow">Consulta pública</p>
-            <h1>{title}</h1>
-            <p className="body-copy">{introduction}</p>
-          </div>
-          <div className="page-content">{children}</div>
-        </main>
-        <footer className="public-footer">
-          <p className="body-copy">
-            A disponibilidade é atualizada a partir do acervo de cada banco.
-          </p>
-        </footer>
-      </div>
-    </div>
-  );
-}
 
 function LoadingMessage() {
   return (
@@ -112,12 +60,12 @@ function retryRemote<T>(
 
 export function PublicAvailabilityLoading() {
   return (
-    <PublicPage
+    <PublicLayout
       title="Disponibilidade por banco"
       introduction="Consulte os equipamentos dos bancos comunitários."
     >
       <LoadingMessage />
-    </PublicPage>
+    </PublicLayout>
   );
 }
 
@@ -159,7 +107,7 @@ export function EquipmentCatalog() {
   }, [attempt]);
 
   return (
-    <PublicPage
+    <PublicLayout
       title="Equipamentos ortopédicos"
       introduction="Encontre um equipamento e consulte a disponibilidade nos bancos comunitários."
     >
@@ -208,104 +156,6 @@ export function EquipmentCatalog() {
           ))}
         </ul>
       )}
-    </PublicPage>
-  );
-}
-
-function BankCard({ bank }: { bank: BankAvailability }) {
-  return (
-    <article className="bank-card">
-      <div className="bank-card-heading">
-        <h2 className="bank-name">{bank.bank_name}</h2>
-        <span
-          className="availability-count"
-          aria-label={`Quantidade disponível: ${bank.available_quantity}`}
-        >
-          {bank.available_quantity}
-        </span>
-      </div>
-      {bank.available_quantity > 0 ? (
-        <p className="availability-label">Disponível no depósito</p>
-      ) : (
-        <p className="availability-empty">Todos emprestados no momento</p>
-      )}
-      <Link className="primary-action" href="/entrar">
-        Entrar para conversar
-      </Link>
-    </article>
-  );
-}
-
-export function EquipmentDetail({ code }: { code: string }) {
-  const [state, setState] = useState<
-    RemoteState<{ equipment: EquipmentType; banks: BankAvailability[] } | null>
-  >({ kind: "loading" });
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    let current = true;
-
-    async function loadDetail() {
-      try {
-        const equipment = await readEquipmentType(code);
-        if (!equipment) {
-          if (current) setState({ kind: "ready", value: null });
-          return;
-        }
-
-        const availability = await readEquipmentAvailability(equipment.code);
-        if (current) {
-          setState({
-            kind: "ready",
-            value: {
-              equipment,
-              banks: orderAvailability(availability),
-            },
-          });
-        }
-      } catch {
-        if (current) setState({ kind: "error" });
-      }
-    }
-
-    void loadDetail();
-    return () => {
-      current = false;
-    };
-  }, [attempt, code]);
-
-  const title =
-    state.kind === "ready" && state.value
-      ? state.value.equipment.name
-      : "Disponibilidade por banco";
-
-  return (
-    <PublicPage
-      title={title}
-      introduction="Veja a quantidade disponível em cada banco mantenedor."
-      backLink={{ href: "/", label: "Voltar para os equipamentos" }}
-    >
-      {state.kind === "loading" ? (
-        <LoadingMessage />
-      ) : state.kind === "error" ? (
-        <ErrorMessage onRetry={() => retryRemote(setState, setAttempt)} />
-      ) : state.value === null ? (
-        <p className="empty-state body-copy">
-          Equipamento não encontrado. Volte para a lista de equipamentos.
-        </p>
-      ) : state.value.banks.length === 0 ? (
-        <p className="empty-state body-copy">
-          Nenhum banco cadastrou este tipo de equipamento.
-        </p>
-      ) : (
-        <ul className="bank-list">
-          {state.value.banks.map((bank) => (
-            <li key={bank.bank_name}>
-              <BankCard bank={bank} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </PublicPage>
+    </PublicLayout>
   );
 }

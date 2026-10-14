@@ -1,8 +1,6 @@
 import { Suspense } from "react";
-import {
-  EquipmentDetail,
-  PublicAvailabilityLoading,
-} from "../../_components/public-equipment";
+import { EquipmentDetail } from "../../_components/equipment-detail";
+import { PublicAvailabilityLoading } from "../../_components/public-equipment";
 
 type PageParameters = {
   params: Promise<{ code: string }>;
