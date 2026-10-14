@@ -4,16 +4,16 @@ Os testes devem usar dados sinteticos e contas de teste. Nenhum nome, CPF, telef
 
 ## 1. Pre-condicoes
 
-- Os quatro bancos e os tres locais fisicos do MVP estao cadastrados com dados de teste, incluindo um banco sem local fixo.
+- Os quatro bancos e os tres pontos de atendimento fisicos do MVP estao cadastrados com dados de teste, incluindo um banco sem ponto fixo.
 - Cada banco possui pelo menos um administrador de teste.
-- Existem tipos de equipamento com disponibilidade, sem disponibilidade e em conserto.
+- Existem tipos de equipamento com disponibilidade, sem disponibilidade e em manutencao.
 - Existe pelo menos um minimo de estoque configurado para um tipo em um banco.
 - Existem pelo menos dois perfis com papeis diferentes e um perfil com papeis acumulados.
 - Existem modelos de termo de emprestimo, doacao e autorizacao de imagem de teste.
 
 ## 2. Criterios funcionais
 
-- **AC-001**: o visitante consegue listar equipamentos, abrir um detalhe e ver disponibilidade agregada sem autenticar; a quantidade e derivada da contagem de unidades fisicas em `em_casa`, por tipo e entidade proprietaria. O cartao de um banco permanece visivel com quantidade zero e mostra `Todos emprestados no momento`; bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos demais. A acao para conversar permanece visivel com quantidade zero: `Entrar para conversar` para visitante sem sessao aponta para `/entrar`; `Conversar no WhatsApp` fica para pessoa autenticada com papel Comunidade.
+- **AC-001**: o visitante consegue listar equipamentos, abrir um detalhe e ver disponibilidade agregada sem autenticar; a quantidade e derivada da contagem de unidades fisicas cuja coluna tecnica `catalog.equipment_units.situacao` vale `disponivel`, por tipo e entidade proprietaria. A interface usa o rotulo **Disponível no depósito**. O cartao de um banco permanece visivel com quantidade zero e mostra `Todos emprestados no momento`; bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos demais. A acao para conversar permanece visivel com quantidade zero: `Entrar para conversar` para visitante sem sessao aponta para `/entrar`; `Conversar no WhatsApp` fica para pessoa autenticada com papel Comunidade.
 - **AC-002**: a consulta anonima de disponibilidade retorna somente nome do banco e quantidade disponivel; nao revela identificadores de unidades, movimentacoes, emprestimos, dados pessoais, telefone, endereco, mapa ou link/destino de WhatsApp.
 - **AC-003**: uma pessoa consegue criar cadastro com CPF valido, confirmar telefone, criar senha de pelo menos oito caracteres sem informar endereco residencial e voltar ao equipamento originalmente escolhido.
 - **AC-004**: uma pessoa consegue entrar com CPF com e sem pontuacao, desde que a senha esteja correta.
@@ -23,8 +23,8 @@ Os testes devem usar dados sinteticos e contas de teste. Nenhum nome, CPF, telef
 - **AC-008**: contatos repetidos na janela de deduplicacao nao geram duplicidade indevida.
 - **AC-009**: o modo substituto altera o destinatario do novo contato sem alterar historico de contatos anteriores.
 - **AC-010**: dois administradores conseguem registrar entrada, emprestimo com termo e devolucao sem ajuda, cada tarefa em ate tres minutos depois do treinamento.
-- **AC-011**: uma devolucao pode marcar equipamento como pronto, em conserto ou sem condicao de uso.
-- **AC-012**: uma doacao definitiva sai da disponibilidade e permanece no historico.
+- **AC-011**: uma devolucao pode definir a situacao tecnica `disponivel`, `manutencao` ou `baixado`, conforme a condicao do equipamento; os rotulos de tela correspondentes estao em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
+- **AC-012**: uma doacao definitiva define a situacao tecnica `doado`, sai da disponibilidade e permanece no historico.
 - **AC-013**: lembretes mostram emprestimos vencendo, vencidos e revisoes pendentes.
 - **AC-014**: o termo de cada entidade usa o modelo e os campos corretos, sem clausula obrigatoria de imagem e com o texto de privacidade aprovado.
 - **AC-015**: a pessoa consegue consultar, corrigir, baixar e solicitar exclusao dos proprios dados.
@@ -54,7 +54,7 @@ Os testes devem usar dados sinteticos e contas de teste. Nenhum nome, CPF, telef
 - **AC-030**: no cadastro assistido, a pessoa confirma o telefone e o aviso de privacidade; o administrador nao define nem visualiza a senha.
 - **AC-031**: o painel do Companheiro mostra os agregados previstos e permite filtrar por banco sem retornar dados pessoais ou linhas individuais pela tela ou API.
 - **AC-032**: o painel destaca indisponibilidade total e estoque abaixo do minimo configurado para o banco e tipo correspondentes.
-- **AC-033**: o banco itinerante pode operar sem endereco fixo e usar um local de apoio sem que a configuracao exija um endereco proprio.
+- **AC-033**: o banco itinerante pode operar sem endereco fixo e usar um ponto de apoio sem que a configuracao exija um endereco proprio.
 - **AC-034**: o catalogo inicia na ordem definida para os tipos mais procurados e respeita a ordem configurada para os demais.
 - **AC-035**: mensagens iniciadas pelo WhatsApp nao contem CPF, nome do paciente, endereco, diagnostico ou motivo de saude, permitem revisao e nunca sao enviadas automaticamente pelo sistema.
 - **AC-036**: uma frase-senha de pelo menos oito caracteres e aceita sem exigir combinacao de maiusculas, numeros ou simbolos, e a pessoa consegue mostrar ou ocultar o texto digitado.

@@ -25,3 +25,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Stack: Next.js (App Router, TypeScript) + Supabase (`@supabase/ssr`).
 - All Supabase database queries MUST enforce Row Level Security (RLS) policies to isolate data among the 4 entities (Boa Vista, Três Vendas, Casa da Amizade, and Erechim).
 - NEVER expose CPFs, phone numbers, or personal data to the client/frontend for the "Companheiro" user role.
+
+## Testing Strategy (Lean MVP)
+- DO NOT use or install browser automation tools (Playwright, Cypress, Puppeteer).
+- UI/UX layout compliance (accessibility, 360px viewport, 56px button height) must be verified visually by the developer, NOT via automated browser code.
+- Focus automated checks ONLY on:
+  1. TypeScript compilation (`npm run build`).
+  2. Database RLS security policies (`supabase test db`).
+- Keep tasks and checklists lightweight to preserve LLM token usage and ease maintenance for community volunteers.

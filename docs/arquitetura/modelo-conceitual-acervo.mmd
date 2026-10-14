@@ -9,8 +9,9 @@ classDiagram
     class Entidade {
         <<mantenedora ou vinculadora>>
     }
-    class Local {
-        <<local fisico>>
+    class PontoAtendimento {
+        <<tabela catalog.pontos_atendimento>>
+        <<ponto fisico>>
     }
     class UnidadeFisica {
         <<uma peca individual do acervo>>
@@ -23,8 +24,8 @@ classDiagram
 
     TipoEquipamento "1" --> "0..*" UnidadeFisica : classifica
     Entidade "1" --> "0..*" UnidadeFisica : proprietaria
-    UnidadeFisica "0..*" --> "0..1" Local : local atual de guarda
-    Entidade "0..*" --> "0..*" Local : atendimento ou apoio compartilhavel
+    UnidadeFisica "0..*" --> "0..1" PontoAtendimento : ponto atual de guarda
+    Entidade "0..*" --> "0..*" PontoAtendimento : atendimento ou apoio compartilhavel
     Movimentacao "0..*" --> "1" UnidadeFisica : registra evento da unidade
     Emprestimo "0..*" --> "1" Entidade : entidade da operacao
     Emprestimo "1" --> "1..*" LinhaEmprestimo : organiza linhas
@@ -32,4 +33,4 @@ classDiagram
 
     note for UnidadeFisica "Identidade interna unica; codigo visivel de etiqueta ou QR pode ser nulo.<br/>Fase 1: saldo N cria N unidades. Fase 2: atribui codigos as mesmas unidades apos conferencia.<br/>Preservar o saldo e registrar divergencias; regra de tratamento, inclusive para emprestimos abertos, permanece em aberto."
     note for LinhaEmprestimo "Cada linha referencia uma unidade fisica. A unidade nao pode estar em mais de um emprestimo ativo."
-    note for TipoEquipamento "Disponibilidade agregada e derivada da contagem por tipo, entidade proprietaria e situacao. Unidades em em_casa contam como disponiveis; separado e espera informal, sem ciclo automatico de reserva. Nao ha saldo agregado editavel."
+    note for TipoEquipamento "Disponibilidade agregada deriva de catalog.equipment_units.situacao = 'disponivel'; 'reservado' e espera informal, sem ciclo automatico de reserva. Valores tecnicos: disponivel, reservado, emprestado, manutencao, doado e baixado. Rotulos de tela: Regras de Negocio. Nao ha saldo agregado editavel."

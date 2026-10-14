@@ -23,7 +23,7 @@ Preferir linguagem cotidiana. Evitar estes termos em textos exibidos ao publico:
 
 Preferir: `entrar`, `painel`, `situacao`, `equipamento`, `enviar`, `sair` e `voltar`.
 
-O vocabulario interno do codigo e do banco pode usar termos tecnicos, mas nao deve vazar para a interface.
+O vocabulario interno do codigo e do banco pode usar termos tecnicos, mas nao deve vazar para a interface. Por exemplo, `catalog.pontos_atendimento` e `catalog.equipment_units.situacao = 'disponivel'` sao identificadores tecnicos; a tela usa nomes cotidianos e os rotulos definidos em [Regras de Negocio](../produto/regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 
 ## 3. Fluxo publico para encontrar equipamento
 
@@ -31,7 +31,7 @@ O vocabulario interno do codigo e do banco pode usar termos tecnicos, mas nao de
 2. Lista mostra nome, foto opcional e disponibilidade em texto.
 3. Detalhe mostra largura quando aplicavel e um cartao por banco que possui o tipo.
 4. Cartoes com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta; cartoes sem disponibilidade aparecem depois.
-5. Quando um banco tem zero unidades em `em_casa`, seu cartao permanece visivel e mostra `Todos emprestados no momento`.
+5. Quando um banco tem zero unidades com `catalog.equipment_units.situacao = 'disponivel'`, seu cartao permanece visivel e mostra `Todos emprestados no momento`. Para unidades disponiveis, a tela mostra o rotulo **Disponível no depósito**.
 6. Visitante sem sessao ve apenas nome do banco, quantidade agregada e a acao `Entrar para conversar`, com destino `/entrar`; essa acao nao abre WhatsApp.
 7. Depois de entrar ou criar conta, retornar ao mesmo detalhe.
 8. Pessoa autenticada com papel Comunidade pode abrir WhatsApp com mensagem pronta para aquele banco, mesmo quando a disponibilidade e zero.
@@ -52,7 +52,7 @@ O teclado deve ser numerico para CPF, telefone, CEP e codigo. CPF com ou sem pon
 
 ## 5. Painel do Companheiro
 
-O painel mostra quantidades agregadas em casa, emprestadas, em conserto e com prazo vencido. Permite ver o conjunto dos bancos ou filtrar um banco, e destaca falta total ou estoque abaixo do minimo configurado.
+O painel mostra quantidades agregadas **Disponível no depósito**, emprestadas, em manutencao e com prazo vencido. Permite ver o conjunto dos bancos ou filtrar um banco, e destaca falta total ou estoque abaixo do minimo configurado. Os valores tecnicos usados para agrupar ficam ocultos; seus rotulos estao em [Regras de Negocio](../produto/regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 
 O painel nunca mostra nome, nem mesmo primeiro nome, bairro, contato ou linha individual de emprestimo de uma pessoa atendida.
 
@@ -68,7 +68,7 @@ O formulario pede tipo, quantidade, origem e condicao. A foto e opcional; largur
 
 ### Registrar emprestimo ou doacao definitiva
 
-O administrador localiza a pessoa, escolhe um ou mais equipamentos disponiveis no proprio banco, informa se o equipamento e para a propria pessoa ou para outro paciente (somente o nome), escolhe a data sugerida ou outra data e confere o documento antes de gerar o PDF. Se nao houver data de devolucao, informa uma data de revisao.
+O administrador localiza a pessoa, escolhe um ou mais equipamentos com o rotulo **Disponível no depósito** no proprio banco, informa se o equipamento e para a propria pessoa ou para outro paciente (somente o nome), escolhe a data sugerida ou outra data e confere o documento antes de gerar o PDF. Se nao houver data de devolucao, informa uma data de revisao.
 
 ### Registrar devolucao
 

@@ -28,17 +28,17 @@ Relacao entre pessoa, papel, entidade e situacao de acesso:
 
 Uma pessoa pode ter mais de um papel e mais de um vinculo institucional. Administradores de banco sempre precisam de escopo de entidade.
 
-## 2. Entidades e locais
+## 2. Entidades e pontos de atendimento
 
 ### Entidade
 
 Representa organizacao mantenedora ou vinculadora. Campos conceituais: nome oficial, nome publico, tipo, sigla, indicador de possuir banco, identificador juridico opcional, logo permitido, contato operacional protegido, configuracao de atendimento, prazo sugerido e estado ativo.
 
-### Local
+### Ponto de atendimento
 
-Representa local fisico compartilhavel entre entidades. Campos conceituais: nome, endereco, referencia, coordenadas, horario e imagem opcional.
+Representa um ponto fisico compartilhavel entre entidades. A tabela tecnica atual e `catalog.pontos_atendimento`; na interface, use **Ponto de atendimento** ou **Local de atendimento**, nunca o nome da tabela. Campos conceituais: nome, endereco, referencia, coordenadas, horario e imagem opcional.
 
-O relacionamento entre entidade e local deve suportar atendimento itinerante, local de apoio e mais de uma entidade usando o mesmo local.
+O relacionamento entre entidade e ponto de atendimento deve suportar atendimento itinerante, ponto de apoio e mais de uma entidade usando o mesmo ponto.
 
 ## 3. Catalogo e acervo
 
@@ -57,17 +57,22 @@ O acervo operacional representa cada peca fisica por uma unidade individual, inc
 Conceitos associados:
 
 - entidade proprietaria;
-- local atual de guarda, distinto da propriedade;
+- ponto atual de guarda, distinto da propriedade; a coluna tecnica `storage_location_id` referencia `catalog.pontos_atendimento`;
 - tipo de equipamento;
 - situacao e condicao;
 - largura, origem, doador e observacoes quando aplicaveis;
 - fotos privadas ou publicas conforme classificacao.
 
+Na implementacao atual, a unidade fica em `catalog.equipment_units`; a situacao e
+gravada em `catalog.equipment_units.situacao` como um valor de
+`catalog.equipment_situation`. Os valores tecnicos e seus rotulos de tela estao
+em [Regras de Negocio](../produto/regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
+
 A carga inicial de saldo N cria N registros individuais sem codigo visivel. Na Fase 2, a conferencia fisica atribui codigos as mesmas unidades, sem converter uma contagem agregada ou duplicar registros. O saldo informado deve ser preservado e as divergencias registradas, sem correcao silenciosa. A regra operacional para tratar a diferenca entre N informado e a quantidade fisica encontrada, inclusive unidades em emprestimos abertos, continua em aberto.
 
 ### Disponibilidade agregada
 
-A disponibilidade publica e um agregado de consulta derivado da contagem de unidades por tipo, entidade proprietaria e situacao. Somente unidades em situacao `em_casa` contam como disponiveis; `separado` nao conta. Nao existe saldo agregado editavel como fonte de verdade paralela. O minimo opcional por entidade e tipo e um limite de referencia, nao uma quantidade de acervo.
+A disponibilidade publica e um agregado de consulta derivado da contagem de unidades por tipo, entidade proprietaria e situacao. Somente unidades com `catalog.equipment_units.situacao = 'disponivel'` contam como disponiveis; `reservado` nao conta. Na interface publica, o rotulo correspondente e **Disponível no depósito**. Nao existe saldo agregado editavel como fonte de verdade paralela. O minimo opcional por entidade e tipo e um limite de referencia, nao uma quantidade de acervo.
 
 ### Movimentacao
 

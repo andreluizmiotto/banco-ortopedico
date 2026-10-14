@@ -9,7 +9,7 @@ Disponibilizar um catalogo unico de equipamentos ortopedicos para a comunidade d
 O sistema deve:
 
 - permitir que qualquer pessoa encontre tipos de equipamento e disponibilidade agregada sem cadastro;
-- identificar a pessoa antes de revelar contatos, enderecos e locais de atendimento;
+- identificar a pessoa antes de revelar contatos, enderecos e pontos de atendimento;
 - encaminhar a conversa para o responsavel do banco por WhatsApp, sem tentar substituir a conversa humana;
 - registrar o contato e permitir que o administrador converta o atendimento em emprestimo;
 - controlar entradas, emprestimos, devolucoes, consertos, baixas e doacoes definitivas;
@@ -37,7 +37,7 @@ O sistema deve:
 - confirmacao de telefone por codigo;
 - recuperacao automatica de senha;
 - perfis Comunidade, Companheiro, Administrador do banco e Administrador geral;
-- cadastro inicial de quatro bancos e tres locais fisicos de atendimento, incluindo um banco itinerante que pode usar um local de apoio;
+- cadastro inicial de quatro bancos e tres pontos fisicos de atendimento, incluindo um banco itinerante que pode usar um ponto de apoio;
 - registro de contatos iniciados no WhatsApp;
 - modo de responsavel substituto;
 - entradas por doacao, compra ou retorno de conserto;
@@ -48,7 +48,7 @@ O sistema deve:
 - geracao de termo em PDF para cada banco;
 - armazenamento opcional de foto do termo assinado;
 - painel agregado do Companheiro e estoque do proprio banco, incluindo indicacao de tipos em falta ou abaixo do minimo configurado;
-- quadro de organizacao para equipamentos, dono/local e acessos;
+- quadro de organizacao para equipamentos, propriedade/ponto de guarda e acessos;
 - auditoria das alteracoes relevantes;
 - direitos de acesso, correcao, portabilidade e exclusao dos dados;
 - PWA ou experiencia instalavel no navegador, sem aplicativo de loja.
@@ -74,7 +74,7 @@ O sistema deve:
 | Comunidade | Tudo do visitante, contato, proprios emprestimos, dados pessoais e oferta de doacao | Nao ve dados de outras pessoas |
 | Companheiro | Somente painel agregado; funcoes pessoais exigem tambem o papel Comunidade | O papel Companheiro nao recebe dados pessoais, nem primeiro nome ou bairro |
 | Administrador do banco | Operar acervo, contatos, emprestimos, devolucoes, lembretes e acessos do proprio clube | Escopo limitado ao banco ou entidade autorizada |
-| Administrador geral | Configurar entidades, locais, tipos, modelos, acessos, auditoria e dados globais | Pode operar todos os bancos; toda alteracao deve ser auditada |
+| Administrador geral | Configurar entidades, pontos de atendimento, tipos, modelos, acessos, auditoria e dados globais | Pode operar todos os bancos; toda alteracao deve ser auditada |
 
 Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas para a mesma pessoa.
 
@@ -83,7 +83,7 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 ### Catalogo e descoberta
 
 - **FR-001**: o visitante deve conseguir consultar a lista de tipos de equipamento ativos.
-- **FR-002**: cada tipo deve exibir nome, foto opcional, descricao curta e disponibilidade em linguagem simples; a disponibilidade agregada e derivada da contagem de unidades fisicas em `em_casa`, por tipo e entidade proprietaria.
+- **FR-002**: cada tipo deve exibir nome, foto opcional, descricao curta e disponibilidade em linguagem simples; a disponibilidade agregada e derivada da contagem de unidades fisicas cuja coluna tecnica `catalog.equipment_units.situacao` vale `disponivel`, por tipo e entidade proprietaria. A interface usa o rotulo **Disponível no depósito**; os demais valores e rotulos estao em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 - **FR-003**: o detalhe do tipo deve mostrar um cartao por banco que possua aquele tipo, inclusive quando a quantidade disponivel for zero; nesse caso, exibe exatamente `Todos emprestados no momento`. Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos cartoes sem disponibilidade. A API anonima de disponibilidade retorna somente o nome do banco e a quantidade disponivel, sem identificadores individuais.
 - **FR-004**: o catalogo deve permitir busca textual simples por equipamento, sem filtros avancados no MVP.
 - **FR-005**: a comunidade deve retornar ao equipamento originalmente solicitado depois de concluir cadastro ou entrada.
@@ -115,14 +115,14 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 - **FR-022**: o administrador deve registrar devolucao total ou parcial, estado na devolucao e destino posterior do equipamento.
 - **FR-023**: o sistema deve registrar doacao definitiva separadamente de emprestimo.
 - **FR-024**: o administrador deve registrar tentativas de contato e nova data de revisao.
-- **FR-025**: o estoque deve exibir, por tipo, contagens derivadas das unidades fisicas em casa, emprestadas, em conserto, doadas em definitivo e baixadas, e destacar indisponibilidade ou estoque abaixo do minimo configurado; nao ha quantidade agregada editavel paralela.
+- **FR-025**: o estoque deve exibir, por tipo, contagens derivadas das unidades fisicas com os rotulos **Disponível no depósito**, **Emprestado**, **Em manutenção**, **Doado** e **Retirado do acervo**, e destacar indisponibilidade ou estoque abaixo do minimo configurado; nao ha quantidade agregada editavel paralela. Os valores tecnicos correspondentes sao definidos em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 
 ### Organizacao e administracao
 
 - **FR-026**: o administrador do banco deve administrar somente registros permitidos para seu escopo.
-- **FR-027**: o administrador geral deve administrar entidades, locais, tipos, modelos de documento e permissoes.
+- **FR-027**: o administrador geral deve administrar entidades, pontos de atendimento, tipos, modelos de documento e permissoes.
 - **FR-028**: o quadro de situacao deve permitir corrigir movimentos administrativos com confirmacao e justificativa.
-- **FR-029**: o quadro de dono/local deve distinguir propriedade do equipamento e local onde ele esta guardado.
+- **FR-029**: o quadro de propriedade e ponto de guarda deve distinguir o dono do equipamento e o ponto onde ele esta guardado.
 - **FR-030**: o quadro de acessos deve permitir solicitar, liberar e retirar acesso sem apagar a conta de comunidade.
 - **FR-031**: alteracoes de dados, permissoes, acervo e emprestimos devem gerar registro de auditoria.
 
@@ -138,11 +138,11 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 ### Conteudo e configuracao
 
 - **FR-038**: o administrador geral deve poder alterar mensagens prontas, descricoes de tipos, perguntas frequentes e textos institucionais sem deploy; mensagens aceitam somente campos dinamicos aprovados e nunca incluem CPF, nome do paciente, endereco, diagnostico ou motivo de saude, conforme [mensagens padrao](mensagens-padrao.md).
-- **FR-039**: configuracoes de telefone, horario e local de atendimento devem ser editaveis por perfil autorizado.
+- **FR-039**: configuracoes de telefone, horario e ponto de atendimento devem ser editaveis por perfil autorizado.
 - **FR-040**: o sistema deve permitir cadastrar entidades futuras sem mudanca de codigo, respeitando o fluxo de autorizacao.
 - **FR-041**: o administrador do banco deve conseguir iniciar, dentro do proprio banco, um cadastro assistido com papel Comunidade para uma pessoa sem conta; a pessoa confirma o proprio telefone e o aviso de privacidade, e o administrador nunca define nem visualiza a senha.
 - **FR-042**: no fluxo de emprestimo ou devolucao do proprio banco, o administrador pode localizar e reutilizar a conta existente pelo nome ou CPF, com acesso apenas aos dados minimos necessarios; historico de emprestimos de outros bancos nunca e exibido.
-- **FR-043**: o painel do Companheiro deve mostrar quantidades agregadas de equipamentos em casa, emprestados, em conserto e com prazo vencido, com filtro por banco, sem dados pessoais ou linhas de emprestimo.
+- **FR-043**: o painel do Companheiro deve mostrar quantidades agregadas de equipamentos disponiveis no deposito, emprestados, em manutencao e com prazo vencido, com filtro por banco, sem dados pessoais ou linhas de emprestimo.
 - **FR-044**: o administrador do banco deve poder configurar um minimo opcional por tipo de equipamento dentro do proprio banco; o painel deve indicar tipos sem disponibilidade em todos os bancos e tipos abaixo do minimo daquele banco.
 - **FR-045**: o visitante deve conseguir consultar perguntas frequentes e a politica de privacidade sem criar conta ou entrar no sistema.
 
@@ -159,7 +159,7 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 
 ## 7. Implantacao
 
-1. **Fase 1 - carga do saldo inicial**: cadastrar entidades, locais, responsaveis e modelos; representar o saldo informado N por N registros individuais de unidades, cada um com identidade interna unica e sem codigo visivel; treinar administradores e revisar fluxos com os bancos.
+1. **Fase 1 - carga do saldo inicial**: cadastrar entidades, pontos de atendimento, responsaveis e modelos; representar o saldo informado N por N registros individuais de unidades, cada um com identidade interna unica e sem codigo visivel; treinar administradores e revisar fluxos com os bancos.
 2. **Fase 2 - conferencia fisica**: conferir as unidades e atribuir codigos visiveis as mesmas unidades da Fase 1, registrando medidas/fotos quando aplicavel; importar emprestimos ainda abertos com cada linha ligada a unidade emprestada. Preservar o saldo inicial e registrar divergencias, sem definir neste requisito como resolver diferencas entre N e a quantidade encontrada, inclusive para unidades em emprestimos abertos.
 3. **Divulgacao**: ampliar a divulgacao publica depois de confirmar os dados e concluir o inventario planejado.
 4. **Evolucao**: priorizar itens marcados FASE 2 apos o MVP.

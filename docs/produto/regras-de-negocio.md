@@ -2,14 +2,14 @@
 
 As regras deste documento sao normativas para o dominio. Regras de autorizacao tecnica e isolamento de dados estao em [autenticacao e autorizacao](../arquitetura/autenticacao-e-autorizacao.md).
 
-## 1. Entidades, bancos e locais
+## 1. Entidades, bancos e pontos de atendimento
 
 - O produto apresenta um catalogo unico, mas cada banco conserva propriedade, atendimento, documentos e decisoes sobre o proprio acervo.
-- O MVP considera quatro bancos: Boa Vista, Tres Vendas, Casa da Amizade e Erechim, atendidos em tres locais fisicos. Um banco pode funcionar sem local fixo e usar outro local como apoio.
+- O MVP considera quatro bancos: Boa Vista, Tres Vendas, Casa da Amizade e Erechim, atendidos em tres pontos de atendimento fisicos. Um banco pode funcionar sem ponto fixo e usar outro ponto como apoio.
 - Entidades da Familia Rotaria sem banco podem existir para vincular companheiros e administradores futuros.
-- Uma entidade pode funcionar sem local fixo.
-- Um local pode atender mais de uma entidade.
-- Propriedade e localizacao fisica sao atributos diferentes. Mover um equipamento para outro local nao muda seu dono.
+- Uma entidade pode funcionar sem ponto fixo.
+- Um ponto de atendimento pode atender mais de uma entidade.
+- Propriedade e ponto de atendimento atual sao atributos diferentes. Mover um equipamento para outro ponto nao muda seu dono.
 - Enderecos, coordenadas, horarios e telefones de producao devem ser cadastrados somente por perfil autorizado. Este repositorio nao contem esses valores.
 
 ## 2. Tipos e unidades de equipamento
@@ -52,31 +52,35 @@ O controle operacional e individual desde a Fase 1: cada peca fisica tem seu pro
 - A carga inicial deve preservar o saldo informado e registrar divergencias observadas na conferencia, nunca apagar ou corrigir silenciosamente o saldo anterior.
 - A regra operacional para tratar a diferenca entre N informado e a quantidade fisica encontrada permanece em aberto, inclusive quando houver itens associados a emprestimos abertos.
 
-A disponibilidade publica e agregada para consulta, mas derivada da contagem das unidades por tipo, entidade proprietaria e situacao. Somente unidades em `em_casa` contam como disponiveis; `separado` nao conta.
+A disponibilidade publica e agregada para consulta, mas derivada da contagem das unidades por tipo, entidade proprietaria e situacao. Somente unidades cuja coluna `catalog.equipment_units.situacao` tenha o valor `disponivel` contam como disponiveis; `reservado` nao conta.
 
 Cada banco pode definir um minimo opcional de unidades disponiveis por tipo. O painel indica um tipo como indisponivel quando nenhum banco tem unidades disponiveis e indica estoque baixo para o banco cuja quantidade esteja abaixo do proprio minimo. Sem minimo configurado, so se aplica o alerta de indisponibilidade total.
 
 Formato sugerido para codigo individual: `SIGLA_ENTIDADE + SIGLA_TIPO + SEQUENCIAL_DE_4_DIGITOS`, por exemplo `BVCR0001`. O codigo nao e exibido para a comunidade.
 
-## 4. Situacao do equipamento
+## 4. Situacao tecnica e rotulos de tela
 
-| Situacao | Significado | Conta como disponivel? |
-|---|---|---|
-| `em_casa` | Disponivel no local do banco | Sim |
-| `separado` | Em espera informal, aguardando retirada; nao e reserva automatica nem define um ciclo de reservas | Nao |
-| `emprestado` | Em posse de um responsavel | Nao |
-| `em_conserto` | Quebrado, incompleto ou aguardando reparo | Nao |
-| `doado_definitivo` | Saiu do acervo sem previsao de retorno | Nao |
-| `baixado` | Perdido, inutilizado ou nao devolvido | Nao |
+O banco grava a situacao no campo `catalog.equipment_units.situacao`, do tipo
+`catalog.equipment_situation`. A interface apresenta os rotulos amigaveis abaixo,
+sem exibir os identificadores tecnicos.
+
+| Valor tecnico | Rotulo de tela | Significado | Conta como disponivel? |
+|---|---|---|---|
+| `disponivel` | **Disponível no depósito** | Pronto para emprestimo no ponto de atendimento do banco | Sim |
+| `reservado` | **Aguardando retirada** | Em espera informal; nao e reserva automatica nem define um ciclo de reservas | Nao |
+| `emprestado` | **Emprestado** | Em posse de um responsavel | Nao |
+| `manutencao` | **Em manutenção** | Quebrado, incompleto ou aguardando reparo | Nao |
+| `doado` | **Doado** | Saiu definitivamente do acervo, sem previsao de retorno | Nao |
+| `baixado` | **Retirado do acervo** | Perdido, inutilizado ou nao devolvido | Nao |
 
 Transicoes normais:
 
-- `em_casa` -> `separado`, `emprestado`, `em_conserto`, `doado_definitivo` ou `baixado`;
-- `separado` -> `em_casa` ou `emprestado`;
-- `emprestado` -> `em_casa`, `em_conserto` ou `baixado`;
-- `em_conserto` -> `em_casa` ou `baixado`.
+- `disponivel` -> `reservado`, `emprestado`, `manutencao`, `doado` ou `baixado`;
+- `reservado` -> `disponivel` ou `emprestado`;
+- `emprestado` -> `disponivel`, `manutencao` ou `baixado`;
+- `manutencao` -> `disponivel` ou `baixado`.
 
-`doado_definitivo` e `baixado` sao estados terminais para administradores de banco. Correcao posterior exige administrador geral, justificativa e auditoria.
+`doado` e `baixado` sao estados terminais para administradores de banco. Correcao posterior exige administrador geral, justificativa e auditoria.
 
 Toda transicao deve registrar ator, data, situacao anterior, situacao nova e motivo quando aplicavel.
 
@@ -101,7 +105,7 @@ Toda transicao deve registrar ator, data, situacao anterior, situacao nova e mot
 ## 6. Contato por WhatsApp
 
 - A consulta anonima de disponibilidade retorna somente o nome publico do banco e a quantidade disponivel para o tipo consultado. Nao retorna endereco, telefone, link/destino de WhatsApp, identificador de unidade, movimentacao, emprestimo ou dados pessoais.
-- O detalhe do tipo mostra cartao para cada banco que possui o tipo, mesmo quando a quantidade em `em_casa` e zero. Nesse caso, o cartao exibe exatamente `Todos emprestados no momento`.
+- O detalhe do tipo mostra cartao para cada banco que possui o tipo, mesmo quando a quantidade de unidades com `situacao = 'disponivel'` e zero. Nesse caso, o cartao exibe exatamente `Todos emprestados no momento`.
 - Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta; os cartoes sem disponibilidade aparecem depois.
 - A acao para conversar continua visivel com disponibilidade zero. Visitante sem sessao ve `Entrar para conversar`, direcionado a `/entrar`; pessoa autenticada com papel Comunidade ve `Conversar no WhatsApp`. A acao direta do WhatsApp exige esse papel autenticado.
 - Quando a quantidade disponivel e zero, o responsavel ainda pode orientar sobre alternativa ou fila informal.
@@ -129,14 +133,14 @@ Para cada lembrete, o administrador pode abrir mensagem pronta, ligar, registrar
 
 Os textos iniciais e os campos permitidos estao em [mensagens padrao](mensagens-padrao.md). O administrador deve confirmar o destinatario e revisar a mensagem no WhatsApp antes de envia-la.
 
-## 8. Locais e mapa
+## 8. Pontos de atendimento e mapa
 
-Cada local possui nome, endereco, referencia textual, coordenadas fixadas manualmente, horario e foto opcional da fachada.
+O nome tecnico da tabela e `catalog.pontos_atendimento`; na interface, use **Ponto de atendimento**. Cada ponto possui nome, endereco, referencia textual, coordenadas fixadas manualmente, horario e foto opcional da fachada.
 
 - O mapa deve usar as coordenadas salvas, nao uma nova geocodificacao do endereco a cada acesso.
 - No MVP, o botao de rota pode abrir um link externo para o mapa.
 - Enderecos e telefones ficam disponiveis somente depois da autenticacao.
-- Para banco itinerante, o cartao deve informar "Local combinado pelo WhatsApp" e, se aplicavel, um local de apoio.
+- Para banco itinerante, o cartao deve informar "Local combinado pelo WhatsApp" e, se aplicavel, um ponto de apoio.
 
 ## 9. Documentos
 
@@ -151,13 +155,14 @@ Cada local possui nome, endereco, referencia textual, coordenadas fixadas manual
 
 ### Situacao dos equipamentos
 
-Colunas: `Em casa`, `Separado`, `Emprestado`, `Em conserto`, `Doado em definitivo`, `Baixado`.
+Colunas de tela: **Disponível no depósito**, **Aguardando retirada**,
+**Emprestado**, **Em manutenção**, **Doado** e **Retirado do acervo**.
 
-Movimentos para `Emprestado` e `Em casa` devem abrir os fluxos de emprestimo e devolucao, respectivamente. Os demais podem ser feitos diretamente, com confirmacao e motivo quando necessario.
+Selecionar **Emprestado** abre o fluxo de emprestimo; selecionar **Disponível no depósito** abre o fluxo de devolucao. Esses rotulos correspondem aos valores tecnicos `emprestado` e `disponivel`. Os demais movimentos podem ser feitos diretamente, com confirmacao e motivo quando necessario.
 
-### Dono e local
+### Propriedade e ponto de guarda
 
-O administrador geral pode transferir propriedade com motivo. O administrador do banco pode solicitar ou registrar troca de local conforme sua permissao, sem alterar o dono.
+O administrador geral pode transferir propriedade com motivo. O administrador do banco pode solicitar ou registrar troca de ponto de guarda conforme sua permissao, sem alterar o dono. O campo tecnico `catalog.equipment_units.storage_location_id` referencia `catalog.pontos_atendimento` e nao deve ser exibido na interface.
 
 ### Acessos
 
@@ -167,9 +172,9 @@ Retirar acesso nao exclui a conta de comunidade nem o historico legalmente neces
 
 ## 11. Integridade
 
-- A disponibilidade e uma contagem derivada de unidades em situacao disponivel, nao um saldo editavel separado.
+- A disponibilidade e uma contagem derivada de unidades com `situacao = 'disponivel'`, nao um saldo editavel separado.
 - Uma unidade fisica so pode estar em um emprestimo ativo.
 - Devolucao parcial deve deixar o emprestimo com situacao `parcial` ate encerramento.
 - Uma entidade inativa nao pode receber novos emprestimos, mas seu historico deve permanecer consultavel por perfis autorizados.
-- Alteracoes de situacao, dono, local, permissao e documento devem ser auditaveis.
+- Alteracoes de situacao, dono, ponto de guarda, permissao e documento devem ser auditaveis.
 - Regras de escopo entre bancos devem ser reforcadas pelo banco de dados com RLS.
