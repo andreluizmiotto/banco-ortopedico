@@ -25,11 +25,67 @@ insert into catalog.entities (code, public_name, is_bank, is_active)
 values
   ('SYN-A', 'Entidade Sintética A', true, true),
   ('SYN-B', 'Entidade Sintética B', true, true),
-  ('SYN-C', 'Entidade Sintética C', true, true)
+  ('SYN-C', 'Entidade Sintética C', true, true),
+  ('SYN-ROTARY-BOA-VISTA', 'Rotary Boa Vista (sintético)', true, true)
 on conflict (code) do update
 set
   public_name = excluded.public_name,
   is_bank = excluded.is_bank,
+  is_active = excluded.is_active;
+
+-- Local-only synthetic credentials; do not use this identity outside local development.
+insert into auth.users (
+  id,
+  aud,
+  role,
+  email,
+  email_confirmed_at,
+  encrypted_password,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+values (
+  '90000000-0000-4000-8000-000000000001',
+  'authenticated',
+  'authenticated',
+  'admin-rotary-boa-vista@banco-ortopedico.test',
+  clock_timestamp(),
+  extensions.crypt(
+    'Rotary-Local-Synthetic-2026!',
+    extensions.gen_salt('bf')
+  ),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  clock_timestamp(),
+  clock_timestamp()
+)
+on conflict (id) do update
+set
+  aud = excluded.aud,
+  role = excluded.role,
+  email = excluded.email,
+  email_confirmed_at = excluded.email_confirmed_at,
+  encrypted_password = excluded.encrypted_password,
+  raw_app_meta_data = excluded.raw_app_meta_data,
+  raw_user_meta_data = excluded.raw_user_meta_data,
+  updated_at = excluded.updated_at;
+
+insert into catalog.user_roles (id, user_id, role, entity_id, is_active)
+select
+  '90000000-0000-4000-8000-000000000002',
+  '90000000-0000-4000-8000-000000000001',
+  'admin_banco',
+  entity.id,
+  true
+from catalog.entities as entity
+where entity.code = 'SYN-ROTARY-BOA-VISTA'
+on conflict (id) do update
+set
+  user_id = excluded.user_id,
+  role = excluded.role,
+  entity_id = excluded.entity_id,
   is_active = excluded.is_active;
 
 insert into catalog.pontos_atendimento (code, name)

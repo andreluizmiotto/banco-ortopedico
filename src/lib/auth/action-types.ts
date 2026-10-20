@@ -7,6 +7,10 @@ export type MessageState = {
   message: string | null;
 };
 
+export type AdminSignInState = {
+  message: string | null;
+};
+
 export type SignupState = {
   kind: "idle" | "error" | "otp";
   message: string | null;

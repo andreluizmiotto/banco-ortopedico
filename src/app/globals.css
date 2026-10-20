@@ -466,6 +466,21 @@ h1 {
   font-weight: 700;
 }
 
+.admin-auth-loading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-auth-loading .loading-indicator {
+  flex: 0 0 28px;
+}
+
+.admin-auth-loading .body-copy {
+  margin: 0;
+}
+
 .privacy-notice {
   display: flex;
   flex-direction: column;
