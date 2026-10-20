@@ -33,8 +33,10 @@ set
   is_bank = excluded.is_bank,
   is_active = excluded.is_active;
 
+-- GoTrue's email/password lookup uses the zero instance UUID.
 -- Local-only synthetic credentials; do not use this identity outside local development.
 insert into auth.users (
+  instance_id,
   id,
   aud,
   role,
@@ -47,6 +49,7 @@ insert into auth.users (
   updated_at
 )
 values (
+  '00000000-0000-0000-0000-000000000000',
   '90000000-0000-4000-8000-000000000001',
   'authenticated',
   'authenticated',
@@ -63,6 +66,7 @@ values (
 )
 on conflict (id) do update
 set
+  instance_id = excluded.instance_id,
   aud = excluded.aud,
   role = excluded.role,
   email = excluded.email,

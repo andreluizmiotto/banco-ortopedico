@@ -9,6 +9,6 @@ Database: `supabase/migrations/20261015000000_autenticacao_administrativa.sql` �
 
 Session refresh: `src/proxy.ts` includes `/admin/:path*`; Proxy refreshes cookies only and does not grant authorization. `/admin/contatos` remains an empty guarded route until FR-017/AC-007.
 
-Fixture: `supabase/seed.sql` — local-only synthetic Auth identity and one role linked to `SYN-ROTARY-BOA-VISTA`.
+Fixture: `supabase/seed.sql` — local-only synthetic Auth identity and one role linked to `SYN-ROTARY-BOA-VISTA`; set `auth.users.instance_id` to the zero UUID explicitly. GoTrue's `FindUserByEmailAndAudience()` filters by `instance_id = uuid.Nil`; omitting it leaves `NULL`, so Auth reports generic invalid credentials. After changing the seed, rerun the local database reset to reload the identity.
 
 Updated: 2026-10-20

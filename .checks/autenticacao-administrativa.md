@@ -5,7 +5,9 @@ State: IN PROGRESS — os dois comandos automatizados permitidos passaram após 
 ## Sources
 
 - `.tasks/autenticacao-administrativa.md` — critérios C1–C12, decisões, limites e `Unresolved` 1–8.
-- Conversa desta sessão — Supabase Auth por e-mail/senha, separação de `/entrar`, destino fixo `/admin/contatos`, fixture local sintética e proibição de alterações em produção.
+- Conversa desta sessão e follow-up — Supabase Auth por e-mail/senha, destino fixo, diagnóstico do acesso local e passos de configuração documentados.
+- `README.md` — antes desta alteração continha somente o scaffold padrão do Next.js, sem os passos locais exigidos.
+- Supabase Auth GoTrue [`FindUserByEmailAndAudience`](https://github.com/supabase/auth/blob/master/internal/models/user.go) — a busca de conta por e-mail inclui `instance_id = uuid.Nil`.
 - `.tasks/contatos-administrativos-fr-017-ac-007.md` — dependência, acesso restrito a `admin_banco` e decisões da task de contatos que permanecem abertas.
 - `.checks/contatos-administrativos-fr-017-ac-007.md` — fixture local, validação manual e fronteira de escopo; não transferir nem declarar checks de contatos verificados.
 - `AGENTS.md` — termos em português, paleta, acessibilidade manual e comandos permitidos.
@@ -50,7 +52,7 @@ A entrada administrativa reutiliza o cliente SSR e o invólucro visual existente
 | Resolvedor de autorização no banco | `public.current_admin_bank_entity_id()` sem argumentos; retorna somente o UUID da entidade do `auth.uid()` quando há exatamente um vínculo ativo; owner `admin_bank_authorization_checker` `NOLOGIN NOBYPASSRLS` e RLS | Aceitar `user_id`, papel ou entidade do navegador, ou devolver linhas de `catalog.user_roles`; viola a origem confiável e expõe mais dados. |
 | Destino da entrada | `/admin/contatos`; página Server Component chama `requireAdminBankContext()` em cada requisição e retorna `null` sem renderizar conteúdo | Não criar rota e terminar em 404, ou implementar agora uma tela/coleção de contatos fora da task. |
 | Atualização SSR das rotas administrativas | Acrescentar `/admin/:path*` ao matcher existente; o Proxy continua apenas chamando `auth.getUser()` para atualizar cookies | Deixar novas páginas fora do fluxo existente de atualização de cookie, ou deslocar autorização de papel para o Proxy. |
-| Fixture local | Entidade `SYN-ROTARY-BOA-VISTA` com nome público `Rotary Boa Vista (sintético)`; identidade `90000000-0000-4000-8000-000000000001`, e-mail `admin-rotary-boa-vista@banco-ortopedico.test` e senha local sintética `Rotary-Local-Synthetic-2026!`, hash por `extensions.crypt(..., extensions.gen_salt('bf'))`; exatamente um vínculo ativo; inserts idempotentes | Senha aleatória/desconhecida impediria a prova manual de entrada; credenciais reais ou criação automática de papel pela tela são proibidas. A fixture é exclusivamente local. |
+| Fixture local | Entidade `SYN-ROTARY-BOA-VISTA` com nome público `Rotary Boa Vista (sintético)`; identidade `90000000-0000-4000-8000-000000000001`, e-mail `admin-rotary-boa-vista@banco-ortopedico.test`, senha local sintética `Rotary-Local-Synthetic-2026!` com hash `extensions.crypt(..., extensions.gen_salt('bf'))` e `auth.users.instance_id = '00000000-0000-0000-0000-000000000000'`; exatamente um vínculo ativo; inserts idempotentes | Omitir `instance_id` deixa `NULL`, mas o lookup de e-mail/senha do GoTrue filtra pelo UUID zero; credenciais reais ou criação automática de papel pela tela são proibidas. A fixture é exclusivamente local. |
 
 - O layout e a tipografia da entrada seguem os componentes/tokens existentes; não há dependência nova nem alteração de contrato público.
 
@@ -102,7 +104,7 @@ Provas: revisão independente de `supabase/config.toml` e `supabase/migrations/2
 
 **C11 (critério 11) — PENDENTE** — `supabase/seed.sql` cria, de forma repetível, identidade Auth sintética local com exatamente um `admin_banco` ativo para a entidade sintética Rotary Boa Vista, sem dados ou credenciais reais.
 
-Provas: `supabase test db` (exit 0; assertion `C11 local seed can hash the synthetic Auth password with pgcrypto`) e revisão estática independente em `.checks/autenticacao-administrativa.verified.md:44`. O seed não foi executado e não houve `db reset`; C11 permanece pendente até prova da fixture carregada localmente. A fixture não habilita acesso administrativo de produção.
+Provas: `supabase test db` (exit 0; assertion `C11 local seed can hash the synthetic Auth password with pgcrypto`) confirma as funções de hash, não a fixture. A revisão independente anterior analisou o seed antes da correção de `instance_id`; a revisão do seed atual e sua execução após reset local ainda estão pendentes. C11 permanece pendente até a fixture corrigida ser carregada. Ela não habilita acesso administrativo de produção.
 
 **C12 (critério 12) — PENDENTE** — Revisão visual manual a 360 px confirma: sem rolagem horizontal; botões principais ≥56 px e texto em negrito ≥20 px; texto corrido ≥18 px; títulos ≥26 px; contraste ≥4,5:1; foco/informação não dependem apenas de cor/ícone; uma ação principal; rótulos acessíveis; linguagem e paleta de `AGENTS.md`.
 
@@ -123,6 +125,7 @@ State: PASS. Não executar outros comandos de validação nem adicionar runners.
 - Após autorização do usuário, `npx --yes supabase@latest start` iniciou a stack local a partir do backup existente.
 - Após autorização do usuário, `npx --yes supabase@latest migration up --local` aplicou somente `20261015000000_autenticacao_administrativa.sql`; não houve reset, execução do seed, inserção em produção ou deploy.
 - A primeira tentativa de `supabase test db` foi bloqueada porque a migration ainda não estava aplicada; a tentativa seguinte teve uma assertion de teste que consultava `catalog.entities` sob `authenticated`. O teste passou a usar UUIDs sintéticos determinísticos, sem conceder acesso direto; a execução final, invocada por `npx --yes supabase@latest test db`, foi `PASS` (`Files=5, Tests=161`).
+- O usuário informou que executou `db reset` e `npm run dev` antes deste follow-up. Como o reset ocorreu antes da correção de `instance_id`, repita o passo local do README para recarregar a fixture; o agente não executou reset nem seed.
 
 ## Go-live gates
 
