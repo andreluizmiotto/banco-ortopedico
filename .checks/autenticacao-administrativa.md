@@ -23,8 +23,12 @@ State: IN PROGRESS — os dois comandos automatizados permitidos passaram após 
 - `supabase/migrations/20261013000000_disponibilidade_publica.sql` — assinatura pública existente de `equipment_availability`.
 - `supabase/seed.sql` e `supabase/config.toml` — convenção das fixtures e schemas expostos.
 - `supabase/tests/autenticacao-comunidade.test.sql`, `supabase/tests/contatos-comunidade.test.sql` e `supabase/tests/disponibilidade-publica.test.sql` — padrões SQL, isolamento entre entidades e contrato público.
-- `node_modules/next/AGENTS.md` e documentação local Next.js 16.4.0 (`01-getting-started/03-layouts-and-pages.md`, `05-server-and-client-components.md`, `07-mutating-data.md`, `16-proxy.md`; `02-guides/authentication.md`, `server-actions.md`, `forms.md`, `data-security.md`, `redirecting.md`) — App Router, Server Actions, autorização, Proxy e redirecionamento.
-- `node_modules/@supabase/supabase-js/AGENTS.md`, `node_modules/@supabase/auth-js/AGENTS.md` e `node_modules/@supabase/auth-js/src/GoTrueClient.ts` / `src/lib/types.ts` — assinaturas instaladas de `signInWithPassword` e `getUser`.
+- `node_modules/next/AGENTS.md` e documentação local Next.js 16.4.0:
+  - `node_modules/next/dist/docs/01-app/01-getting-started/03-layouts-and-pages.md`, `node_modules/next/dist/docs/01-app/01-getting-started/05-server-and-client-components.md`, `node_modules/next/dist/docs/01-app/01-getting-started/07-mutating-data.md` e `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`.
+  - `node_modules/next/dist/docs/01-app/02-guides/authentication.md`, `node_modules/next/dist/docs/01-app/02-guides/server-actions.md`, `node_modules/next/dist/docs/01-app/02-guides/forms.md`, `node_modules/next/dist/docs/01-app/02-guides/data-security.md`, `node_modules/next/dist/docs/01-app/02-guides/redirecting.md`, `node_modules/next/dist/docs/01-app/02-guides/authentication-with-cache-components.md`, `node_modules/next/dist/docs/01-app/02-guides/building.md` e `node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md`.
+  - `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/02-route-segment-config/instant.md`.
+  - Fontes para App Router, Server Actions, autorização, Proxy, Suspense e renderização dinâmica.
+- `node_modules/@supabase/supabase-js/AGENTS.md`, `node_modules/@supabase/auth-js/AGENTS.md`, `node_modules/@supabase/auth-js/src/GoTrueClient.ts` e `node_modules/@supabase/auth-js/src/lib/types.ts` — assinaturas instaladas de `signInWithPassword` e `getUser`.
 
 ## Out of scope
 
@@ -42,7 +46,7 @@ A entrada administrativa reutiliza o cliente SSR e o invólucro visual existente
 
 | One-way door | Literal shape | Alternative rejected |
 | --- | --- | --- |
-| Regra monobanco em `catalog.user_roles` | Índice único parcial em `user_id` para `role = 'admin_banco' AND is_active` | Apenas validar na tela ou usar trigger sem unicidade transacional; ambos permitem corrida/duplicidade. Não corrigir vínculos existentes automaticamente. |
+| Regra monobanco em `catalog.user_roles` | Índice único parcial em `user_id` para `role = 'admin_banco' AND is_active` | Apenas contar vínculos na Server Action; não impõe a regra ao banco nem impede inserções concorrentes. Não corrigir vínculos existentes automaticamente. |
 | Resolvedor de autorização no banco | `public.current_admin_bank_entity_id()` sem argumentos; retorna somente o UUID da entidade do `auth.uid()` quando há exatamente um vínculo ativo; owner `admin_bank_authorization_checker` `NOLOGIN NOBYPASSRLS` e RLS | Aceitar `user_id`, papel ou entidade do navegador, ou devolver linhas de `catalog.user_roles`; viola a origem confiável e expõe mais dados. |
 | Destino da entrada | `/admin/contatos`; página Server Component chama `requireAdminBankContext()` em cada requisição e retorna `null` sem renderizar conteúdo | Não criar rota e terminar em 404, ou implementar agora uma tela/coleção de contatos fora da task. |
 | Atualização SSR das rotas administrativas | Acrescentar `/admin/:path*` ao matcher existente; o Proxy continua apenas chamando `auth.getUser()` para atualizar cookies | Deixar novas páginas fora do fluxo existente de atualização de cookie, ou deslocar autorização de papel para o Proxy. |
@@ -76,29 +80,29 @@ Prova: **R5 — falha local controlada de Auth/rede seguida de nova tentativa**.
 
 ### S2 — Revalidar a autorização administrativa em cada requisição · 7 critérios
 
-**C6 (critério 6) — PENDENTE** — Cada superfície protegida valida a identidade da sessão com Supabase Auth e deriva papel/entidade da RPC baseada em `auth.uid()`; nenhum valor de papel/entidade do cliente concede acesso.
+**C6 (critério 6) — PASS — Verifier round 1** — Cada superfície protegida valida a identidade da sessão com Supabase Auth e deriva papel/entidade da RPC baseada em `auth.uid()`; nenhum valor de papel/entidade do cliente concede acesso.
 
-Provas automatizadas executadas: `npm run build` (exit 0) e `supabase test db` (exit 0; assertions `C6 entity resolver returns only one entity UUID`, `C6 entity resolver accepts no browser-supplied identity or entity arguments` e `C6 resolver derives entity A from the authenticated uid`). Revisão independente de `getAdminBankContext()`, `requireAdminBankContext()`, `/admin/contatos` e `current_admin_bank_entity_id()` ainda pendente; C6 permanece pendente.
+Provas: `npm run build` (exit 0), `supabase test db` (exit 0; assertions `C6 entity resolver returns only one entity UUID`, `C6 entity resolver accepts no browser-supplied identity or entity arguments` e `C6 resolver derives entity A from the authenticated uid`) e revisão independente em `.checks/autenticacao-administrativa.verified.md:39`.
 
-**C7 (critério 7) — PENDENTE** — Segunda associação ativa `admin_banco` do mesmo usuário a outra entidade é rejeitada pelo banco; não há seletor de entidade.
+**C7 (critério 7) — PASS — Verifier round 1** — Segunda associação ativa `admin_banco` do mesmo usuário a outra entidade é rejeitada pelo banco; não há seletor de entidade.
 
-Prova automatizada executada: `supabase test db` (exit 0; assertions `C7 database uniquely limits each user to one active admin_banco entity`, `C7 authorized test identity has exactly one active admin_banco entity` e `C7 second active admin_banco entity is rejected`). Revisão independente da ausência de seletor ainda pendente; C7 permanece pendente.
+Provas: `supabase test db` (exit 0; assertions `C7 database uniquely limits each user to one active admin_banco entity`, `C7 authorized test identity has exactly one active admin_banco entity` e `C7 second active admin_banco entity is rejected`) e revisão independente em `.checks/autenticacao-administrativa.verified.md:40`.
 
 **C8 (critério 8) — PENDENTE** — Após desativar/remover o vínculo, a próxima requisição protegida é negada e não retorna informação protegida.
 
 Provas: `supabase test db` executado (exit 0; assertion `C8 revoked admin_banco has no resolved entity on the next database request` passou); **R8 — navegação manual local para a rota protegida após desativar o vínculo**, conferindo redirecionamento e ausência de dados, ainda não executada. C8 permanece pendente.
 
-**C9 (critério 9) — PENDENTE** — Com quatro entidades sintéticas, o resolvedor retorna somente a entidade do vínculo ativo de `auth.uid()` e ignora papel/entidade informados pelo navegador. `anon`, Comunidade, Companheiro, `admin_geral` sem `admin_banco`, vínculo inativo e leitura direta de `catalog.user_roles` não recebem autorização.
+**C9 (critério 9) — PASS — Verifier round 1** — Com quatro entidades sintéticas, o resolvedor retorna somente a entidade do vínculo ativo de `auth.uid()` e ignora papel/entidade informados pelo navegador. `anon`, Comunidade, Companheiro, `admin_geral` sem `admin_banco`, vínculo inativo e leitura direta de `catalog.user_roles` não recebem autorização.
 
-Prova automatizada executada: `supabase test db` (exit 0; assertions `C9 authorization test covers four synthetic entities`, `C9 resolver ignores browser role and entity claims`, `C9 Community without admin_banco resolves no entity`, `C9 Companion without admin_banco resolves no entity`, `C9 admin_geral without admin_banco resolves no entity`, `C9 inactive admin_banco resolves no entity`, `C9 authenticated user without any role resolves no entity`, `C9 anon cannot call the admin entity resolver`, `C9 authenticated browser cannot read role rows directly` e `C9 anon cannot read role rows directly`). C9 permanece pendente até a revisão independente.
+Provas: `supabase test db` (exit 0; assertions `C9 authorization test covers four synthetic entities`, `C9 resolver ignores browser role and entity claims`, `C9 Community without admin_banco resolves no entity`, `C9 Companion without admin_banco resolves no entity`, `C9 admin_geral without admin_banco resolves no entity`, `C9 inactive admin_banco resolves no entity`, `C9 authenticated user without any role resolves no entity`, `C9 anon cannot call the admin entity resolver`, `C9 authenticated browser cannot read role rows directly` e `C9 anon cannot read role rows directly`) e revisão independente em `.checks/autenticacao-administrativa.verified.md:42`.
 
-**C10 (critério 10) — PENDENTE** — `catalog` permanece fora dos schemas expostos pela Data API e `equipment_availability` continua retornando somente `bank_name` e `available_quantity`.
+**C10 (critério 10) — PASS — Verifier round 1** — `catalog` permanece fora dos schemas expostos pela Data API e `equipment_availability` continua retornando somente `bank_name` e `available_quantity`.
 
-Provas: `supabase test db` executado (exit 0; assertion `C10 equipment_availability public result remains bank_name and available_quantity` passou); revisão independente de `supabase/config.toml` ainda pendente. C10 permanece pendente.
+Provas: revisão independente de `supabase/config.toml` e `supabase/migrations/20261013000000_disponibilidade_publica.sql`, mais `supabase test db` (exit 0; assertion `C10 equipment_availability public result remains bank_name and available_quantity`), em `.checks/autenticacao-administrativa.verified.md:43`.
 
 **C11 (critério 11) — PENDENTE** — `supabase/seed.sql` cria, de forma repetível, identidade Auth sintética local com exatamente um `admin_banco` ativo para a entidade sintética Rotary Boa Vista, sem dados ou credenciais reais.
 
-Provas: `supabase test db` executado (exit 0; assertion `C11 local seed can hash the synthetic Auth password with pgcrypto` passou); revisão independente do Verifier em `supabase/seed.sql` — conferir os valores sintéticos exatos e `ON CONFLICT` em Auth, entidade e vínculo, ainda pendente. `supabase test db` não executa o seed; o seed não foi executado e não houve `db reset`. C11 permanece pendente até a revisão/execução local autorizada. A fixture não habilita acesso administrativo de produção.
+Provas: `supabase test db` (exit 0; assertion `C11 local seed can hash the synthetic Auth password with pgcrypto`) e revisão estática independente em `.checks/autenticacao-administrativa.verified.md:44`. O seed não foi executado e não houve `db reset`; C11 permanece pendente até prova da fixture carregada localmente. A fixture não habilita acesso administrativo de produção.
 
 **C12 (critério 12) — PENDENTE** — Revisão visual manual a 360 px confirma: sem rolagem horizontal; botões principais ≥56 px e texto em negrito ≥20 px; texto corrido ≥18 px; títulos ≥26 px; contraste ≥4,5:1; foco/informação não dependem apenas de cor/ícone; uma ação principal; rótulos acessíveis; linguagem e paleta de `AGENTS.md`.
 
