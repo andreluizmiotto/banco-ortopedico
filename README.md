@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Banco Ortopédico
 
-## Getting Started
+Aplicação web para consulta de equipamentos ortopédicos e gestão dos bancos
+participantes. A documentação do produto fica em [`docs/README.md`](docs/README.md).
 
-First, run the development server:
+## Requisitos locais
+
+- Node.js 22 ou posterior e npm.
+- Docker Desktop ou outro Docker daemon em execução.
+
+## Iniciar o projeto
+
+1. Instale as dependências:
+
+   ```bash
+   npm ci
+   ```
+
+2. Inicie o Supabase local:
+
+   ```bash
+   npx supabase start
+   ```
+
+3. Consulte os valores locais:
+
+   ```bash
+   npx supabase status -o env
+   ```
+
+   Crie `.env.local` na raiz e copie os valores correspondentes:
+
+   ```dotenv
+   NEXT_PUBLIC_SUPABASE_URL=<API_URL>
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY>
+   SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY>
+   ```
+
+   Use `API_URL`, `ANON_KEY` e `SERVICE_ROLE_KEY` exibidos pelo comando. A chave
+   `SUPABASE_SERVICE_ROLE_KEY` é somente do servidor: não a prefixe com
+   `NEXT_PUBLIC_` e nunca adicione `.env.local` ao Git. O arquivo já é ignorado.
+
+4. Recrie o banco local para aplicar migrations e carregar `supabase/seed.sql`:
+
+   ```bash
+   npx supabase db reset --local
+   ```
+
+   **Atenção:** esse comando apaga os dados locais do Supabase antes de recriá-los.
+   Ele não deve ser usado contra um projeto de produção.
+
+5. Inicie a aplicação:
+
+   ```bash
+   npm run dev
+   ```
+
+6. Abra <http://localhost:3000> ou a entrada administrativa em
+   <http://localhost:3000/admin/entrar>.
+
+## Acesso administrativo local
+
+Depois do reset local, a fixture sintética de `supabase/seed.sql` permite testar
+`/admin/entrar` com:
+
+- **E-mail:** `admin-rotary-boa-vista@banco-ortopedico.test`
+- **Senha:** `Rotary-Local-Synthetic-2026!`
+
+Essas credenciais são públicas e exclusivas para desenvolvimento local; nunca as
+use em produção. Se você executou `db reset` antes de receber a correção do seed,
+execute o passo 4 novamente para recriar a identidade com o `instance_id` esperado
+por Supabase Auth.
+
+Após a entrada válida, a aplicação redireciona para `/admin/contatos`. A rota está
+protegida, mas seu conteúdo ainda não foi implementado; a tela e as operações de
+contatos pertencem à task FR-017/AC-007.
+
+## Validação permitida
+
+Com o Supabase local em execução, use:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npx supabase test db
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+As verificações visuais são manuais; não use automação de navegador.

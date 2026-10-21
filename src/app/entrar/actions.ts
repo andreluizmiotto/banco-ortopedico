@@ -27,6 +27,22 @@ const signupErrorMessage =
   "Não foi possível criar o cadastro agora. Confira os dados e tente novamente.";
 const confirmPhoneErrorMessage =
   "Não foi possível confirmar o telefone. Confira o código e tente novamente.";
+const localTestPhone = "+5511912345678";
+const localTestPhoneErrorMessage =
+  "No ambiente local, use somente o telefone de teste +55 (11) 91234-5678. Nenhum SMS real será enviado.";
+
+function isLocalSupabaseProject(): boolean {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl) return false;
+
+  try {
+    return ["localhost", "127.0.0.1", "::1", "[::1]"].includes(
+      new URL(supabaseUrl).hostname,
+    );
+  } catch {
+    return false;
+  }
+}
 
 function formText(formData: FormData, key: string): string | null {
   const value = formData.get(key);
@@ -183,6 +199,9 @@ export async function startCommunitySignupAction(
       message: "Informe um telefone válido com código do país.",
     };
   }
+  if (isLocalSupabaseProject() && phone !== localTestPhone) {
+    return { kind: "error", message: localTestPhoneErrorMessage };
+  }
   if (!isValidNewPassword(password)) {
     return {
       kind: "error",
@@ -212,7 +231,9 @@ export async function startCommunitySignupAction(
     return {
       kind: "otp",
       acceptedVersion: notice.version,
-      message: "Se o telefone puder receber o código, ele foi enviado.",
+      message: isLocalSupabaseProject()
+        ? "Cadastro de teste local iniciado. Use o código de confirmação 123456."
+        : "Se o telefone puder receber o código, ele foi enviado.",
     };
   } catch {
     return { kind: "error", message: signupErrorMessage };
@@ -241,6 +262,9 @@ export async function finishCommunitySignupAction(
   if (!name || !cpf || !phone) {
     return { kind: "error", message: confirmPhoneErrorMessage };
   }
+  if (isLocalSupabaseProject() && phone !== localTestPhone) {
+    return { kind: "error", message: localTestPhoneErrorMessage };
+  }
   if (!privacyAccepted || acceptedVersion !== notice.version) {
     return {
       kind: "error",
@@ -258,14 +282,18 @@ export async function finishCommunitySignupAction(
     const { data: currentUserData } = await supabase.auth.getUser();
     let user = currentUserData.user;
 
-    if (!user || user.phone !== phone || !user.phone_confirmed_at) {
+    if (
+      !user ||
+      normalizeAuthPhone(user.phone) !== phone ||
+      !user.phone_confirmed_at
+    ) {
       const { data, error } = await supabase.auth.verifyOtp({
         phone,
         token,
         type: "sms",
       });
 
-      if (error || !data.user || data.user.phone !== phone) {
+      if (error || !data.user || normalizeAuthPhone(data.user.phone) !== phone) {
         return { kind: "error", message: confirmPhoneErrorMessage };
       }
 
@@ -283,7 +311,7 @@ export async function finishCommunitySignupAction(
         p_auth_user_id: user.id,
         p_cpf: cpf,
         p_name: name,
-        p_phone: user.phone,
+        p_phone: phone,
         p_privacy_notice_version: notice.version,
         p_privacy_accepted: true,
       },

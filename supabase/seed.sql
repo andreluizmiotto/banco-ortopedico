@@ -25,11 +25,83 @@ insert into catalog.entities (code, public_name, is_bank, is_active)
 values
   ('SYN-A', 'Entidade Sintética A', true, true),
   ('SYN-B', 'Entidade Sintética B', true, true),
-  ('SYN-C', 'Entidade Sintética C', true, true)
+  ('SYN-C', 'Entidade Sintética C', true, true),
+  ('SYN-ROTARY-BOA-VISTA', 'Rotary Boa Vista (sintético)', true, true)
 on conflict (code) do update
 set
   public_name = excluded.public_name,
   is_bank = excluded.is_bank,
+  is_active = excluded.is_active;
+
+-- GoTrue's email/password lookup uses the zero instance UUID.
+-- Local-only synthetic credentials; do not use this identity outside local development.
+insert into auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change,
+  encrypted_password,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+values (
+  '00000000-0000-0000-0000-000000000000',
+  '90000000-0000-4000-8000-000000000001',
+  'authenticated',
+  'authenticated',
+  'admin-rotary-boa-vista@banco-ortopedico.test',
+  clock_timestamp(),
+  '',
+  '',
+  '',
+  '',
+  extensions.crypt(
+    'Rotary-Local-Synthetic-2026!',
+    extensions.gen_salt('bf')
+  ),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  clock_timestamp(),
+  clock_timestamp()
+)
+on conflict (id) do update
+set
+  instance_id = excluded.instance_id,
+  aud = excluded.aud,
+  role = excluded.role,
+  email = excluded.email,
+  email_confirmed_at = excluded.email_confirmed_at,
+  confirmation_token = excluded.confirmation_token,
+  recovery_token = excluded.recovery_token,
+  email_change_token_new = excluded.email_change_token_new,
+  email_change = excluded.email_change,
+  encrypted_password = excluded.encrypted_password,
+  raw_app_meta_data = excluded.raw_app_meta_data,
+  raw_user_meta_data = excluded.raw_user_meta_data,
+  updated_at = excluded.updated_at;
+
+insert into catalog.user_roles (id, user_id, role, entity_id, is_active)
+select
+  '90000000-0000-4000-8000-000000000002',
+  '90000000-0000-4000-8000-000000000001',
+  'admin_banco',
+  entity.id,
+  true
+from catalog.entities as entity
+where entity.code = 'SYN-ROTARY-BOA-VISTA'
+on conflict (id) do update
+set
+  user_id = excluded.user_id,
+  role = excluded.role,
+  entity_id = excluded.entity_id,
   is_active = excluded.is_active;
 
 insert into catalog.pontos_atendimento (code, name)
