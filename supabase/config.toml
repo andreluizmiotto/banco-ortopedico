@@ -265,13 +265,9 @@ template = "Your code is {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
 max_frequency = "5s"
 
-# Synthetic local-only fixture; this fictional number is not a production destination.
+# Synthetic local-only phone and OTP. Do not use real phone numbers with the local project.
 [auth.sms.test_otp]
-12025550123 = "123456"
-
-# Use pre-defined map of phone number to OTP for testing.
-# [auth.sms.test_otp]
-# 4152127777 = "123456"
+5511912345678 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]
@@ -290,13 +286,13 @@ max_frequency = "5s"
 # enabled = true
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
-# Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
+# Local-only provider switch: the test OTP above is intercepted before a message is sent.
+# These are fake placeholders, not working Twilio credentials. Never put real credentials here.
 [auth.sms.twilio]
-enabled = false
-account_sid = ""
-message_service_sid = ""
-# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
-auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+enabled = true
+account_sid = "AC00000000000000000000000000000000"
+message_service_sid = "MG00000000000000000000000000000000"
+auth_token = "local-test-only-not-a-real-token"
 
 # Multi-factor-authentication is available to Supabase Pro plan.
 [auth.mfa]

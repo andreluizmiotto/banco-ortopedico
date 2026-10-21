@@ -1,4 +1,92 @@
 # Acesso e sessão administrativa — `admin_banco`: verificação
+**Veredito atual**: FAIL — 5/12 checks comprovados (C2, C6, C7, C9 e C10); 7 permanecem pendentes ou incompletos.
+**Perfil**: `light` — padrão porque `AGENTS.md` não declara outro perfil.
+**Intervalo do diff**: `d9790d7398651b01e3360ea27863f5c5ccc7015c..51bbdb10270bd06fb7a5508e374cd301e457c5eb`
+**HEAD verificada**: `51bbdb10270bd06fb7a5508e374cd301e457c5eb` (esperada; confirmada)
+**Round**: 3 — scoped; o diff completo foi lido e C1–C12 foram contabilizados. C6, C7, C9 e C10 foram revalidados.
+**Verifier**: subagente independente, distinto do autor e dos verificadores das rodadas 1 e 2.
+
+O FAIL permanece porque R1, R3–R5, R8 e R12 são provas manuais não executadas e a fixture atualizada do seed ainda não foi recarregada. R2 foi confirmado depois pelo usuário: a entrada administrativa redirecionou com sucesso para `/admin/contatos`. Esta rodada não executou `db reset`, não carregou o seed e não substituiu as demais provas por build, CSS ou SQL.
+
+## Acompanhamento manual informado pelo usuário — 2026-10-21
+
+- C2 / R2: **PASS** — o usuário confirmou que entrou com a conta administrativa local e foi redirecionado para `/admin/contatos`.
+- Escopo: comprova o fluxo manual de entrada e redirecionamento. A rota `/admin/contatos` ainda retorna `null`; não comprova conteúdo ou revisão visual da tela.
+
+## Fontes e escopo da rodada 3
+
+- Revisei o diff integral solicitado, `.checks/autenticacao-administrativa.md`, este relatório anterior, `README.md`, `supabase/seed.sql`, actions/helpers administrativos e da Comunidade, Proxy, componentes, estilos, migrations e testes SQL.
+- Abri as fontes da checklist: `.tasks/autenticacao-administrativa.md`, `.tasks/contatos-administrativos-fr-017-ac-007.md`, `.checks/contatos-administrativos-fr-017-ac-007.md`, `AGENTS.md`, os documentos de arquitetura/UX/produto/privacidade, configuração e migrations Supabase, testes SQL, documentação local Next.js 16.4.0, instruções locais Supabase e fontes instaladas `GoTrueClient.ts`/`types.ts`. Também consultei as fontes GoTrue vinculantes citadas abaixo.
+- Perfil `light`: a comparação formal da checklist com fontes visuais é etapa `ui` e não foi executada; a fonte UX não contém desenho específico desta tela. Não há seção `Coverage` nem `Test policy` na checklist (N/A); fault injection não integra este perfil (N/A).
+- A fronteira de FR-017/AC-007 continua preservada: `src/app/admin/contatos/page.tsx:5-9` chama `requireAdminBankContext()` e retorna `null`; o diff não implementa coleção, operações ou tela de contatos. Os arquivos locais `.tasks/autenticacao-administrativa.md`, `.tasks/contatos-administrativos-fr-017-ac-007.md` e `.checks/contatos-administrativos-fr-017-ac-007.md` estavam modificados antes desta rodada e não foram alterados.
+
+## Provas reexecutadas na HEAD
+
+| Comando | Resultado observado |
+|---|---|
+| `npm run build` | Exit 0; Next.js 16.4.0 compilou, concluiu TypeScript e gerou rotas. `/admin/contatos` foi classificada dinâmica e `/admin/entrar` parcialmente pré-renderizada. |
+| `npx --yes supabase@latest test db` | Exit 0; 5 arquivos `.. ok`, `Files=5, Tests=161`. `autenticacao-administrativa.test.sql .. ok`. O runner não imprime cada rótulo pgTAP individualmente; os rótulos/expressões abaixo foram localizados no arquivo executado. |
+
+## Checks C1–C12 — rodada 3
+
+| Check | Resultado e prova | Assertion/evidência localizada (expressão exata) |
+|---|---|---|
+| C1 | **PENDENTE** — R1, revisão manual de `/admin/entrar` e `/entrar`, não executada. | Indício estático, não prova de tela: `src/app/admin/_components/admin-sign-in-form.tsx:19,32` — `<span>E-mail</span>` e `<span>Senha</span>`; `:58-60` — `<button className="primary-action" type="submit" disabled={pending}>` e `{state.message ? "Tentar novamente" : "Entrar"}`. `src/app/entrar/page.tsx:41-53` mantém `title="Entrar ou criar cadastro"`, `eyebrow="Acesso da Comunidade"` e `<AuthFlow returnTo={returnTo} privacyNotice={privacyNotice} />`; nenhuma mudança desse arquivo está no diff. R1 continua necessário para conferir apresentação e comportamento reais. |
+| C2 | **PASS — R2 confirmado manualmente pelo usuário em 2026-10-21.** | O usuário confirmou que a entrada administrativa local teve sucesso e redirecionou para `/admin/contatos`. Isso comprova a sessão e o destino observados; a rota ainda retorna `null`, portanto não comprova conteúdo visual. O escopo autorizado da entidade também é coberto por C6/C9. |
+| C3 | **PENDENTE** — R3, casos de credencial/papel e inspeção manual da resposta/logs, não executada. | `src/app/admin/entrar/actions.ts:8-9`: `const signInErrorMessage = "Não foi possível entrar. Confira os dados e tente novamente."`; `:34-40`: falhas de Auth, contexto e exceção retornam `{ message: signInErrorMessage }`. O código estático não prova o conteúdo dos logs/resposta em execução; R3 permanece necessário. |
+| C4 | **PENDENTE** — R4, observação manual com Auth atrasado, não executada. | `src/app/admin/_components/admin-sign-in-form.tsx:10-13`: `const [state, formAction, pending] = useActionState(...)`; `:52-56` renderiza `role="status"`, indicador e `Aguarde enquanto conferimos seu acesso.`; `:58-60` usa `disabled={pending}`. A demora e a prevenção efetiva de envio duplicado não foram observadas em R4. |
+| C5 | **PENDENTE** — R5, falha controlada de Auth/rede seguida de nova tentativa, não executada. | `src/app/admin/entrar/actions.ts:36-40`: reconsulta `getAdminBankContext(supabase)` e, em falha/contexto ausente, retorna a mensagem comum; `src/app/admin/_components/admin-sign-in-form.tsx:58-60` mostra `"Tentar novamente"` quando `state.message`. Isso não substitui a falha/repetição observada em R5. |
+| C6 | **PASS — verificado em `51bbdb1`**. `npm run build` e `npx --yes supabase@latest test db` passaram; arquivo administrativo terminou `ok`. | `src/lib/auth/admin-bank.ts:19-27` chama `auth.getUser()` antes da RPC sem argumentos; `src/app/admin/entrar/actions.ts:36-37` e `src/app/admin/contatos/page.tsx:5-6` revalidam nas superfícies administrativas. Migration `20261015000000_autenticacao_administrativa.sql:35-40` deriva de `catalog.current_auth_uid()` e exige `having count(*) = 1`. Assertion: `supabase/tests/autenticacao-administrativa.test.sql:149-153` — `public.current_admin_bank_entity_id()` esperado como `'92000000-0000-4000-8000-000000000001'::uuid`, rótulo `C6 resolver derives entity A from the authenticated uid`; `:81-85` espera argumentos `''`. |
+| C7 | **PASS — verificado em `51bbdb1`**. `npx --yes supabase@latest test db` passou. | `supabase/migrations/20261015000000_autenticacao_administrativa.sql:1-3`: `where role = 'admin_banco' and is_active`; teste `:19-30` exige `idx.indisunique` e predicado; `:133-143` espera contagem `1`. Em `:174-185`, a assertion espera `'23505', null, 'C7 second active admin_banco entity is rejected'` ao inserir a segunda associação. O formulário não contém seletor (`src/app/admin/_components/admin-sign-in-form.tsx:18-60`). |
+| C8 | **PENDENTE — subprova SQL PASS; R8 não executada**. | `supabase/tests/autenticacao-administrativa.test.sql:259-263`: `is(public.current_admin_bank_entity_id(), null::uuid, 'C8 revoked admin_banco has no resolved entity on the next database request')`. `src/lib/auth/admin-bank.ts:39` usa `redirect("/admin/entrar")`; `src/app/admin/contatos/page.tsx:5-9` protege e retorna `null`. A resposta HTTP e a ausência de conteúdo protegido após revogação não foram observadas em R8; C8 não é PASS integral. |
+| C9 | **PASS — verificado em `51bbdb1`**. `npx --yes supabase@latest test db` passou. | `supabase/tests/autenticacao-administrativa.test.sql:124-132` testa quatro entidades (esperado `4`); `:161-165` espera a entidade A no teste `C9 resolver ignores browser role and entity claims`; `:196-200` — `is(public.current_admin_bank_entity_id(), null::uuid, 'C9 Community without admin_banco resolves no entity')`; a mesma assertion espera `null::uuid` para Companheiro, `admin_geral` sem `admin_banco`, vínculo inativo e usuário sem papel em `:201-224`. Negações diretas incluem `throws_ok($$select * from catalog.user_roles$$, '42501', null, 'C9 authenticated browser cannot read role rows directly')` em `:166-171` e `throws_ok($$select public.current_admin_bank_entity_id()$$, '42501', null, 'C9 anon cannot call the admin entity resolver')` em `:230-235`; `:70-75` confere ausência de `SELECT` direto para `anon`, `authenticated` e `service_role`. |
+| C10 | **PASS — verificado em `51bbdb1`**. Revisão de configuração/migration e `npx --yes supabase@latest test db` passaram. | `supabase/config.toml:13`: `schemas = ["public", "graphql_public"]` (sem `catalog`); `supabase/migrations/20261013000000_disponibilidade_publica.sql:78-80` declara `returns table (bank_name text, available_quantity integer)`; assertion `supabase/tests/autenticacao-administrativa.test.sql:244-248` espera exatamente `TABLE(bank_name text, available_quantity integer)`. |
+| C11 | **PENDENTE — seed corrigido revisado estaticamente; fixture não recarregada nem confirmada.** | `supabase/seed.sql:52` insere `'00000000-0000-0000-0000-000000000000'`; `:67-77` faz `on conflict (id) do update`, incluindo `instance_id = excluded.instance_id` em `:69`; o vínculo sintético e seu upsert estão em `:79-93`. O teste `supabase/tests/autenticacao-administrativa.test.sql:5-9` só afirma que `to_regprocedure('extensions.crypt(text,text)') is not null and to_regprocedure('extensions.gen_salt(text,integer)') is not null`; não executa nem verifica o seed. O README documenta reset local em `:43-50` e repetir o passo após a correção em `:70-72`. C11 fica pendente até o usuário recarregar e confirmar a fixture. |
+| C12 | **PENDENTE** — R12, revisão visual manual a 360 px, não executada; nenhuma automação de navegador foi usada. | Apenas valores estáticos: `src/app/globals.css:133-137` (`font-size: 18px`); `:224-239` (`min-height: 56px`, `font-size: 20px`, `font-weight: 700`); `:121-130` título; `:249-255,397-400` foco. Esses trechos não provam contraste, ausência de rolagem/composição a 360 px nem as demais condições visuais de C12. |
+
+## Diagnóstico GoTrue e seed (C11)
+
+O diagnóstico de `instance_id` é sustentado pela fonte GoTrue vinculante. O cliente Supabase instalado envia e-mail/senha a `/token?grant_type=password` (`node_modules/@supabase/auth-js/src/GoTrueClient.ts:1243-1250`). No GoTrue consultado, o fluxo por e-mail chama `FindUserByEmailAndAudience` (`[internal/api/token.go:97](https://github.com/supabase/auth/blob/master/internal/api/token.go#L97)`), cuja busca usa exatamente `instance_id = ? and LOWER(email) = ? and aud = ? and is_sso_user = false` com `uuid.Nil` (`[internal/models/user.go:699-701](https://github.com/supabase/auth/blob/master/internal/models/user.go#L699-L701)`). A definição base consultada declara `instance_id uuid NULL` sem default (`[migrations/00_init_auth_schema.up.sql:4](https://github.com/supabase/auth/blob/master/migrations/00_init_auth_schema.up.sql#L4)`); portanto, omitir a coluna deixa `NULL`, que não satisfaz o filtro pelo UUID zero. O seed atual insere o UUID zero e o `ON CONFLICT (id)` corrige também uma linha existente com `instance_id` nulo por meio de `instance_id = excluded.instance_id`. A conclusão é estática: sem recarregar a fixture, não se prova que o acesso local funciona; C11 permanece PENDENTE, conforme o limite desta rodada.
+
+## Swept, nível e amostragem — perfil `light`
+
+| Dimensão | Verificação desta rodada |
+|---|---|
+| validation | A action lê e valida e-mail/senha em `src/app/admin/entrar/actions.ts:20-24`; C2/R2 foi confirmado pelo usuário; R1 e R3 permanecem sem prova manual. O índice único parcial de C7 foi revalidado. |
+| failure modes | Action/helper falham de forma fechada e devolvem mensagem genérica (`src/app/admin/entrar/actions.ts:34-40`; `src/lib/auth/admin-bank.ts:21-32`). R5 e a resposta HTTP de R8 não foram observados. |
+| idempotency and retry | Nova tentativa volta a autenticar e consultar o vínculo (`src/app/admin/entrar/actions.ts:27-37`); entidade, usuário e papel do seed usam `ON CONFLICT` (`supabase/seed.sql:30-34,67-93`). Fixture sem execução. |
+| authorization | `auth.getUser()` e RPC sem argumentos em `src/lib/auth/admin-bank.ts:19-27`; função deriva de `auth.uid()` e vínculo ativo na migration `20261015000000_autenticacao_administrativa.sql:35-40`; negativas C9 passaram. |
+| concurrency and ordering | C7 revalidado: índice parcial único e rejeição da segunda associação ativa com `23505` (`migration:1-3`; `supabase/tests/autenticacao-administrativa.test.sql:174-185`). Nenhuma operação de contatos foi acrescentada. |
+| data lifecycle | SQL C8 confirma resolução `null` após desativação (`supabase/tests/autenticacao-administrativa.test.sql:250-263`); R8 ainda não comprova a resposta da rota. |
+| external-dependency failure | O `catch` retorna a mensagem comum (`src/app/admin/entrar/actions.ts:38-40`); R5 não executou a falha controlada. |
+| state transitions | Código estático cobre entrada, negação e proteção; R2 foi observado com sucesso pelo usuário; R1, R3–R5 e R8 continuam sem observação manual. Não há transição de situação de contato ou criação de empréstimo neste diff. |
+| observability | A action não retorna erro bruto (`src/app/admin/entrar/actions.ts:34-40`); inspeção manual de resposta/logs em R3/R5 continua pendente. Gate de auditoria operacional permanece aberto. |
+
+Não há gap de amostragem novo nas quatro aprovações automatizadas: C6/C7 têm assertions no nível da RPC/constraint; C9 cobre as quatro entidades sintéticas e os papéis negativos listados; C10 compara a assinatura pública. C2/R2 foi observado manualmente. C8 tem gap de nível entre RPC e resposta HTTP. C11 tem gap de nível entre disponibilidade de `pgcrypto` e execução/entrada local da fixture. R1, R3–R5, R8 e R12 continuam pendentes no nível especificado.
+
+## Gates de go-live — permanecem abertos
+
+- [ ] Provisionar a identidade Auth de produção e definir/entregar a senha inicial por processo confiável.
+- [ ] Aprovar auditoria de inserções, desativações e remoções diretas de papéis em produção.
+- [ ] Definir recuperação de senha para contas administrativas.
+
+## `Unresolved` — cinco itens permanecem abertos
+
+- [ ] Duração e renovação da sessão administrativa.
+- [ ] Texto literal da mensagem de erro.
+- [ ] Comportamento de `/admin/entrar` com sessão administrativa já válida.
+- [ ] Localização da ação `Sair`.
+- [ ] Permanência da sessão Auth válida quando não há papel ativo.
+
+## Limites e preservação
+
+- R1, R3–R5, R8 e R12 não foram executados manualmente. R2 foi confirmado pelo usuário. A fixture corrigida não foi carregada; não rodei seed nem `db reset`.
+- Os únicos comandos de validação executados nesta rodada foram `npm run build` e `npx --yes supabase@latest test db`. Não rodei `supabase start`, migration up, dev, curl, lint, outros testes, automação visual/navegador, deploy ou comando de produção; nenhum dado de produção foi inserido.
+- `.tasks/contatos-administrativos-fr-017-ac-007.md` e `.checks/contatos-administrativos-fr-017-ac-007.md` não foram alterados; seus estados locais preexistentes foram preservados. Não declaro M-C1–M-C13 ou M-C15 verificados; C14 continua sendo a única aprovação anterior.
+
+---
+
+# Histórico da rodada 2 — relatório anterior preservado
 
 **Veredito**: FAIL — 4/12 checks comprovados integralmente; 8 permanecem pendentes ou incompletos.
 **Perfil**: `light` — padrão porque `AGENTS.md` não declara outro perfil.

@@ -20,7 +20,7 @@ Sources:
 - Criar autenticação ou cadastro administrativo de produção. A fixture local não equivale a uma sessão administrativa disponível na aplicação.
 - Usar dados reais, credenciais reais, CPF, telefone operacional, contatos ou destinatários reais em seeds, testes, logs ou evidências.
 - Automatizar verificação visual ou usar Playwright, Cypress ou Puppeteer.
-- Resolver retenção, acesso de `admin_geral`, rota, filtros, ordenação, campos adicionais ou confirmação prévia que permanecem em `Unresolved` na task.
+- Resolver retenção, acesso de `admin_geral`, rótulo literal da entrada, filtros, ordenação, campos adicionais ou confirmação prévia que permanecem em `Unresolved` na task. A rota decidida para a tela é `/admin/contatos`.
 - Alterar o contrato público de `equipment_availability`, a mensagem revisável do WhatsApp ou a deduplicação de 30 minutos.
 
 ## Fixture sintética local
@@ -46,7 +46,7 @@ Prova: assertion SQL dentro de `supabase test db` para o vínculo e revisão loc
 
 **C1 (critério 1)** — Com uma sessão administrativa local disponível, a navegação principal apresenta a tarefa de contatos recebidos sem menu escondido.
 
-Prova: procedimento manual na aplicação, após existir a dependência de sessão administrativa. Não testar nem inventar uma rota fixa nesta checklist.
+Prova: procedimento manual na aplicação, após existir a dependência de sessão administrativa. Abrir a rota decidida `/admin/contatos` e conferir que a navegação principal apresenta a tarefa de contatos recebidos sem menu escondido. O rótulo literal permanece em `Unresolved 4`; não o tratar como decisão desta checklist.
 
 **C2 (critério 2)** — Com contatos sintéticos em cada uma das quatro entidades, conferir que a coleção do Rotary Boa Vista mostra somente os registros da entidade autorizada, cada um uma vez, com código e situação atuais. Conferir nome canônico do banco e os quatro rótulos: `Novo`, `Atendido`, `Virou empréstimo` e `Sem retorno`.
 

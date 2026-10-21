@@ -66,7 +66,7 @@ Os três destinos não têm novas transições nesta tarefa. O reuso existente d
 
 | Surface | Decision | Landing |
 | --- | --- | --- |
-| tela administrativa de contatos | entrada visível para a tarefa de contatos recebidos na navegação principal | 1 |
+| tela `/admin/contatos` | entrada visível para a tarefa de contatos recebidos na navegação principal | 1 |
 | tela administrativa de contatos | coleção agrupada pelo banco autorizado, código e situação canônicos | 2, 6 |
 | tela administrativa de contatos | localizar por código da mensagem | 3 |
 | tela administrativa de contatos | destaque após 48 horas sem mudança de `novo` | 4 |
@@ -135,7 +135,7 @@ erDiagram
 
 | Route | In | Out | Status | Criteria |
 |---|---|---|---|---|
-| tela administrativa de contatos — caminho exato `Unresolved 4` | sessão administrativa prévia verificada; código do contato, se pesquisado | nome canônico do banco, código, situação canônica e destaque de 48 horas | carregando, vazio, falha recuperável, sem permissão e sucesso | 1–16 |
+| `/admin/contatos` — rótulo literal da entrada `Unresolved 4` | sessão administrativa prévia verificada; código do contato, se pesquisado | nome canônico do banco, código, situação canônica e destaque de 48 horas | carregando, vazio, falha recuperável, sem permissão e sucesso | 1–16 |
 | API HTTP pública / webhook | n/a | n/a | n/a - nenhum contrato público novo | n/a |
 | Data API anônima `equipment_availability(text)` | código do tipo já previsto pelo contrato existente | `bank_name`, `available_quantity` | existing | existing - migration `20261013000000_disponibilidade_publica.sql` e teste correspondente |
 
@@ -157,7 +157,7 @@ erDiagram
 - [`20261014000000_autenticacao_comunidade.sql`](../supabase/migrations/20261014000000_autenticacao_comunidade.sql) — enum e escopo de `admin_banco`/`admin_geral`; o provisionamento de papel implementado é o de Comunidade.
 - [`20261014010000_contatos_comunidade.sql`](../supabase/migrations/20261014010000_contatos_comunidade.sql) e [`20261014020000_perfil_privado_e_uid_rls.sql`](../supabase/migrations/20261014020000_perfil_privado_e_uid_rls.sql) — enum/tabela de contatos, RLS, campos e RPCs privadas do fluxo Comunidade; não há escrita administrativa de `situacao`.
 - [`contatos-comunidade.test.sql`](../supabase/tests/contatos-comunidade.test.sql) — teste RLS atual com quatro entidades sintéticas; ainda não testa `admin_banco` ou transições administrativas.
-- Decisões confirmadas pelo usuário nesta sessão — autenticação/provisionamento administrativo fica em tarefa prévia; cada contato recebe uma única mudança de `novo` para um dos três destinos de FR-017.
+- Decisões confirmadas pelo usuário nesta sessão — autenticação/provisionamento administrativo fica em tarefa prévia; cada contato recebe uma única mudança de `novo` para um dos três destinos de FR-017; a tela de contatos recebidos usa a rota `/admin/contatos`.
 
 Esta tarefa registra a decisão do recorte. Se uma fonte vinculante divergir, perguntar antes de construir.
 
@@ -168,7 +168,7 @@ Esta tarefa registra a decisão do recorte. Se uma fonte vinculante divergir, pe
 | 1 | blocks | Qual tarefa separada entregará e verificará a entrada/provisionamento administrativos e uma sessão com `admin_banco` ativo e `entity_id` confiável? A separação foi escolhida, mas não há tarefa ou implementação administrativa no repositório. | Não iniciar a implementação desta tela/operação sem essa dependência; os critérios 1–16 pressupõem a sessão administrativa. Não criar entrada, cadastro ou papel provisório dentro deste recorte. |
 | 2 | blocks go-live | Qual prazo de retenção aprovado se aplica aos contatos que não viram empréstimo e aos registros de auditoria associados? | A proposta de 12 meses para contatos não está aprovada; a proposta inicial de dois anos para auditoria também depende de validação. Não automatizar exclusão nem declarar os dados reais liberados para go-live até as decisões jurídicas. |
 | 3 | open | `admin_geral` também pode ler e alterar contatos de todas as entidades? | Os critérios exigem o `admin_banco` da entidade correta. Não conceder nem declarar acesso global para `admin_geral` por inferência do enum; o restante do recorte fica igual. |
-| 4 | open | Qual caminho/URL e rótulo literal da entrada administrativa serão usados para a tela? | A tarefa de contatos recebidos deve estar entre as prioridades e na navegação visível; nenhum caminho ou rótulo literal é contrato neste task. |
+| 4 | open | Qual é o rótulo literal da entrada de contatos recebidos na navegação administrativa? | A rota da tela é `/admin/contatos`. A tarefa continua entre as prioridades e na navegação visível; não fixar um rótulo literal sem decisão explícita. |
 | 5 | open | Além da pesquisa por código, quais filtros, ordenação e densidade a coleção deve oferecer? | A coleção inclui todos os contatos autorizados e a pesquisa por código é obrigatória; nenhum outro filtro ou ordem de apresentação é critério decidido. |
 | 6 | open | Devem ser exibidos campos por contato além do código, da situação e do destaque de 48 horas? | O nome canônico do banco pode identificar o contexto da tela; não acrescentar nome da pessoa, telefone, destinatário ou outros dados pessoais por contato sem decisão explícita. |
 | 7 | open | É necessária uma confirmação antes de gravar a mudança de situação? | A confirmação clara após o sucesso segue o critério 11; nenhum diálogo de confirmação prévia foi decidido ou deve ser presumido. |
