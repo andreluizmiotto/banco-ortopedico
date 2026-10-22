@@ -1,6 +1,6 @@
 begin;
 
-select plan(46);
+select plan(51);
 
 select ok(
   exists (
@@ -301,6 +301,21 @@ select ok(
     ),
   'C4 synthetic new contacts straddle the 48-hour highlight threshold'
 );
+reset role;
+update catalog.community_contacts
+set created_at = transaction_timestamp() - interval '48 hours'
+where codigo = 'A7B8C9D0E1F2';
+set local role authenticated;
+select is(
+  (
+    select destaque_48_horas
+    from public.admin_bank_contacts('A7B8C9D0E1F2')
+    where codigo = 'A7B8C9D0E1F2'
+      and situacao = 'novo'
+  ),
+  true,
+  'C4 exact 48-hour boundary is highlighted and situation stays novo'
+);
 
 select ok(
   (
@@ -408,6 +423,12 @@ select results_eq(
   $$,
   'C6 admin contact collection is isolated across four synthetic entities - SYN-A row data'
 );
+select throws_ok(
+  $$select public.admin_set_contact_situation('A1B2C3D4E5F6', 'atendido')$$,
+  'P0001',
+  'Contato indisponível',
+  'C6 admin_banco from another entity cannot change a Rotary contact'
+);
 
 select set_config(
   'request.jwt.claim.sub',
@@ -478,6 +499,12 @@ select is(
   0,
   'C6 Companion without admin_banco receives no administrative contacts'
 );
+select throws_ok(
+  $$select public.admin_set_contact_situation('A1B2C3D4E5F6', 'atendido')$$,
+  'P0001',
+  'Contato indisponível',
+  'C6 Companion without admin_banco cannot change a contact'
+);
 
 select set_config(
   'request.jwt.claim.sub',
@@ -493,6 +520,12 @@ select is(
   0,
   'C6 inactive admin_banco receives no administrative contacts'
 );
+select throws_ok(
+  $$select public.admin_set_contact_situation('A1B2C3D4E5F6', 'atendido')$$,
+  'P0001',
+  'Contato indisponível',
+  'C6 inactive admin_banco cannot change a contact'
+);
 
 select set_config(
   'request.jwt.claim.sub',
@@ -507,6 +540,12 @@ select is(
   ),
   0,
   'C6 authenticated user without an active admin_banco receives no contacts'
+);
+select throws_ok(
+  $$select public.admin_set_contact_situation('A1B2C3D4E5F6', 'atendido')$$,
+  'P0001',
+  'Contato indisponível',
+  'C6 authenticated user without admin_banco cannot change a contact'
 );
 
 select set_config(

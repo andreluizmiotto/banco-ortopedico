@@ -82,7 +82,7 @@ Prova: procedimento manual com código sintético conhecido; o código não deve
 
 **C4 (critério 4)** — Conferir um contato sintético `novo` com `created_at` anterior a 48 horas e outro com menos de 48 horas. O primeiro tem destaque textual; o segundo não é destacado por essa regra. Nenhum deles muda de situação automaticamente.
 
-Provas: `C4 synthetic new contacts straddle the 48-hour highlight threshold` passou em `supabase test db` para timestamps sintéticos de 49 h e 47 h; observar o destaque textual na tela **PENDENTE — não revisado manualmente**.
+Provas: `C4 synthetic new contacts straddle the 48-hour highlight threshold` e `C4 exact 48-hour boundary is highlighted and situation stays novo` passaram em `supabase test db` para 49 h, exatamente 48 h e 47 h; observar o destaque textual na tela **PENDENTE — não revisado manualmente**.
 
 **C5 (critério 5)** — Conferir que uma busca parcial ou por valor que não tenha o formato completo `^[A-F0-9]{12}$` não retorna contato; um código válido sem correspondência também não retorna registro de outra entidade.
 
@@ -90,7 +90,7 @@ Provas: `C5 exact search rejects malformed, missing, and other-entity codes` pas
 
 **C6 (critério 6)** — Testar acesso com o `admin_banco` sintético da entidade do registro e com identidades sem vínculo ativo para essa entidade, incluindo `anon`, Comunidade sem `admin_banco`, Companheiro sem `admin_banco` e `admin_banco` de outra entidade. Apenas vínculos ativos permitem leitura/alteração no banco correspondente; não há acesso direto às tabelas privadas nem elevação por papel/entidade enviados pelo cliente.
 
-Provas: assertions `C6 restricted contact function owner cannot log in or bypass RLS`, `C6 contact manager can call the session-derived entity resolver`, `C6 contact manager can derive the authenticated actor`, `C6 admin contact collection is isolated across four synthetic entities` (Rotary, SYN-A, SYN-B e SYN-C), `C6 forged browser role and entity claims do not change the bank scope`, `C6 Community without admin_banco receives no administrative contacts`, `C6 Companion without admin_banco receives no administrative contacts`, `C6 inactive admin_banco receives no administrative contacts`, `C6 authenticated user without an active admin_banco receives no contacts`, `C6 anon cannot call the administrative contact collection`, `C6 client roles cannot read private contact or audit rows directly - contacts`, `C6 client roles cannot read private contact or audit rows directly - audit` e `C6 client and service roles cannot select contact or audit rows directly` passaram em `supabase test db` (exit 0). **PASS.** Não afirmar resultado para `admin_geral`; esse papel continua em `Unresolved`.
+Provas: assertions `C6 restricted contact function owner cannot log in or bypass RLS`, `C6 contact manager can call the session-derived entity resolver`, `C6 contact manager can derive the authenticated actor`, `C6 admin contact collection is isolated across four synthetic entities` (Rotary, SYN-A, SYN-B e SYN-C), `C6 admin_banco from another entity cannot change a Rotary contact`, `C6 forged browser role and entity claims do not change the bank scope`, `C6 Community without admin_banco receives no administrative contacts`, `C6 Community without admin_banco cannot change a contact`, `C6 Companion without admin_banco receives no administrative contacts`, `C6 Companion without admin_banco cannot change a contact`, `C6 inactive admin_banco receives no administrative contacts`, `C6 inactive admin_banco cannot change a contact`, `C6 authenticated user without an active admin_banco receives no contacts`, `C6 authenticated user without admin_banco cannot change a contact`, `C6 anon cannot call the administrative contact collection`, `C6 client roles cannot read private contact or audit rows directly - contacts`, `C6 client roles cannot read private contact or audit rows directly - audit` e `C6 client and service roles cannot select contact or audit rows directly` passaram em `supabase test db` (exit 0). **PASS.** Não afirmar resultado para `admin_geral`; esse papel continua em `Unresolved`.
 
 ### S2 — Registrar uma única mudança de situação
 
@@ -139,7 +139,7 @@ Prova: conferência visual manual pelo desenvolvedor. **PENDENTE — a revisão 
 Executar somente estes comandos depois da implementação:
 
 - [x] `npm run build` — exit 0; compilação, TypeScript e rotas passaram na repetição recomendada pelo Next.js.
-- [x] `supabase test db` — exit 0; `Files=6, Tests=207`, incluindo as assertions SQL `F0`, `C2–C10` e `C15`. As provas manuais continuam pendentes onde indicadas nos critérios.
+- [x] `supabase test db` — exit 0; `Files=6, Tests=212`, incluindo as assertions SQL `F0`, `C2–C10` e `C15`. As provas manuais continuam pendentes onde indicadas nos critérios.
 
 State: PASS — estes dois checks automatizados passaram. A primeira execução do build parou no aviso de vulnerabilidade do Next.js; a repetição passou sem atualizar dependências. Não foram adicionados outros testes ou runners.
 
