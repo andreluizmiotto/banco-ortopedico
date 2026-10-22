@@ -33,7 +33,9 @@ Sources:
 
 A tela usa a sessão SSR e o resolvedor administrativo já existentes. Leitura e mudança
 de situação passam por RPCs autenticadas com RLS no schema privado; o navegador recebe
-somente nome público do banco, código, situação e data do contato.
+somente o nome público do banco, o código, a situação e o destaque textual de 48 horas.
+`created_at` é usado no servidor para calcular o destaque, mas não é exibido nem enviado
+como campo por contato.
 
 | One-way door | Literal shape | Alternative rejected |
 | --- | --- | --- |
