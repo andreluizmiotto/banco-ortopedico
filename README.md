@@ -71,9 +71,10 @@ use em produção. Se você executou `db reset` antes de receber a correção do
 execute o passo 4 novamente para recriar a identidade com o `instance_id` esperado
 por Supabase Auth.
 
-Após a entrada válida, a aplicação redireciona para `/admin/contatos`. A rota está
-protegida, mas seu conteúdo ainda não foi implementado; a tela e as operações de
-contatos pertencem à task FR-017/AC-007.
+Após a entrada válida, a aplicação redireciona para `/admin/contatos`. A tela mostra
+os contatos do banco vinculado à sessão, permite pesquisar pelo código da mensagem
+e registrar uma única mudança de situação. `Virou empréstimo` é apenas a situação do
+contato; não cria um empréstimo. Use somente dados sintéticos neste ambiente local.
 
 ## Validação permitida
 
