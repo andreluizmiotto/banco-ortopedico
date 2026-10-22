@@ -73,7 +73,7 @@ Prova: procedimento manual na aplicação com sessão administrativa local. Abri
 
 **C2 (critério 2)** — Com contatos sintéticos em cada uma das quatro entidades, conferir que a coleção do Rotary Boa Vista mostra somente os registros da entidade autorizada, cada um uma vez, com código e situação atuais. Conferir nome canônico do banco e os quatro rótulos: `Novo`, `Atendido`, `Virou empréstimo` e `Sem retorno`.
 
-Provas: `C2 admin contact collection returns the canonical bank name and each authorized row once` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; conferência manual da tela, código e quatro rótulos. Nenhum contato real deve ser criado.
+Provas: `C2 Rotary Boa Vista collection returns the canonical bank name and each authorized row once` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; conferência manual da tela, código e quatro rótulos. Nenhum contato real deve ser criado.
 
 **C3 (critério 3)** — Pesquisar o código completo de um contato sintético e conferir que o resultado contém o mesmo código e a situação daquele registro.
 
@@ -89,17 +89,17 @@ Provas: `C5 exact search rejects malformed and foreign codes` em `supabase/tests
 
 **C6 (critério 6)** — Testar acesso com o `admin_banco` sintético da entidade do registro e com identidades sem vínculo ativo para essa entidade, incluindo `anon`, Comunidade sem `admin_banco`, Companheiro sem `admin_banco` e `admin_banco` de outra entidade. Apenas vínculos ativos permitem leitura/alteração no banco correspondente; não há acesso direto às tabelas privadas nem elevação por papel/entidade enviados pelo cliente.
 
-Provas: `C6 admin contact collection is isolated across four synthetic entities` e `C6 client roles cannot read private contact or audit rows` em `supabase/tests/contatos-administrativos.test.sql`, executadas por `supabase test db`; conferir também que claims forjados não mudam o escopo. Não afirmar resultado para `admin_geral`; esse papel continua em `Unresolved`.
+Provas: assertions `C6 admin contact collection is isolated across four synthetic entities` (Rotary, SYN-A, SYN-B e SYN-C), `C6 forged browser role and entity claims do not change the bank scope`, `C6 Community without admin_banco receives no administrative contacts`, `C6 Companion without admin_banco receives no administrative contacts`, `C6 inactive admin_banco receives no administrative contacts`, `C6 authenticated user without an active admin_banco receives no contacts`, `C6 anon cannot call the administrative contact collection`, `C6 client roles cannot read private contact or audit rows directly - contacts`, `C6 client roles cannot read private contact or audit rows directly - audit` e `C6 client and service roles cannot select contact or audit rows directly` em `supabase/tests/contatos-administrativos.test.sql`, executadas por `supabase test db`. Não afirmar resultado para `admin_geral`; esse papel continua em `Unresolved`.
 
 ### S2 — Registrar uma única mudança de situação
 
 **C7 (critério 7)** — Para contato sintético `novo`, marcar cada destino previsto em casos separados: `atendido`, `sem_retorno` e `virou_emprestimo`. Conferir o valor enum persistido e que somente `situacao` muda; código, ator inicial, entidade, tipo, destinatário efetivo, origem e `created_at` permanecem iguais.
 
-Provas: `C7 each allowed destination changes only situation` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; conferir rótulo na tela manualmente. Não criar empréstimo como efeito desta mudança.
+Provas: `C7 atendido changes the situation from novo` e `C7 atendido changes only situation and preserves the contact fields`; `C7 sem_retorno changes the situation from novo` e `C7 sem_retorno changes only situation and preserves the contact fields`; `C7 virou_emprestimo changes the situation from novo` e `C7 virou_emprestimo changes only situation and preserves the contact fields`, em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`. Conferir os rótulos na tela manualmente. Não criar empréstimo como efeito desta mudança.
 
 **C8 (critério 8)** — Em uma transição confirmada, conferir um registro de auditoria com ator, ação, entidade, identificador interno do contato, situação anterior/nova e data/hora. CPF, telefone, nome de pessoa e erro bruto não aparecem na auditoria nem nos logs inspecionados.
 
-Provas: `C8 audit records actor, action, entity, internal contact, previous/new situation and time without PII` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; inspeção manual dos logs sintéticos.
+Provas: `C8 audit records actor, action, entity, internal contact, previous/new situation and time` e `C8 audit schema contains no PII columns` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; inspeção manual dos logs sintéticos.
 
 **C9 (critério 9)** — Repetir o mesmo pedido de mudança depois da confirmação. O contato continua no destino já gravado, mantém o mesmo código e não ganha outra transição nem outro registro de auditoria.
 
@@ -107,7 +107,7 @@ Prova: `C9 repeating the same destination leaves one contact transition and one 
 
 **C10 (critério 10)** — Enviar dois pedidos simultâneos com destinos diferentes para o mesmo contato ainda `novo`. No máximo um confirma; a situação final é um dos três destinos e há um único registro de auditoria.
 
-Provas: `C10 a competing destination cannot overwrite the confirmed situation or add another audit row` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`, mais duas sessões SQL locais simultâneas com destinos diferentes. Se a concorrência manual não for executada, C10 permanece pendente; não criar outro runner ou automação de navegador.
+Provas: `C10 first competing destination is confirmed`, `C10 a competing destination cannot overwrite the confirmed situation or add another audit row` e `C10 only one situation and one audit row remain after competing destinations` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`, mais duas sessões SQL locais simultâneas com destinos diferentes. Se a concorrência manual não for executada, C10 permanece pendente; não criar outro runner ou automação de navegador.
 
 **C11 (critério 11)** — Depois de uma mudança confirmada, conferir mensagem de sucesso com a situação resultante e exatamente um próximo passo.
 
@@ -127,7 +127,7 @@ Prova: procedimento manual com falha controlada local e inspeção dos logs sint
 
 **C15 (critério 15)** — Com sessão sem vínculo ativo para a entidade, conferir mensagem de falta de permissão sem revelar existência do contato/código.
 
-Provas: `C15 foreign and unknown contact codes receive the same generic denial` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; prova manual da tela com identidade sem vínculo ativo, sem revelar se o contato existe.
+Provas: `C15 foreign and unknown contact codes receive the same generic denial - foreign code` e `C15 foreign and unknown contact codes receive the same generic denial - unknown code` em `supabase/tests/contatos-administrativos.test.sql` via `supabase test db`; prova manual da tela com identidade sem vínculo ativo, sem revelar se o contato existe.
 
 **C16 (critério 16)** — Revisar visualmente a 360 px: sem rolagem horizontal; botões principais ≥56 px e texto em negrito ≥20 px; texto corrido ≥18 px; títulos ≥26 px; contraste ≥4,5:1; foco visível; significado não depende só de cor/ícone; uma ação principal por tela; paleta oficial e linguagem cotidiana.
 
