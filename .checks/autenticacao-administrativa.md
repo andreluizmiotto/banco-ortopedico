@@ -1,6 +1,6 @@
 # Acesso e sessão administrativa — `admin_banco`
 
-State: IN PROGRESS — os dois comandos automatizados permitidos passaram após ajustes; checks de tela, revisão independente e execução local do seed permanecem pendentes.
+State: IN PROGRESS — os comandos automatizados permitidos passaram; C2/R2 foi confirmado localmente e registrado no relatório independente, cujo veredito geral permanece FAIL (5/12). R1, R3–R5, R8, R12 e a execução local da fixture (C11) continuam pendentes.
 
 ## Sources
 
@@ -64,9 +64,9 @@ A entrada administrativa reutiliza o cliente SSR e o invólucro visual existente
 
 Prova: **R1 — revisão manual de `/admin/entrar` e `/entrar`**. Conferir os dois rótulos, a ação, a ausência de cadastro administrativo e o fluxo de Comunidade preservado. Ainda não executada.
 
-**C2 (critério 2) — PENDENTE** — Conta Auth sintética com credenciais válidas e um vínculo ativo único é aceita e encaminhada para `/admin/contatos`; nenhum destino vem de `entity_id` enviado pelo navegador.
+**C2 (critério 2) — PASS — R2 manual confirmado pelo usuário em 2026-10-21** — A conta Auth sintética local foi aceita e encaminhada para `/admin/contatos`; o destino é fixo e não depende de `entity_id` enviado pelo navegador.
 
-Prova: **R2 — entrada manual local com a identidade sintética do seed**. Conferir sessão Auth e URL final `/admin/contatos`; não enviar nem alterar `entity_id`. Ainda não executada.
+Prova: **R2 — entrada manual local com a identidade sintética**. O usuário confirmou a sessão e a URL final `/admin/contatos`; o resultado está registrado em `.checks/autenticacao-administrativa.verified.md:11-14,35`. A rota ainda não contém a tela de contatos. Esta prova não substitui C11: a fixture do seed continua sem execução confirmada.
 
 **C3 (critério 3) — PENDENTE** — Credenciais inválidas e ausência/inatividade de `admin_banco` são negadas pela mesma mensagem genérica; resposta e logs não revelam existência da conta, e-mail, senha, erro bruto ou dados privados.
 
