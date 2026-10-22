@@ -1,0 +1,2 @@
+alter role admin_contact_manager inherit;
+grant admin_bank_authorization_checker to admin_contact_manager;
