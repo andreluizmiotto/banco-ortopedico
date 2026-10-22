@@ -20,7 +20,8 @@ row in the same transaction. Repeating the same target is idempotent;
 
 Database: `supabase/migrations/20261022000000_contatos_administrativos.sql`,
 `20261025000000_admin_contact_manager_checker_membership.sql`, and
-`20261026000000_admin_contact_highlight_dto.sql` —
+`20261026000000_admin_contact_highlight_dto.sql` and
+`20261027000000_admin_contact_highlight_boundary.sql` —
 `admin_contact_manager` is `NOLOGIN NOBYPASSRLS` and inherits the existing
 `admin_bank_authorization_checker` for the session-derived entity resolver;
 policies still scope rows to that active link. The audit table stores actor,
