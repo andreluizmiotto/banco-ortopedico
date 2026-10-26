@@ -9,6 +9,7 @@ type PublicLayoutProps = {
   eyebrow?: string;
   backLink?: { href: string; label: string };
   footerNote?: string | null;
+  headerNavigation?: ReactNode;
   children: ReactNode;
 };
 
@@ -18,6 +19,7 @@ export function PublicLayout({
   eyebrow = "Consulta pública",
   backLink,
   footerNote = "A disponibilidade é atualizada a partir do acervo de cada banco.",
+  headerNavigation,
   children,
 }: PublicLayoutProps) {
   return (
@@ -26,12 +28,14 @@ export function PublicLayout({
         Ir para o conteúdo
       </a>
       <div className="page-frame">
-        <header className="public-header">
+        <header
+          className={`public-header${headerNavigation ? " public-header-admin" : ""}`}
+        >
           <Link className="brand-link" href="/">
             <span className="brand-mark" aria-hidden="true" />
             <span>Banco Ortopédico</span>
           </Link>
-          <p className="brand-note">Acervo comunitário</p>
+          {headerNavigation ?? <p className="brand-note">Acervo comunitário</p>}
         </header>
         <main id="conteudo-principal">
           {backLink ? (

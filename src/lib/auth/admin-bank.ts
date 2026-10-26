@@ -2,15 +2,27 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "../supabase/server";
 
-type ServerSupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+export type ServerSupabaseClient = Awaited<
+  ReturnType<typeof createSupabaseServerClient>
+>;
 
 export type AdminBankContext = {
   entityId: string;
 };
 
-export async function getAdminBankContext(
+export type AdminBankAccess =
+  | { kind: "unauthenticated" }
+  | { kind: "forbidden" }
+  | { kind: "unavailable" }
+  | {
+      kind: "authorized";
+      entityId: string;
+      client: ServerSupabaseClient;
+    };
+
+export async function resolveAdminBankAccess(
   client?: ServerSupabaseClient,
-): Promise<AdminBankContext | null> {
+): Promise<AdminBankAccess> {
   try {
     const supabase = client ?? (await createSupabaseServerClient());
     const {
@@ -18,19 +30,27 @@ export async function getAdminBankContext(
       error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError || !user) return null;
+    if (userError) return { kind: "unavailable" };
+    if (!user) return { kind: "unauthenticated" };
 
     const { data: entityId, error: roleError } = await supabase.rpc(
       "current_admin_bank_entity_id",
     );
 
-    if (roleError || typeof entityId !== "string") return null;
+    if (roleError) return { kind: "unavailable" };
+    if (typeof entityId !== "string") return { kind: "forbidden" };
 
-    return { entityId };
+    return { kind: "authorized", entityId, client: supabase };
   } catch {
-    // Fail closed without exposing raw Auth or database errors to the caller.
-    return null;
+    return { kind: "unavailable" };
   }
+}
+
+export async function getAdminBankContext(
+  client?: ServerSupabaseClient,
+): Promise<AdminBankContext | null> {
+  const access = await resolveAdminBankAccess(client);
+  return access.kind === "authorized" ? { entityId: access.entityId } : null;
 }
 
 export async function requireAdminBankContext(): Promise<AdminBankContext> {
