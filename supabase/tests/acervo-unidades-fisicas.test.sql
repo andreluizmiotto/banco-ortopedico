@@ -1,6 +1,6 @@
 begin;
 
-select plan(50);
+select plan(53);
 
 create function pg_temp.aq_login(p_sub text)
 returns void
@@ -90,7 +90,8 @@ from (
     ('a0000000-0000-4000-8000-000000000003', 'SYN-AQ-INACTIVE', 'SYN-AQ-A', null, 'baixado', null),
     ('a0000000-0000-4000-8000-000000000004', 'SYN-AQ-CR', 'SYN-AQ-B', 'SYN-AQ-P2', 'disponivel', 'AQ-B-0001'),
     ('a0000000-0000-4000-8000-000000000005', 'SYN-AQ-CR', 'SYN-AQ-C', 'SYN-AQ-P1', 'reservado', 'AQ-C-0001'),
-    ('a0000000-0000-4000-8000-000000000006', 'SYN-AQ-CR', 'SYN-AQ-D', 'SYN-AQ-P2', 'emprestado', 'AQ-D-0001')
+    ('a0000000-0000-4000-8000-000000000006', 'SYN-AQ-CR', 'SYN-AQ-D', 'SYN-AQ-P2', 'emprestado', 'AQ-D-0001'),
+    ('a0000000-0000-4000-8000-000000000007', 'SYN-AQ-CR', 'SYN-AQ-A', null, 'reservado', null)
 ) as fixture(id, equipment_type_code, entity_code, point_code, situacao, visible_code)
 join catalog.entities as entity on entity.code = fixture.entity_code
 left join catalog.pontos_atendimento as location on location.code = fixture.point_code;
@@ -130,12 +131,12 @@ select results_eq(
     select bank_name, unit_id::text
     from public.admin_bank_equipment_units()
     where unit_id is not null
-    order by unit_id
   $$,
   $$
     values
       ('Entidade Sintetica AQ A'::text, 'a0000000-0000-4000-8000-000000000001'::text),
       ('Entidade Sintetica AQ A'::text, 'a0000000-0000-4000-8000-000000000002'::text),
+      ('Entidade Sintetica AQ A'::text, 'a0000000-0000-4000-8000-000000000007'::text),
       ('Entidade Sintetica AQ A'::text, 'a0000000-0000-4000-8000-000000000003'::text)
   $$,
   'C1 acervo collection returns the canonical bank and only its units'
@@ -213,7 +214,7 @@ select ok(
     where situacao = 'baixado'
   )
     and (
-    select count(*) = 0
+    select count(*) = 1
     from public.admin_bank_equipment_units()
     where situacao = 'reservado'
   )
@@ -240,6 +241,7 @@ select results_eq(
     values
       ('a0000000-0000-4000-8000-000000000001'::text),
       ('a0000000-0000-4000-8000-000000000002'::text),
+      ('a0000000-0000-4000-8000-000000000007'::text),
       ('a0000000-0000-4000-8000-000000000003'::text)
   $$,
   'C3 units are ordered by type then identifier with nulls last'
@@ -389,6 +391,30 @@ select throws_ok(
   'C10 identifier longer than 64 characters is rejected'
 );
 
+create temp table aq_max_identifier as
+select public.admin_create_equipment_unit(
+  'SYN-AQ-CR',
+  repeat('x', 64),
+  null,
+  'disponivel',
+  'doacao'
+) as id;
+
+reset role;
+
+select is(
+  (
+    select char_length(visible_code)
+    from catalog.equipment_units
+    where id = (select id from aq_max_identifier)
+  ),
+  64,
+  'C10 identifier with exactly 64 characters is accepted'
+);
+
+set local role authenticated;
+select pg_temp.aq_login('a1000000-0000-4000-8000-000000000001');
+
 select throws_ok(
   $$select public.admin_create_equipment_unit('SYN-AQ-CR', 'AQ-0001', null, 'disponivel', 'doacao')$$,
   'P0003',
@@ -419,6 +445,14 @@ select ok(
   ),
   'C11 the same identifier is accepted in another entity'
 );
+
+reset role;
+create temp table aq_before_invalid as
+select
+  (select count(*) from catalog.equipment_units
+   where owner_entity_id = 'c1000000-0000-4000-8000-000000000001') as unit_count,
+  (select count(*) from catalog.equipment_unit_change_audit
+   where entity_id = 'c1000000-0000-4000-8000-000000000001') as audit_count;
 
 set local role authenticated;
 select pg_temp.aq_login('a1000000-0000-4000-8000-000000000001');
@@ -464,11 +498,20 @@ select is(
   (
     select count(*)
     from catalog.equipment_units
-    where owner_entity_id = ('c1000000-0000-4000-8000-000000000001'::uuid)
-      and visible_code in ('AQ-INVALID-1', 'AQ-INVALID-2')
+    where owner_entity_id = 'c1000000-0000-4000-8000-000000000001'
   ),
-  0::bigint,
+  (select unit_count from aq_before_invalid),
   'C12 invalid creation attempts leave no unit behind'
+);
+
+select is(
+  (
+    select count(*)
+    from catalog.equipment_unit_change_audit
+    where entity_id = 'c1000000-0000-4000-8000-000000000001'
+  ),
+  (select audit_count from aq_before_invalid),
+  'C12 invalid creation attempts leave no audit behind'
 );
 
 set local role authenticated;
@@ -782,9 +825,10 @@ reset role;
 set local role authenticated;
 select pg_temp.aq_login('a1000000-0000-4000-8000-000000000005');
 
-select is(
-  (select count(*) from public.admin_bank_equipment_units()),
-  0::bigint,
+select throws_ok(
+  $$select * from public.admin_bank_equipment_units()$$,
+  '42501',
+  'Acervo indisponível',
   'C6 acervo RPCs reject an inactive admin_banco'
 );
 
@@ -792,19 +836,28 @@ reset role;
 set local role authenticated;
 select pg_temp.aq_login('a1000000-0000-4000-8000-000000000006');
 
-select is(
-  (select count(*) from public.admin_bank_equipment_units()),
-  0::bigint,
+select throws_ok(
+  $$select * from public.admin_bank_equipment_units()$$,
+  '42501',
+  'Acervo indisponível',
   'C6 acervo RPCs reject a session without an active admin_banco'
+);
+
+select throws_ok(
+  $$select * from public.admin_bank_equipment_options()$$,
+  '42501',
+  'Acervo indisponível',
+  'C6 acervo options reject a session without an active admin_banco'
 );
 
 reset role;
 set local role authenticated;
 select pg_temp.aq_login('a1000000-0000-4000-8000-000000000007');
 
-select is(
-  (select count(*) from public.admin_bank_equipment_units()),
-  0::bigint,
+select throws_ok(
+  $$select * from public.admin_bank_equipment_units()$$,
+  '42501',
+  'Acervo indisponível',
   'C6 acervo RPCs reject an authenticated user without admin_banco'
 );
 

@@ -188,7 +188,7 @@ declare
   v_entity_id uuid := public.current_admin_bank_entity_id();
 begin
   if v_entity_id is null then
-    return;
+    raise exception 'Acervo indisponível' using errcode = '42501';
   end if;
 
   return query
@@ -234,7 +234,7 @@ declare
   v_entity_id uuid := public.current_admin_bank_entity_id();
 begin
   if v_entity_id is null then
-    return;
+    raise exception 'Acervo indisponível' using errcode = '42501';
   end if;
 
   return query
@@ -268,7 +268,7 @@ declare
   v_unit_id uuid;
 begin
   if v_actor_id is null or v_entity_id is null then
-    raise exception 'Acervo indisponível' using errcode = 'P0001';
+    raise exception 'Acervo indisponível' using errcode = '42501';
   end if;
 
   if p_situation is null
@@ -384,7 +384,7 @@ declare
   v_previous_situation catalog.equipment_situation;
 begin
   if v_actor_id is null or v_entity_id is null then
-    raise exception 'Acervo indisponível' using errcode = 'P0001';
+    raise exception 'Acervo indisponível' using errcode = '42501';
   end if;
 
   if p_unit_id is null

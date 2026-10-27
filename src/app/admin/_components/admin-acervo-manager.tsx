@@ -35,6 +35,7 @@ export function AdminAcervoManager({
   const [createState, setCreateState] = useState<EquipmentMutationState>({
     kind: "idle",
   });
+  const [createdTypeName, setCreatedTypeName] = useState<string | null>(null);
   const [createPending, startCreate] = useTransition();
   const createSubmitting = useRef(false);
   const router = useRouter();
@@ -53,12 +54,18 @@ export function AdminAcervoManager({
     createSubmitting.current = true;
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const typeCode = formData.get("tipo");
+    const typeName =
+      typeof typeCode === "string"
+        ? types.find((type) => type.code === typeCode)?.name ?? null
+        : null;
 
     startCreate(async () => {
       try {
         const state = await createEquipmentUnitAction(formData);
         setCreateState(state);
         if (state.kind === "success") {
+          setCreatedTypeName(typeName);
           form.reset();
           router.refresh();
         }
@@ -74,6 +81,7 @@ export function AdminAcervoManager({
   }
 
   function resetCreate() {
+    setCreatedTypeName(null);
     setCreateState({ kind: "idle" });
   }
 
@@ -105,7 +113,9 @@ export function AdminAcervoManager({
             role="status"
           >
             <p className="body-copy">
-              Equipamento cadastrado como{" "}
+              {createdTypeName === null
+                ? "Equipamento cadastrado como "
+                : `Equipamento ${createdTypeName} cadastrado como `}
               <strong>{equipmentSituationLabels[createState.situation]}</strong>.
             </p>
             <button
