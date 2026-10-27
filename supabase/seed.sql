@@ -144,3 +144,41 @@ set
   owner_entity_id = excluded.owner_entity_id,
   storage_location_id = excluded.storage_location_id,
   situacao = excluded.situacao;
+
+-- Synthetic acervo for the administrative inventory panel; no real inventory data.
+insert into catalog.equipment_units (
+  id,
+  equipment_type_code,
+  owner_entity_id,
+  storage_location_id,
+  situacao,
+  visible_code,
+  entry_origin
+)
+select
+  fixture.id::uuid,
+  fixture.equipment_type_code,
+  entity.id,
+  location.id,
+  fixture.situacao::catalog.equipment_situation,
+  fixture.visible_code,
+  fixture.entry_origin::catalog.equipment_entry_origin
+from (
+  values
+    ('10000000-0000-4000-8000-000000000001', 'CR', 'disponivel', 'BVCR0001', 'doacao'),
+    ('10000000-0000-4000-8000-000000000002', 'CR', 'reservado', 'BVCR0002', 'compra'),
+    ('10000000-0000-4000-8000-000000000003', 'CM', 'emprestado', 'BVCM0001', 'retorno_conserto'),
+    ('10000000-0000-4000-8000-000000000004', 'AN', 'manutencao', null, 'devolucao_outro_banco'),
+    ('10000000-0000-4000-8000-000000000005', 'MU', 'doado', 'BVMU0001', 'doacao'),
+    ('10000000-0000-4000-8000-000000000006', 'CB', 'baixado', null, 'compra')
+) as fixture(id, equipment_type_code, situacao, visible_code, entry_origin)
+join catalog.entities as entity on entity.code = 'SYN-ROTARY-BOA-VISTA'
+left join catalog.pontos_atendimento as location on location.code = 'SYN-SHARED'
+on conflict (id) do update
+set
+  equipment_type_code = excluded.equipment_type_code,
+  owner_entity_id = excluded.owner_entity_id,
+  storage_location_id = excluded.storage_location_id,
+  situacao = excluded.situacao,
+  visible_code = excluded.visible_code,
+  entry_origin = excluded.entry_origin;
