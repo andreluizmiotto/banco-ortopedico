@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { PublicLayout } from "../../_components/public-layout";
 import { AdminContactsManager } from "../_components/admin-contacts-manager";
+import { AdminNavigation } from "../_components/admin-navigation";
 import { getAdminContactsPageData } from "../../../lib/contacts/admin-server";
 
 export const instant = false;
@@ -104,29 +105,12 @@ function AdminContactsLayout({
     <PublicLayout
       eyebrow={eyebrow ?? "Gestão do banco"}
       footerNote={null}
-      headerNavigation={<AdminContactsNavigation />}
+      headerNavigation={<AdminNavigation current="/admin/contatos" />}
       introduction={introduction}
       title={title}
     >
       {children}
     </PublicLayout>
-  );
-}
-
-function AdminContactsNavigation() {
-  return (
-    <nav
-      aria-label="Tarefas prioritárias do banco"
-      className="admin-primary-navigation"
-    >
-      <ul>
-        <li>
-          <Link aria-current="page" href="/admin/contatos">
-            Contatos recebidos
-          </Link>
-        </li>
-      </ul>
-    </nav>
   );
 }
 

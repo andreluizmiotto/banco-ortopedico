@@ -1,0 +1,23 @@
+[
+  {
+    "file": "supabase/migrations/20261028000000_acervo_unidades_fisicas.sql",
+    "old": "  if v_visible_code is not null and char_length(v_visible_code) > 64 then\n    raise exception 'Dados da unidade inválidos' using errcode = 'P0002';\n  end if;\n\n  insert into catalog.equipment_units (",
+    "new": "  if v_visible_code is not null and char_length(v_visible_code) >= 64 then\n    raise exception 'Dados da unidade inválidos' using errcode = 'P0002';\n  end if;\n\n  insert into catalog.equipment_units (",
+    "proof": "bash scripts/acervo-test-db.sh # C10 identifier longer than 64 characters is rejected",
+    "label": "identifier length bound 64 -> 63 (64 must still be accepted)"
+  },
+  {
+    "file": "supabase/migrations/20261028000000_acervo_unidades_fisicas.sql",
+    "old": "    unit.visible_code nulls last,",
+    "new": "    unit.visible_code nulls first,",
+    "proof": "bash scripts/acervo-test-db.sh # C3 units are ordered by type then identifier with nulls last",
+    "label": "collection order: null identifiers last -> first"
+  },
+  {
+    "file": "supabase/migrations/20261028000000_acervo_unidades_fisicas.sql",
+    "old": "    and v_previous_situation = p_situation::catalog.equipment_situation\n  then\n    return v_previous_situation::text;",
+    "new": "    and v_previous_situation <> p_situation::catalog.equipment_situation\n  then\n    return v_previous_situation::text;",
+    "proof": "bash scripts/acervo-test-db.sh # C16 repeating the same update creates no extra audit row",
+    "label": "idempotency guard: unchanged values still write a new audit"
+  }
+]
