@@ -1,10 +1,10 @@
-create type catalog.equipment_situation as enum (
-  'disponivel',
-  'reservado',
-  'emprestado',
-  'manutencao',
-  'doado',
-  'baixado'
+create type catalog.equipment_status as enum (
+  'available',
+  'reserved',
+  'on_loan',
+  'under_maintenance',
+  'donated',
+  'written_off'
 );
 
 create role availability_reader nologin noinherit;
@@ -17,7 +17,7 @@ create table catalog.entities (
   is_active boolean not null default true
 );
 
-create table catalog.pontos_atendimento (
+create table catalog.storage_locations (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
@@ -31,23 +31,23 @@ create table catalog.equipment_units (
   owner_entity_id uuid not null
     references catalog.entities (id) on delete restrict,
   storage_location_id uuid
-    references catalog.pontos_atendimento (id) on delete restrict,
-  situacao catalog.equipment_situation not null
+    references catalog.storage_locations (id) on delete restrict,
+  status catalog.equipment_status not null
 );
 
-create index equipment_units_owner_type_situation_idx
-  on catalog.equipment_units (owner_entity_id, equipment_type_code, situacao);
+create index equipment_units_owner_type_status_idx
+  on catalog.equipment_units (owner_entity_id, equipment_type_code, status);
 
 alter table catalog.entities enable row level security;
 alter table catalog.entities force row level security;
-alter table catalog.pontos_atendimento enable row level security;
-alter table catalog.pontos_atendimento force row level security;
+alter table catalog.storage_locations enable row level security;
+alter table catalog.storage_locations force row level security;
 alter table catalog.equipment_units enable row level security;
 alter table catalog.equipment_units force row level security;
 
 revoke all privileges on table catalog.entities
   from public, anon, authenticated, service_role;
-revoke all privileges on table catalog.pontos_atendimento
+revoke all privileges on table catalog.storage_locations
   from public, anon, authenticated, service_role;
 revoke all privileges on table catalog.equipment_units
   from public, anon, authenticated, service_role;
@@ -86,7 +86,7 @@ as $function$
   select
     entity.public_name,
     count(*) filter (
-      where equipment_unit.situacao = 'disponivel'::catalog.equipment_situation
+      where equipment_unit.status = 'available'::catalog.equipment_status
     )::integer
   from catalog.entities as entity
   join catalog.equipment_units as equipment_unit

@@ -69,7 +69,7 @@ create policy "Profile provisioner inserts community profile roles"
   for insert
   to community_profile_provisioner
   with check (
-    role = 'comunidade'
+    role = 'community'
     and entity_id is null
     and is_active
     and exists (
@@ -88,7 +88,7 @@ create policy "Authorization checker sees its own active community role"
   to community_authorization_checker
   using (
     user_id = catalog.current_auth_uid()
-    and role = 'comunidade'
+    and role = 'community'
     and is_active
   );
 
@@ -116,7 +116,7 @@ begin
   from catalog.community_profiles as profile
   join catalog.user_roles as user_role
     on user_role.user_id = profile.id
-    and user_role.role = 'comunidade'
+    and user_role.role = 'community'
     and user_role.is_active
   where profile.cpf = p_cpf
   limit 1;
@@ -177,7 +177,7 @@ begin
     or length(btrim(p_privacy_notice_version)) not between 1 and 128
     or p_privacy_accepted is distinct from true
   then
-    raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+    raise exception 'Signup unavailable' using errcode = 'P0001';
   end if;
 
   perform pg_advisory_xact_lock(
@@ -191,7 +191,7 @@ begin
 
   if found then
     if v_existing_cpf <> p_cpf or v_existing_phone <> p_phone then
-      raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+      raise exception 'Signup unavailable' using errcode = 'P0001';
     end if;
   else
     begin
@@ -213,7 +213,7 @@ begin
       );
     exception
       when unique_violation then
-        raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+        raise exception 'Signup unavailable' using errcode = 'P0001';
     end;
   end if;
 
@@ -221,23 +221,23 @@ begin
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = p_auth_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.entity_id is null
       and not user_role.is_active
   ) then
-    raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+    raise exception 'Signup unavailable' using errcode = 'P0001';
   end if;
 
   if not exists (
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = p_auth_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.entity_id is null
       and user_role.is_active
   ) then
     insert into catalog.user_roles (user_id, role, entity_id, is_active)
-    values (p_auth_user_id, 'comunidade', null, true);
+    values (p_auth_user_id, 'community', null, true);
   end if;
 end
 $function$;
@@ -282,7 +282,7 @@ as $function$
       select 1
       from catalog.user_roles as user_role
       where user_role.user_id = catalog.current_auth_uid()
-        and user_role.role = 'comunidade'
+        and user_role.role = 'community'
         and user_role.is_active
     )
 $function$;
@@ -306,11 +306,11 @@ create policy "Contact processor checks active community and recipients"
   using (
     (
       user_id = catalog.current_auth_uid()
-      and role = 'comunidade'
+      and role = 'community'
       and is_active
     )
     or (
-      role in ('responsavel', 'substituto')
+      role in ('responsible', 'substitute')
       and is_active
     )
   );
@@ -335,7 +335,7 @@ create policy "Community contact processor inserts own contacts"
       select 1
       from catalog.user_roles as user_role
       where user_role.user_id = catalog.current_auth_uid()
-        and user_role.role = 'comunidade'
+        and user_role.role = 'community'
         and user_role.is_active
     )
   );
@@ -349,12 +349,12 @@ create policy "Community contact processor refreshes own effective recipient"
   using (user_id = catalog.current_auth_uid())
   with check (
     user_id = catalog.current_auth_uid()
-    and recipient_role in ('responsavel', 'substituto')
+    and recipient_role in ('responsible', 'substitute')
     and exists (
       select 1
       from catalog.user_roles as user_role
       where user_role.user_id = catalog.current_auth_uid()
-        and user_role.role = 'comunidade'
+        and user_role.role = 'community'
         and user_role.is_active
     )
   );
@@ -405,7 +405,7 @@ begin
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = v_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.is_active
   ) then
     return 'unavailable';
@@ -436,8 +436,8 @@ begin
   where settings.entity_id = v_entity_id;
 
   v_recipient_role := case
-    when v_substitute_mode then 'substituto'::catalog.user_role
-    else 'responsavel'::catalog.user_role
+    when v_substitute_mode then 'substitute'::catalog.user_role
+    else 'responsible'::catalog.user_role
   end;
 
   select destination.whatsapp_phone, destination.call_phone
@@ -489,10 +489,10 @@ begin
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = v_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.is_active
   ) then
-    raise exception 'Contato indisponivel' using errcode = '42501';
+    raise exception 'Contact unavailable' using errcode = '42501';
   end if;
 
   select entity.id
@@ -520,8 +520,8 @@ begin
   from catalog.entity_contact_settings as settings
   where settings.entity_id = v_entity_id;
   v_recipient_role := case
-    when v_substitute_mode then 'substituto'::catalog.user_role
-    else 'responsavel'::catalog.user_role
+    when v_substitute_mode then 'substitute'::catalog.user_role
+    else 'responsible'::catalog.user_role
   end;
 
   select destination.recipient_user_id, destination.whatsapp_phone, destination.call_phone
@@ -559,7 +559,7 @@ begin
   );
   v_now := clock_timestamp();
 
-  select contact.codigo
+  select contact.public_code
   into v_contact_code
   from catalog.community_contacts as contact
   where contact.user_id = v_user_id
@@ -576,8 +576,8 @@ begin
       equipment_type_code,
       recipient_user_id,
       recipient_role,
-      origem,
-      situacao,
+      source,
+      status,
       created_at
     )
     values (
@@ -586,17 +586,17 @@ begin
       p_equipment_type_code,
       v_recipient_user_id,
       v_recipient_role,
-      'detalhe_equipamento',
-      'novo',
+      'equipment_detail',
+      'new',
       v_now
     )
-    returning codigo into v_contact_code;
+    returning public_code into v_contact_code;
   else
     update catalog.community_contacts as contact
     set
       recipient_user_id = v_recipient_user_id,
       recipient_role = v_recipient_role
-    where contact.codigo = v_contact_code
+    where contact.public_code = v_contact_code
       and contact.user_id = v_user_id;
   end if;
 

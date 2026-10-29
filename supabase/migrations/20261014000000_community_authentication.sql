@@ -1,10 +1,10 @@
 create type catalog.user_role as enum (
-  'comunidade',
-  'companheiro',
-  'responsavel',
-  'substituto',
-  'admin_banco',
-  'admin_geral'
+  'community',
+  'rotarian',
+  'responsible',
+  'substitute',
+  'bank_admin',
+  'general_admin'
 );
 
 create table catalog.community_profiles (
@@ -33,11 +33,11 @@ create table catalog.user_roles (
   created_at timestamptz not null default clock_timestamp(),
   constraint user_roles_entity_scope_check check (
     (
-      role in ('responsavel', 'substituto', 'admin_banco')
+      role in ('responsible', 'substitute', 'bank_admin')
       and entity_id is not null
     )
     or (
-      role in ('comunidade', 'companheiro', 'admin_geral')
+      role in ('community', 'rotarian', 'general_admin')
       and entity_id is null
     )
   )
@@ -124,20 +124,20 @@ create policy "Identity lookup sees active community roles"
   on catalog.user_roles
   for select
   to community_identity_lookup
-  using (role = 'comunidade' and is_active);
+  using (role = 'community' and is_active);
 
 create policy "Profile provisioner reads community roles"
   on catalog.user_roles
   for select
   to community_profile_provisioner
-  using (role = 'comunidade' and entity_id is null);
+  using (role = 'community' and entity_id is null);
 
 create policy "Profile provisioner inserts confirmed community roles"
   on catalog.user_roles
   for insert
   to community_profile_provisioner
   with check (
-    role = 'comunidade'
+    role = 'community'
     and entity_id is null
     and is_active
     and exists (
@@ -155,7 +155,7 @@ create policy "Authorization checker sees its own active community role"
   to community_authorization_checker
   using (
     user_id = catalog.current_auth_uid()
-    and role = 'comunidade'
+    and role = 'community'
     and is_active
   );
 
@@ -228,7 +228,7 @@ begin
   from catalog.community_profiles as profile
   join catalog.user_roles as user_role
     on user_role.user_id = profile.id
-    and user_role.role = 'comunidade'
+    and user_role.role = 'community'
     and user_role.is_active
   where profile.cpf = p_cpf
   limit 1;
@@ -267,7 +267,7 @@ begin
     or length(btrim(p_privacy_notice_version)) not between 1 and 128
     or p_privacy_accepted is distinct from true
   then
-    raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+    raise exception 'Signup unavailable' using errcode = 'P0001';
   end if;
 
   perform pg_advisory_xact_lock(
@@ -281,7 +281,7 @@ begin
 
   if found then
     if v_existing_cpf <> p_cpf or v_existing_phone <> p_phone then
-      raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+      raise exception 'Signup unavailable' using errcode = 'P0001';
     end if;
   else
     begin
@@ -303,7 +303,7 @@ begin
       );
     exception
       when unique_violation then
-        raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+        raise exception 'Signup unavailable' using errcode = 'P0001';
     end;
   end if;
 
@@ -311,23 +311,23 @@ begin
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = p_auth_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.entity_id is null
       and not user_role.is_active
   ) then
-    raise exception 'Cadastro indisponivel' using errcode = 'P0001';
+    raise exception 'Signup unavailable' using errcode = 'P0001';
   end if;
 
   if not exists (
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = p_auth_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.entity_id is null
       and user_role.is_active
   ) then
     insert into catalog.user_roles (user_id, role, entity_id, is_active)
-    values (p_auth_user_id, 'comunidade', null, true);
+    values (p_auth_user_id, 'community', null, true);
   end if;
 end
 $function$;
@@ -343,7 +343,7 @@ declare
   v_locked_until timestamptz;
 begin
   if p_origin_hash is null or p_origin_hash !~ '^[0-9a-f]{64}$' then
-    raise exception 'Origem invalida' using errcode = '22023';
+    raise exception 'Invalid source' using errcode = '22023';
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(p_origin_hash, 0));
@@ -385,7 +385,7 @@ declare
   v_next_attempts smallint;
 begin
   if p_origin_hash is null or p_origin_hash !~ '^[0-9a-f]{64}$' then
-    raise exception 'Origem invalida' using errcode = '22023';
+    raise exception 'Invalid source' using errcode = '22023';
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(p_origin_hash, 0));
@@ -438,7 +438,7 @@ set row_security = on
 as $function$
 begin
   if p_origin_hash is null or p_origin_hash !~ '^[0-9a-f]{64}$' then
-    raise exception 'Origem invalida' using errcode = '22023';
+    raise exception 'Invalid source' using errcode = '22023';
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(p_origin_hash, 0));
@@ -461,7 +461,7 @@ as $function$
       select 1
       from catalog.user_roles as user_role
       where user_role.user_id = catalog.current_auth_uid()
-        and user_role.role = 'comunidade'
+        and user_role.role = 'community'
         and user_role.is_active
     )
 $function$;

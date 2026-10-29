@@ -5,6 +5,9 @@ select plan(48);
 insert into catalog.equipment_types (code, name, is_active, display_order)
 values ('SYN-RLS-C14', 'Tipo sintetico C14', true, 990);
 
+insert into catalog.storage_locations (code, name)
+values ('SYN-SHARED', 'Ponto Sintetico Compartilhado');
+
 insert into catalog.entities (code, public_name, is_bank, is_active)
 values
   ('SYN-RLS-A', 'Entidade Sintetica RLS A', true, true),
@@ -16,15 +19,15 @@ insert into catalog.equipment_units (
   equipment_type_code,
   owner_entity_id,
   storage_location_id,
-  situacao
+  status
 )
 select
   'SYN-RLS-C14',
   entity.id,
   location.id,
-  'reservado'::catalog.equipment_situation
+  'reserved'::catalog.equipment_status
 from catalog.entities as entity
-cross join catalog.pontos_atendimento as location
+cross join catalog.storage_locations as location
 where entity.code in ('SYN-RLS-A', 'SYN-RLS-B', 'SYN-RLS-C', 'SYN-RLS-D')
   and location.code = 'SYN-SHARED';
 
@@ -52,14 +55,14 @@ values
 
 insert into catalog.user_roles (user_id, role, entity_id, is_active)
 values
-  ('30000000-0000-4000-8000-000000000001', 'comunidade', null, true),
-  ('30000000-0000-4000-8000-000000000002', 'companheiro', null, true),
-  ('30000000-0000-4000-8000-000000000003', 'responsavel', (select id from catalog.entities where code = 'SYN-RLS-A'), true),
-  ('30000000-0000-4000-8000-000000000004', 'responsavel', (select id from catalog.entities where code = 'SYN-RLS-B'), true),
-  ('30000000-0000-4000-8000-000000000005', 'responsavel', (select id from catalog.entities where code = 'SYN-RLS-C'), true),
-  ('30000000-0000-4000-8000-000000000006', 'substituto', (select id from catalog.entities where code = 'SYN-RLS-C'), true),
-  ('30000000-0000-4000-8000-000000000007', 'responsavel', (select id from catalog.entities where code = 'SYN-RLS-D'), true),
-  ('30000000-0000-4000-8000-000000000008', 'comunidade', null, false);
+  ('30000000-0000-4000-8000-000000000001', 'community', null, true),
+  ('30000000-0000-4000-8000-000000000002', 'rotarian', null, true),
+  ('30000000-0000-4000-8000-000000000003', 'responsible', (select id from catalog.entities where code = 'SYN-RLS-A'), true),
+  ('30000000-0000-4000-8000-000000000004', 'responsible', (select id from catalog.entities where code = 'SYN-RLS-B'), true),
+  ('30000000-0000-4000-8000-000000000005', 'responsible', (select id from catalog.entities where code = 'SYN-RLS-C'), true),
+  ('30000000-0000-4000-8000-000000000006', 'substitute', (select id from catalog.entities where code = 'SYN-RLS-C'), true),
+  ('30000000-0000-4000-8000-000000000007', 'responsible', (select id from catalog.entities where code = 'SYN-RLS-D'), true),
+  ('30000000-0000-4000-8000-000000000008', 'community', null, false);
 
 insert into catalog.entity_contact_settings (entity_id, substitute_mode)
 select id, code = 'SYN-RLS-C'
@@ -75,11 +78,11 @@ insert into catalog.contact_destinations (
   is_active
 )
 values
-  ((select id from catalog.entities where code = 'SYN-RLS-A'), 'responsavel', '30000000-0000-4000-8000-000000000003', '+12025550131', null, true),
-  ((select id from catalog.entities where code = 'SYN-RLS-B'), 'responsavel', '30000000-0000-4000-8000-000000000004', null, '+12025550132', true),
-  ((select id from catalog.entities where code = 'SYN-RLS-C'), 'responsavel', '30000000-0000-4000-8000-000000000005', '+12025550133', null, true),
-  ((select id from catalog.entities where code = 'SYN-RLS-C'), 'substituto', '30000000-0000-4000-8000-000000000006', '+12025550134', null, true),
-  ((select id from catalog.entities where code = 'SYN-RLS-D'), 'responsavel', '30000000-0000-4000-8000-000000000007', null, null, true);
+  ((select id from catalog.entities where code = 'SYN-RLS-A'), 'responsible', '30000000-0000-4000-8000-000000000003', '+12025550131', null, true),
+  ((select id from catalog.entities where code = 'SYN-RLS-B'), 'responsible', '30000000-0000-4000-8000-000000000004', null, '+12025550132', true),
+  ((select id from catalog.entities where code = 'SYN-RLS-C'), 'responsible', '30000000-0000-4000-8000-000000000005', '+12025550133', null, true),
+  ((select id from catalog.entities where code = 'SYN-RLS-C'), 'substitute', '30000000-0000-4000-8000-000000000006', '+12025550134', null, true),
+  ((select id from catalog.entities where code = 'SYN-RLS-D'), 'responsible', '30000000-0000-4000-8000-000000000007', null, null, true);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'catalog.community_contacts'::regclass),
@@ -374,10 +377,10 @@ select is(
     select count(*)::integer
     from catalog.community_contacts
     where user_id = '30000000-0000-4000-8000-000000000001'
-      and situacao = 'novo'::catalog.contact_situation
+      and status = 'new'::catalog.contact_status
   ),
   3,
-  'C9 newly created contacts use the normalized situation novo'
+  'C9 newly created contacts use the normalized situation new'
 );
 
 select * from finish();
