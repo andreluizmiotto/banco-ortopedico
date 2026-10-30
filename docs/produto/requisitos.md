@@ -83,8 +83,8 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 ### Catalogo e descoberta
 
 - **FR-001**: o visitante deve conseguir consultar a lista de tipos de equipamento ativos.
-- **FR-002**: cada tipo deve exibir nome, foto opcional, descricao curta e disponibilidade em linguagem simples; a disponibilidade agregada e derivada da contagem de unidades fisicas cuja coluna tecnica `catalog.equipment_units.situacao` vale `disponivel`, por tipo e entidade proprietaria. A interface usa o rotulo **Disponível no depósito**; os demais valores e rotulos estao em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
-- **FR-003**: o detalhe do tipo deve mostrar um cartao por banco que possua aquele tipo, inclusive quando a quantidade disponivel for zero; nesse caso, exibe exatamente `Todos emprestados no momento`. Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos cartoes sem disponibilidade. A API anonima de disponibilidade retorna somente o nome do banco e a quantidade disponivel, sem identificadores individuais.
+- **FR-002**: cada tipo deve exibir nome, foto opcional, descricao curta e disponibilidade em linguagem simples; a disponibilidade agregada e derivada da contagem de unidades fisicas cuja coluna tecnica `catalog.equipment_units.status` vale `available`, por tipo e entidade proprietaria. A interface usa o rotulo **Disponível para empréstimo**; os demais valores e rotulos estao em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
+- **FR-003**: o detalhe do tipo deve mostrar um cartao por banco que possua aquele tipo, inclusive quando a quantidade disponivel for zero; nesse caso, exibe exatamente `Nenhum disponível no momento`. Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos cartoes sem disponibilidade. A API anonima de disponibilidade retorna somente o nome do banco e a quantidade disponivel, sem identificadores individuais.
 - **FR-004**: o catalogo deve permitir busca textual simples por equipamento, sem filtros avancados no MVP.
 - **FR-005**: a comunidade deve retornar ao equipamento originalmente solicitado depois de concluir cadastro ou entrada.
 
@@ -115,14 +115,14 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 - **FR-022**: o administrador deve registrar devolucao total ou parcial, estado na devolucao e destino posterior do equipamento.
 - **FR-023**: o sistema deve registrar doacao definitiva separadamente de emprestimo.
 - **FR-024**: o administrador deve registrar tentativas de contato e nova data de revisao.
-- **FR-025**: o estoque deve exibir, por tipo, contagens derivadas das unidades fisicas com os rotulos **Disponível no depósito**, **Emprestado**, **Em manutenção**, **Doado** e **Retirado do acervo**, e destacar indisponibilidade ou estoque abaixo do minimo configurado; nao ha quantidade agregada editavel paralela. Os valores tecnicos correspondentes sao definidos em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
+- **FR-025**: o estoque deve exibir, por tipo, contagens derivadas das unidades fisicas com os rotulos **Disponível para empréstimo**, **Reservado para retirada**, **Emprestado**, **Em conserto**, **Doado** e **Fora de uso**, e destacar indisponibilidade ou estoque abaixo do minimo configurado; nao ha quantidade agregada editavel paralela. Os valores tecnicos correspondentes sao definidos em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 
 ### Organizacao e administracao
 
 - **FR-026**: o administrador do banco deve administrar somente registros permitidos para seu escopo.
 - **FR-027**: o administrador geral deve administrar entidades, pontos de atendimento, tipos, modelos de documento e permissoes.
 - **FR-028**: o quadro de situacao deve permitir corrigir movimentos administrativos com confirmacao e justificativa.
-- **FR-029**: o quadro de propriedade e ponto de guarda deve distinguir o dono do equipamento e o ponto onde ele esta guardado.
+- **FR-029**: o quadro de propriedade e local deve distinguir o dono do equipamento do local onde ele esta guardado, exibido como **Onde está guardado**.
 - **FR-030**: o quadro de acessos deve permitir solicitar, liberar e retirar acesso sem apagar a conta de comunidade.
 - **FR-031**: alteracoes de dados, permissoes, acervo e emprestimos devem gerar registro de auditoria.
 
@@ -152,7 +152,7 @@ Uma pessoa pode ter mais de um papel. O sistema nao deve criar contas duplicadas
 - **NFR-002**: nenhuma tela principal pode exigir rolagem horizontal em viewport de 360 px.
 - **NFR-003**: dados entre bancos devem ser isolados por RLS no Supabase e testados diretamente contra a API.
 - **NFR-004**: o servidor nunca deve devolver dados pessoais de terceiros a consultas do papel Companheiro, inclusive primeiro nome, bairro ou linhas de emprestimo; dados proprios so podem ser acessados pelo papel Comunidade e pelo titular.
-- **NFR-005**: CPF, telefone e nome nao podem aparecer em URL, logs de aplicacao ou mensagens de erro.
+- **NFR-005**: CPF, telefone e nome nao podem aparecer em URLs internas, logs de aplicacao ou mensagens de erro. A unica excecao e o telefone do destinatario autorizado, que pode aparecer exclusivamente nos links externos `https://wa.me/...` e `tel:` apresentados a uma pessoa autenticada e autorizada. CPF, nome e telefone de pessoas atendidas continuam proibidos em qualquer URL, log ou mensagem de erro.
 - **NFR-006**: paginas publicas devem ser leves e imagens devem ter dimensoes e compressao adequadas ao celular.
 - **NFR-007**: operacoes importantes devem ser idempotentes ou protegidas contra duplo envio.
 - **NFR-008**: backups, restauracao e retencao devem ser configurados no ambiente Supabase conforme a politica operacional do projeto.

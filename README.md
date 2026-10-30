@@ -60,10 +60,10 @@ participantes. A documentação do produto fica em [`docs/README.md`](docs/READM
 
 ## Acesso administrativo local
 
-Depois do reset local, a fixture sintética de `supabase/seed.sql` permite testar
+Depois do reset local, a fixture fictícia de `supabase/seed.sql` permite testar
 `/admin/entrar` com:
 
-- **E-mail:** `admin-rotary-boa-vista@banco-ortopedico.test`
+- **E-mail:** `admin.boavista@rotary.test`
 - **Senha:** `Rotary-Local-Synthetic-2026!`
 
 Essas credenciais são públicas e exclusivas para desenvolvimento local; nunca as
@@ -72,9 +72,10 @@ execute o passo 4 novamente para recriar a identidade com o `instance_id` espera
 por Supabase Auth.
 
 Após a entrada válida, a aplicação redireciona para `/admin/contatos`. A tela mostra
-os contatos do banco vinculado à sessão, permite pesquisar pelo código da mensagem
-e registrar uma única mudança de situação. `Virou empréstimo` é apenas a situação do
-contato; não cria um empréstimo. Use somente dados sintéticos neste ambiente local.
+os pedidos de contato do banco vinculado à sessão, permite pesquisar pelo código que
+veio na mensagem e registrar uma única mudança de situação. `Empréstimo feito` é
+apenas a situação do pedido; não cria um empréstimo. Use somente dados fictícios
+neste ambiente local.
 
 ## Validação permitida
 

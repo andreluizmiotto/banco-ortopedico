@@ -13,7 +13,7 @@ Os testes devem usar dados sinteticos e contas de teste. Nenhum nome, CPF, telef
 
 ## 2. Criterios funcionais
 
-- **AC-001**: o visitante consegue listar equipamentos, abrir um detalhe e ver disponibilidade agregada sem autenticar; a quantidade e derivada da contagem de unidades fisicas cuja coluna tecnica `catalog.equipment_units.situacao` vale `disponivel`, por tipo e entidade proprietaria. A interface usa o rotulo **Disponível no depósito**. O cartao de um banco permanece visivel com quantidade zero e mostra `Todos emprestados no momento`; bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos demais. A acao para conversar permanece visivel com quantidade zero: `Entrar para conversar` para visitante sem sessao aponta para `/entrar`; `Conversar no WhatsApp` fica para pessoa autenticada com papel Comunidade.
+- **AC-001**: o visitante consegue listar equipamentos, abrir um detalhe e ver disponibilidade agregada sem autenticar; a quantidade e derivada da contagem de unidades fisicas cuja coluna tecnica `catalog.equipment_units.status` vale `available`, por tipo e entidade proprietaria. A interface usa o rotulo **Disponível para empréstimo**. O cartao de um banco permanece visivel com quantidade zero e mostra `Nenhum disponível no momento`; bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta, seguidos pelos demais. A acao para conversar permanece visivel com quantidade zero: `Entrar para conversar` para visitante sem sessao aponta para `/entrar`; `Conversar no WhatsApp` fica para pessoa autenticada com papel Comunidade.
 - **AC-002**: a consulta anonima de disponibilidade retorna somente nome do banco e quantidade disponivel; nao revela identificadores de unidades, movimentacoes, emprestimos, dados pessoais, telefone, endereco, mapa ou link/destino de WhatsApp.
 - **AC-003**: uma pessoa consegue criar cadastro com CPF valido, confirmar telefone, criar senha de pelo menos oito caracteres sem informar endereco residencial e voltar ao equipamento originalmente escolhido.
 - **AC-004**: uma pessoa consegue entrar com CPF com e sem pontuacao, desde que a senha esteja correta.
@@ -23,8 +23,8 @@ Os testes devem usar dados sinteticos e contas de teste. Nenhum nome, CPF, telef
 - **AC-008**: contatos repetidos na janela de deduplicacao nao geram duplicidade indevida.
 - **AC-009**: o modo substituto altera o destinatario do novo contato sem alterar historico de contatos anteriores.
 - **AC-010**: dois administradores conseguem registrar entrada, emprestimo com termo e devolucao sem ajuda, cada tarefa em ate tres minutos depois do treinamento.
-- **AC-011**: uma devolucao pode definir a situacao tecnica `disponivel`, `manutencao` ou `baixado`, conforme a condicao do equipamento; os rotulos de tela correspondentes estao em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
-- **AC-012**: uma doacao definitiva define a situacao tecnica `doado`, sai da disponibilidade e permanece no historico.
+- **AC-011**: uma devolucao pode definir a status tecnica `available`, `under_maintenance` ou `written_off`, conforme a condicao do equipamento; os rotulos de tela correspondentes estao em [Regras de Negocio](regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
+- **AC-012**: uma doacao definitiva define a situacao tecnica `donated`, sai da disponibilidade e permanece no historico.
 - **AC-013**: lembretes mostram emprestimos vencendo, vencidos e revisoes pendentes.
 - **AC-014**: o termo de cada entidade usa o modelo e os campos corretos, sem clausula obrigatoria de imagem e com o texto de privacidade aprovado.
 - **AC-015**: a pessoa consegue consultar, corrigir, baixar e solicitar exclusao dos proprios dados.

@@ -21,10 +21,10 @@ Nao criar coluna de senha ou de hash de senha na tabela de perfil. Hashes e sess
 
 Relacao entre pessoa, papel, entidade e situacao de acesso:
 
-- `comunidade`;
-- `companheiro`;
-- `admin_banco`;
-- `admin_geral`.
+- `community`;
+- `rotarian`;
+- `bank_admin`;
+- `general_admin`.
 
 Uma pessoa pode ter mais de um papel e mais de um vinculo institucional. Administradores de banco sempre precisam de escopo de entidade.
 
@@ -36,7 +36,7 @@ Representa organizacao mantenedora ou vinculadora. Campos conceituais: nome ofic
 
 ### Ponto de atendimento
 
-Representa um ponto fisico compartilhavel entre entidades. A tabela tecnica atual e `catalog.pontos_atendimento`; na interface, use **Ponto de atendimento** ou **Local de atendimento**, nunca o nome da tabela. Campos conceituais: nome, endereco, referencia, coordenadas, horario e imagem opcional.
+Representa um ponto fisico compartilhavel entre entidades. A tabela tecnica atual e `catalog.storage_locations`; na interface, use **Onde está guardado** ou **Local de atendimento**, nunca o nome da tabela. Campos conceituais: nome, endereco, referencia, coordenadas, horario e imagem opcional.
 
 O relacionamento entre entidade e ponto de atendimento deve suportar atendimento itinerante, ponto de apoio e mais de uma entidade usando o mesmo ponto.
 
@@ -57,22 +57,22 @@ O acervo operacional representa cada peca fisica por uma unidade individual, inc
 Conceitos associados:
 
 - entidade proprietaria;
-- ponto atual de guarda, distinto da propriedade; a coluna tecnica `storage_location_id` referencia `catalog.pontos_atendimento`;
+- ponto atual de guarda, distinto da propriedade; a coluna tecnica `storage_location_id` referencia `catalog.storage_locations`;
 - tipo de equipamento;
 - situacao e condicao;
 - largura, origem, doador e observacoes quando aplicaveis;
 - fotos privadas ou publicas conforme classificacao.
 
-Na implementacao atual, a unidade fica em `catalog.equipment_units`; a situacao e
-gravada em `catalog.equipment_units.situacao` como um valor de
-`catalog.equipment_situation`. Os valores tecnicos e seus rotulos de tela estao
+Na implementacao atual, a unidade fica em `catalog.equipment_units`; a status e
+gravada em `catalog.equipment_units.status` como um valor de
+`catalog.equipment_status`. Os valores tecnicos e seus rotulos de tela estao
 em [Regras de Negocio](../produto/regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 
 A carga inicial de saldo N cria N registros individuais sem codigo visivel. Na Fase 2, a conferencia fisica atribui codigos as mesmas unidades, sem converter uma contagem agregada ou duplicar registros. O saldo informado deve ser preservado e as divergencias registradas, sem correcao silenciosa. A regra operacional para tratar a diferenca entre N informado e a quantidade fisica encontrada, inclusive unidades em emprestimos abertos, continua em aberto.
 
 ### Disponibilidade agregada
 
-A disponibilidade publica e um agregado de consulta derivado da contagem de unidades por tipo, entidade proprietaria e situacao. Somente unidades com `catalog.equipment_units.situacao = 'disponivel'` contam como disponiveis; `reservado` nao conta. Na interface publica, o rotulo correspondente e **Disponível no depósito**. Nao existe saldo agregado editavel como fonte de verdade paralela. O minimo opcional por entidade e tipo e um limite de referencia, nao uma quantidade de acervo.
+A disponibilidade publica e um agregado de consulta derivado da contagem de unidades por tipo, entidade proprietaria e status. Somente unidades com `catalog.equipment_units.status = 'available'` contam como disponiveis; `reserved` nao conta. Na interface publica, o rotulo correspondente e **Disponível para empréstimo**. Nao existe saldo agregado editavel como fonte de verdade paralela. O minimo opcional por entidade e tipo e um limite de referencia, nao uma quantidade de acervo.
 
 ### Movimentacao
 

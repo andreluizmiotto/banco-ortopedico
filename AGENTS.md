@@ -26,6 +26,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - All Supabase database queries MUST enforce Row Level Security (RLS) policies to isolate data among the 4 entities (Boa Vista, Três Vendas, Casa da Amizade, and Erechim).
 - NEVER expose CPFs, phone numbers, or personal data to the client/frontend for the "Companheiro" user role.
 
+## Naming Rules
+- Banco, código e API em inglês técnico: `storage_locations`, `status`, `available`, `public_code`. Nunca `pontos_atendimento`, `situacao` ou `codigo` em identificadores novos.
+- Texto na tela em PT-BR natural e cotidiano; identificador técnico nunca vaza para a UI. Rótulos canônicos ficam em `docs/produto/regras-de-negocio.md` §4.
+- `seed.sql` usa nomes verossímeis de clube, ponto e e-mail em `.test`. Proibido "Sintético A", "Ponto AQ 1" e e-mail em domínio real.
+
 ## Testing Strategy (Lean MVP)
 - DO NOT use or install browser automation tools (Playwright, Cypress, Puppeteer).
 - UI/UX layout compliance (accessibility, 360px viewport, 56px button height) must be verified visually by the developer, NOT via automated browser code.

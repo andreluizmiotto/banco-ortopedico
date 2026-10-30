@@ -10,7 +10,7 @@ classDiagram
         <<mantenedora ou vinculadora>>
     }
     class PontoAtendimento {
-        <<tabela catalog.pontos_atendimento>>
+        <<tabela catalog.storage_locations>>
         <<ponto fisico>>
     }
     class UnidadeFisica {
@@ -33,4 +33,4 @@ classDiagram
 
     note for UnidadeFisica "Identidade interna unica; codigo visivel de etiqueta ou QR pode ser nulo.<br/>Fase 1: saldo N cria N unidades. Fase 2: atribui codigos as mesmas unidades apos conferencia.<br/>Preservar o saldo e registrar divergencias; regra de tratamento, inclusive para emprestimos abertos, permanece em aberto."
     note for LinhaEmprestimo "Cada linha referencia uma unidade fisica. A unidade nao pode estar em mais de um emprestimo ativo."
-    note for TipoEquipamento "Disponibilidade agregada deriva de catalog.equipment_units.situacao = 'disponivel'; 'reservado' e espera informal, sem ciclo automatico de reserva. Valores tecnicos: disponivel, reservado, emprestado, manutencao, doado e baixado. Rotulos de tela: Regras de Negocio. Nao ha saldo agregado editavel."
+    note for TipoEquipamento "Disponibilidade agregada deriva de catalog.equipment_units.status = 'available'; 'reserved' e espera informal, sem ciclo automatico de reserva. Valores tecnicos: available, reserved, on_loan, under_maintenance, donated e written_off. Rotulos de tela: Regras de Negocio. Nao ha saldo agregado editavel."

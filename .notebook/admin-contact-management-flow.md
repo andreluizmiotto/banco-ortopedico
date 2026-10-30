@@ -6,19 +6,19 @@ Entry: `src/app/admin/contatos/page.tsx:AdminContactsData()` →
 `src/lib/auth/admin-bank.ts:resolveAdminBankAccess()`.
 
 Read: `public.admin_bank_contacts(text)` derives the bank from the active
-`admin_banco` session and returns its canonical public name, contact code,
-situation, and the `destaque_48_horas` boolean. PostgreSQL computes the 48-hour
+`bank_admin` session and returns its canonical public name, contact code,
+situation, and the `overdue_48h` boolean. PostgreSQL computes the 48-hour
 threshold from `created_at`; neither the timestamp nor another contact field
 reaches the browser. Search accepts only `^[A-F0-9]{12}$`.
 
 Change: `src/app/admin/contatos/actions.ts:setAdminContactSituationAction()` →
 `src/lib/contacts/admin-server.ts:changeAdminContactSituation()` →
-`public.admin_set_contact_situation(text,text)`. The database locks the contact,
-allows one transition from `novo`, updates only `situacao`, and writes one audit
+`public.admin_set_contact_status(text,text)`. The database locks the contact,
+allows one transition from `new`, updates only `status`, and writes one audit
 row in the same transaction. Repeating the same target is idempotent;
-`virou_emprestimo` does not create a loan.
+`converted_to_loan` does not create a loan.
 
-Database: `supabase/migrations/20261022000000_contatos_administrativos.sql`,
+Database: `supabase/migrations/20261022000000_admin_contacts.sql`,
 `20261025000000_admin_contact_manager_checker_membership.sql`, and
 `20261026000000_admin_contact_highlight_dto.sql` and
 `20261027000000_admin_contact_highlight_boundary.sql` —
