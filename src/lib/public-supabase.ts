@@ -10,7 +10,7 @@ function getPublicClient() {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    throw new Error("Configuracao publica do acervo indisponivel.");
+    throw new Error("Configuracao publica dos equipamentos indisponivel.");
   }
 
   publicClient = createClient(url, anonKey, {

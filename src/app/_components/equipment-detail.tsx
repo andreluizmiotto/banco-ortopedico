@@ -29,9 +29,9 @@ function BankCard({
         </span>
       </div>
       {bank.available_quantity > 0 ? (
-        <p className="availability-label">Disponível no depósito</p>
+        <p className="availability-label">Disponível para empréstimo</p>
       ) : (
-        <p className="availability-empty">Todos emprestados no momento</p>
+        <p className="availability-empty">Nenhum disponível no momento</p>
       )}
       {contactMethod === undefined ? (
         <Link className="primary-action" href="/entrar">
@@ -68,8 +68,8 @@ export async function EquipmentDetail({ code }: { code: string }) {
     if (!equipment) {
       return (
         <PublicLayout
-          title="Disponibilidade por banco"
-          introduction="Veja a quantidade disponível em cada banco mantenedor."
+          title="Onde tem equipamento"
+          introduction="Veja onde tem equipamento em cada banco responsável."
           backLink={{ href: "/", label: "Voltar para os equipamentos" }}
         >
           <p className="empty-state body-copy">
@@ -83,8 +83,8 @@ export async function EquipmentDetail({ code }: { code: string }) {
   } catch {
     return (
       <PublicLayout
-        title="Disponibilidade por banco"
-        introduction="Veja a quantidade disponível em cada banco mantenedor."
+        title="Onde tem equipamento"
+        introduction="Veja onde tem equipamento em cada banco responsável."
         backLink={{ href: "/", label: "Voltar para os equipamentos" }}
       >
         <div className="remote-state error-state" role="alert">
@@ -105,12 +105,12 @@ export async function EquipmentDetail({ code }: { code: string }) {
   return (
     <PublicLayout
       title={equipment.name}
-      introduction="Veja a quantidade disponível em cada banco mantenedor."
+      introduction="Veja onde tem equipamento em cada banco responsável."
       backLink={{ href: "/", label: "Voltar para os equipamentos" }}
     >
       {banks.length === 0 ? (
         <p className="empty-state body-copy">
-          Nenhum banco cadastrou este tipo de equipamento.
+          Nenhum banco tem este equipamento cadastrado.
         </p>
       ) : (
         <ul className="bank-list">

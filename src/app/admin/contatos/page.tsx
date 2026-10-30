@@ -24,7 +24,7 @@ async function AdminContactsData({
   searchParams: PageProps<"/admin/contatos">["searchParams"];
 }) {
   const params = await searchParams;
-  const rawCode = params.codigo;
+  const rawCode = params.code;
   const searchCode =
     rawCode === undefined ? null : typeof rawCode === "string" ? rawCode : "";
   const result = await getAdminContactsPageData(searchCode);
@@ -34,8 +34,8 @@ async function AdminContactsData({
   if (result.kind === "forbidden") {
     return (
       <AdminContactsLayout
-        title="Contatos recebidos"
-        introduction="Acompanhe os contatos destinados ao seu banco."
+        title="Pedidos de contato"
+        introduction="Acompanhe os pedidos de contato destinados ao seu banco."
       >
         <div
           className="remote-state admin-contacts-state"
@@ -43,7 +43,7 @@ async function AdminContactsData({
           aria-live="polite"
         >
           <p className="body-copy">
-            Você não tem permissão para acessar os contatos deste banco.
+            Você não tem permissão para acessar os pedidos deste banco.
           </p>
           <Link className="secondary-action" href="/admin/entrar">
             Voltar à entrada
@@ -56,8 +56,8 @@ async function AdminContactsData({
   if (result.kind === "error") {
     return (
       <AdminContactsLayout
-        title="Contatos recebidos"
-        introduction="Acompanhe os contatos destinados ao seu banco."
+        title="Pedidos de contato"
+        introduction="Acompanhe os pedidos de contato destinados ao seu banco."
       >
         <div
           className="remote-state admin-contacts-state error-state"
@@ -65,7 +65,7 @@ async function AdminContactsData({
           aria-live="assertive"
         >
           <p className="body-copy">
-            Não foi possível carregar os contatos. Tente novamente.
+            Não foi possível carregar os pedidos. Tente novamente.
           </p>
           <Link className="secondary-action" href={retryHref(searchCode)}>
             Tentar novamente
@@ -78,11 +78,11 @@ async function AdminContactsData({
   return (
     <AdminContactsLayout
       eyebrow="Painel do banco"
-      title={`Contatos de ${result.bankName}`}
-      introduction="Pesquise pelo código da mensagem ou acompanhe a situação de cada contato."
+      title={`Pedidos de ${result.bankName}`}
+      introduction="Pesquise pelo código que veio na mensagem ou acompanhe a situação de cada pedido."
     >
       <AdminContactsManager
-        key={result.searchCode ?? "todos-os-contatos"}
+        key={result.searchCode ?? "todos-os-pedidos"}
         contacts={result.contacts}
         searchCode={result.searchCode}
       />
@@ -117,12 +117,12 @@ function AdminContactsLayout({
 function AdminContactsLoadingPage() {
   return (
     <AdminContactsLayout
-      title="Contatos recebidos"
-      introduction="Acompanhe os contatos destinados ao seu banco."
+      title="Pedidos de contato"
+      introduction="Acompanhe os pedidos de contato destinados ao seu banco."
     >
       <div className="remote-state" role="status" aria-live="polite">
         <span className="loading-indicator" aria-hidden="true" />
-        <p className="body-copy">Carregando os contatos...</p>
+        <p className="body-copy">Carregando os pedidos...</p>
       </div>
     </AdminContactsLayout>
   );
@@ -131,5 +131,5 @@ function AdminContactsLoadingPage() {
 function retryHref(searchCode: string | null): string {
   if (searchCode === null) return "/admin/contatos";
   if (searchCode.length > 12) return "/admin/contatos";
-  return `/admin/contatos?codigo=${encodeURIComponent(searchCode)}`;
+  return `/admin/contatos?code=${encodeURIComponent(searchCode)}`;
 }

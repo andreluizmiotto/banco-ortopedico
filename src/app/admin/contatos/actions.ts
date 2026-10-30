@@ -1,6 +1,6 @@
 "use server";
 
-import { changeAdminContactSituation } from "../../../lib/contacts/admin-server";
+import { changeAdminContactStatus } from "../../../lib/contacts/admin-server";
 import type { AdminContactChangeState } from "../../../lib/contacts/admin-types";
 
 function formText(formData: FormData, key: string): string | null {
@@ -8,13 +8,13 @@ function formText(formData: FormData, key: string): string | null {
   return typeof value === "string" ? value : null;
 }
 
-export async function setAdminContactSituationAction(
+export async function setAdminContactStatusAction(
   formData: FormData,
 ): Promise<AdminContactChangeState> {
-  const codigo = formText(formData, "codigo");
-  const situation = formText(formData, "situacao");
+  const publicCode = formText(formData, "publicCode");
+  const status = formText(formData, "status");
 
-  if (!codigo || !situation) return { kind: "forbidden" };
+  if (!publicCode || !status) return { kind: "forbidden" };
 
-  return changeAdminContactSituation(codigo, situation);
+  return changeAdminContactStatus(publicCode, status);
 }

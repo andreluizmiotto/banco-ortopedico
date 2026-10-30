@@ -162,7 +162,7 @@ if (checks.includes('C4')) {
   const privateResources = [
     { path: '/rest/v1/equipment_units', schema: 'catalog' },
     { path: '/rest/v1/entities', schema: 'catalog' },
-    { path: '/rest/v1/pontos_atendimento', schema: 'catalog' },
+    { path: '/rest/v1/storage_locations', schema: 'catalog' },
     { path: '/rest/v1/equipment_movements' },
     { path: '/rest/v1/loans' },
     { path: '/rest/v1/loan_items' },

@@ -663,7 +663,7 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.admin-contact-situation {
+.admin-contact-status {
   min-width: 0;
   margin: 0;
   font-size: 20px;
@@ -672,19 +672,19 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.situation-novo {
+.status-new {
   color: var(--charcoal);
 }
 
-.situation-atendido {
+.status-answered {
   color: var(--available-green);
 }
 
-.situation-virou_emprestimo {
+.status-converted_to_loan {
   color: var(--rotary-blue);
 }
 
-.situation-sem_retorno {
+.status-no_response {
   color: var(--overdue-red);
 }
 
@@ -841,15 +841,15 @@ h1 {
   }
 }
 
-.admin-acervo {
+.admin-inventory {
   display: grid;
   min-width: 0;
   gap: 24px;
 }
 
-.acervo-summary,
-.acervo-card,
-.acervo-group {
+.inventory-summary,
+.inventory-card,
+.inventory-group {
   min-width: 0;
   padding: 20px;
   border: 1px solid var(--line);
@@ -859,11 +859,11 @@ h1 {
   box-shadow: 0 5px 16px rgb(23 69 143 / 6%);
 }
 
-.acervo-summary h2,
-.acervo-card h2,
-.acervo-section-heading,
-.acervo-group-heading,
-.acervo-empty h3 {
+.inventory-summary h2,
+.inventory-card h2,
+.inventory-section-heading,
+.inventory-group-heading,
+.inventory-empty h3 {
   margin: 0;
   color: var(--rotary-blue);
   font-size: 26px;
@@ -872,7 +872,7 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.acervo-summary-list {
+.inventory-summary-list {
   display: grid;
   min-width: 0;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -882,7 +882,7 @@ h1 {
   list-style: none;
 }
 
-.acervo-summary-list > li {
+.inventory-summary-list > li {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -893,7 +893,7 @@ h1 {
   background: var(--page-paper);
 }
 
-.acervo-summary-label {
+.inventory-summary-label {
   min-width: 0;
   font-size: 18px;
   font-weight: 700;
@@ -901,20 +901,20 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.acervo-summary-value {
+.inventory-summary-value {
   color: var(--rotary-blue);
   font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
 }
 
-.acervo-card {
+.inventory-card {
   display: grid;
   min-width: 0;
   gap: 16px;
 }
 
-.acervo-form {
+.inventory-form {
   display: grid;
   min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -922,11 +922,11 @@ h1 {
   gap: 16px;
 }
 
-.acervo-form .form-field {
+.inventory-form .form-field {
   min-width: 0;
 }
 
-.acervo-form .form-field select {
+.inventory-form .form-field select {
   width: 100%;
   min-width: 0;
   min-height: 56px;
@@ -940,37 +940,37 @@ h1 {
   font-weight: 500;
 }
 
-.acervo-form .form-field select:focus-visible {
+.inventory-form .form-field select:focus-visible {
   outline: 3px solid var(--rotary-blue);
   outline-offset: 3px;
 }
 
-.acervo-form .primary-action {
+.inventory-form .primary-action {
   margin: 0;
 }
 
-.acervo-form .field-error,
-.acervo-form .acervo-pending,
-.acervo-form .primary-action {
+.inventory-form .field-error,
+.inventory-form .inventory-pending,
+.inventory-form .primary-action {
   grid-column: 1 / -1;
 }
 
-.acervo-pending {
+.inventory-pending {
   display: flex;
   min-width: 0;
   align-items: center;
   gap: 12px;
 }
 
-.acervo-pending .loading-indicator {
+.inventory-pending .loading-indicator {
   flex: 0 0 28px;
 }
 
-.acervo-pending .body-copy {
+.inventory-pending .body-copy {
   margin: 0;
 }
 
-.acervo-confirmation {
+.inventory-confirmation {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -978,30 +978,30 @@ h1 {
   gap: 12px;
 }
 
-.acervo-confirmation .body-copy {
+.inventory-confirmation .body-copy {
   margin: 0;
   color: var(--available-green);
   font-weight: 700;
 }
 
-.acervo-confirmation .secondary-action {
+.inventory-confirmation .secondary-action {
   margin: 0;
 }
 
-.acervo-groups {
+.inventory-groups {
   display: grid;
   min-width: 0;
   gap: 20px;
   margin-top: 16px;
 }
 
-.acervo-group {
+.inventory-group {
   display: grid;
   min-width: 0;
   gap: 16px;
 }
 
-.acervo-unit-list {
+.inventory-unit-list {
   display: grid;
   min-width: 0;
   gap: 12px;
@@ -1010,7 +1010,7 @@ h1 {
   list-style: none;
 }
 
-.acervo-unit-card {
+.inventory-unit-card {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -1022,7 +1022,7 @@ h1 {
   background: var(--page-paper);
 }
 
-.acervo-unit-heading {
+.inventory-unit-heading {
   display: flex;
   min-width: 0;
   flex-wrap: wrap;
@@ -1031,7 +1031,7 @@ h1 {
   gap: 8px;
 }
 
-.acervo-unit-code {
+.inventory-unit-code {
   min-width: 0;
   margin: 0;
   color: var(--rotary-blue);
@@ -1041,7 +1041,7 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.acervo-unit-situation {
+.inventory-unit-status {
   min-width: 0;
   margin: 0;
   font-size: 20px;
@@ -1050,7 +1050,7 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.acervo-unit-details {
+.inventory-unit-details {
   display: grid;
   min-width: 0;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -1058,17 +1058,17 @@ h1 {
   margin: 0;
 }
 
-.acervo-unit-details div {
+.inventory-unit-details div {
   min-width: 0;
 }
 
-.acervo-unit-details dt {
+.inventory-unit-details dt {
   font-size: 18px;
   font-weight: 700;
   line-height: 1.35;
 }
 
-.acervo-unit-details dd {
+.inventory-unit-details dd {
   min-width: 0;
   margin: 0;
   font-size: 18px;
@@ -1076,16 +1076,16 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.acervo-unit-card .secondary-action {
+.inventory-unit-card .secondary-action {
   margin: 0;
 }
 
-.acervo-edit-form {
+.inventory-edit-form {
   border-top: 2px solid var(--line);
   padding-top: 12px;
 }
 
-.acervo-edit-actions {
+.inventory-edit-actions {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -1093,11 +1093,11 @@ h1 {
   grid-column: 1 / -1;
 }
 
-.acervo-edit-actions .secondary-action {
+.inventory-edit-actions .secondary-action {
   margin: 0;
 }
 
-.acervo-close-action {
+.inventory-close-action {
   min-height: 56px;
   padding: 8px;
   border: 0;
@@ -1111,25 +1111,25 @@ h1 {
   text-underline-offset: 4px;
 }
 
-.acervo-close-action:focus-visible {
+.inventory-close-action:focus-visible {
   outline: 3px solid var(--rotary-blue);
   outline-offset: 3px;
 }
 
-.acervo-empty {
+.inventory-empty {
   min-width: 0;
   margin-top: 16px;
 }
 
-.acervo-empty .body-copy {
+.inventory-empty .body-copy {
   margin: 0;
 }
 
-.acervo-empty .secondary-action {
+.inventory-empty .secondary-action {
   margin: 0;
 }
 
-.admin-acervo .secondary-action:focus-visible {
+.admin-inventory .secondary-action:focus-visible {
   outline-color: var(--rotary-blue);
 }
 
@@ -1144,24 +1144,24 @@ h1 {
     gap: 0;
   }
 
-  .acervo-summary,
-  .acervo-card,
-  .acervo-group {
+  .inventory-summary,
+  .inventory-card,
+  .inventory-group {
     padding: 18px;
   }
 
-  .acervo-summary-list {
+  .inventory-summary-list {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .acervo-form {
+  .inventory-form {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .acervo-form .field-error,
-  .acervo-form .acervo-pending,
-  .acervo-form .primary-action,
-  .acervo-edit-actions {
+  .inventory-form .field-error,
+  .inventory-form .inventory-pending,
+  .inventory-form .primary-action,
+  .inventory-edit-actions {
     grid-column: auto;
   }
 }

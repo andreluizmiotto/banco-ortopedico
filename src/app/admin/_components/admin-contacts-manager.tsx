@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import {
-  adminContactSituationLabels,
+  adminContactStatusLabels,
   type AdminContact,
   type AdminContactChangeState,
-  type AdminContactDestination,
+  type AdminContactOutcome,
 } from "../../../lib/contacts/admin-types";
-import { setAdminContactSituationAction } from "../contatos/actions";
+import { setAdminContactStatusAction } from "../contatos/actions";
 
 type Props = {
   contacts: AdminContact[];
@@ -30,14 +30,14 @@ export function AdminContactsManager({
         role="search"
       >
         <label className="form-field" htmlFor="contact-code-search">
-          <span>Código do contato na mensagem</span>
+          <span>Código que veio na mensagem</span>
           <input
             autoCapitalize="off"
             autoComplete="off"
             id="contact-code-search"
             inputMode="text"
             maxLength={12}
-            name="codigo"
+            name="code"
             type="text"
             defaultValue={searchCode ?? ""}
             aria-describedby="contact-code-hint"
@@ -54,10 +54,10 @@ export function AdminContactsManager({
       <section
         aria-labelledby="admin-contact-list-heading"
         className="admin-contact-results"
-        id="lista-de-contatos"
+        id="contact-list"
       >
         <h2 className="admin-contact-section-heading" id="admin-contact-list-heading">
-          {isSearching ? "Resultado da pesquisa" : "Contatos recebidos"}
+          {isSearching ? "Resultado da pesquisa" : "Pedidos de contato"}
         </h2>
 
         {contacts.length === 0 ? (
@@ -65,7 +65,7 @@ export function AdminContactsManager({
         ) : (
           <ul className="admin-contact-list">
             {contacts.map((contact) => (
-              <li key={contact.codigo}>
+              <li key={contact.publicCode}>
                 <AdminContactCard contact={contact} />
               </li>
             ))}
@@ -79,14 +79,14 @@ export function AdminContactsManager({
 function EmptyContacts({ searchCode }: { searchCode: string | null }) {
   return (
     <div className="admin-contact-empty empty-state">
-      <h3>{searchCode === null ? "Ainda não há contatos" : "Nenhum contato encontrado"}</h3>
+      <h3>{searchCode === null ? "Ainda não há pedidos" : "Nenhum pedido encontrado"}</h3>
       <p className="body-copy">
         {searchCode === null
-          ? "Quando alguém iniciar uma conversa, o código e a situação aparecerão aqui."
+          ? "Quando alguém pedir contato, o código e a situação aparecerão aqui."
           : "Confira o código na mensagem e tente outra pesquisa."}
       </p>
       <Link className="secondary-action" href="/admin/contatos">
-        {searchCode === null ? "Atualizar contatos" : "Ver todos os contatos"}
+        {searchCode === null ? "Atualizar pedidos" : "Ver todos os pedidos"}
       </Link>
     </div>
   );
@@ -96,22 +96,22 @@ function AdminContactCard({ contact }: { contact: AdminContact }) {
   const [changeState, setChangeState] = useState<AdminContactChangeState>({
     kind: "idle",
   });
-  const [selectedSituation, setSelectedSituation] = useState<
-    AdminContactDestination | ""
+  const [selectedStatus, setSelectedStatus] = useState<
+    AdminContactOutcome | ""
   >("");
   const [pending, startTransition] = useTransition();
   const isSubmitting = useRef(false);
 
-  function submitSituation(event: FormEvent<HTMLFormElement>) {
+  function submitStatus(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting.current || !selectedSituation) return;
+    if (isSubmitting.current || !selectedStatus) return;
 
     isSubmitting.current = true;
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
       try {
-        setChangeState(await setAdminContactSituationAction(formData));
+        setChangeState(await setAdminContactStatusAction(formData));
       } catch {
         setChangeState({ kind: "error" });
       } finally {
@@ -120,21 +120,21 @@ function AdminContactCard({ contact }: { contact: AdminContact }) {
     });
   }
 
-  const situation =
-    changeState.kind === "success" ? changeState.situation : contact.situacao;
-  const fieldId = `contact-situation-${contact.codigo}`;
-  const errorId = `contact-situation-error-${contact.codigo}`;
+  const status =
+    changeState.kind === "success" ? changeState.status : contact.status;
+  const fieldId = `contact-status-${contact.publicCode}`;
+  const errorId = `contact-status-error-${contact.publicCode}`;
 
   return (
     <article className="admin-contact-card">
       <header className="admin-contact-card-heading">
-        <h3 className="admin-contact-code">{contact.codigo}</h3>
-        <p className={`admin-contact-situation situation-${situation}`}>
-          Situação: <strong>{adminContactSituationLabels[situation]}</strong>
+        <h3 className="admin-contact-code">{contact.publicCode}</h3>
+        <p className={`admin-contact-status status-${status}`}>
+          Situação: <strong>{adminContactStatusLabels[status]}</strong>
         </p>
       </header>
 
-      {contact.destaque48Horas && situation === "novo" ? (
+      {contact.overdue48Hours && status === "new" ? (
         <p className="admin-contact-overdue">
           Sem atendimento há 48 horas ou mais.
         </p>
@@ -144,20 +144,20 @@ function AdminContactCard({ contact }: { contact: AdminContact }) {
         <div className="admin-contact-confirmation">
           <p className="body-copy" role="status" aria-live="polite">
             Situação registrada como{" "}
-            <strong>{adminContactSituationLabels[changeState.situation]}</strong>.
+            <strong>{adminContactStatusLabels[changeState.status]}</strong>.
           </p>
-          <Link className="secondary-action" href="#lista-de-contatos">
-            Continuar acompanhando contatos
+          <Link className="secondary-action" href="#contact-list">
+            Continuar acompanhando pedidos
           </Link>
         </div>
       ) : changeState.kind === "conflict" ? (
         <div className="admin-contact-denied">
           <p className="body-copy" role="status" aria-live="polite">
-            Outra pessoa já registrou uma situação para este contato.
+            Outra pessoa já registrou uma situação para este pedido.
           </p>
           <Link
             className="secondary-action"
-            href={`/admin/contatos?codigo=${encodeURIComponent(contact.codigo)}`}
+            href={`/admin/contatos?code=${encodeURIComponent(contact.publicCode)}`}
           >
             Atualizar situação
           </Link>
@@ -165,19 +165,19 @@ function AdminContactCard({ contact }: { contact: AdminContact }) {
       ) : changeState.kind === "forbidden" ? (
         <div className="admin-contact-denied">
           <p className="field-error" role="alert" aria-live="assertive">
-            Você não tem permissão para alterar este contato.
+            Você não tem permissão para alterar este pedido.
           </p>
           <Link className="secondary-action" href="/admin/contatos">
-            Voltar aos contatos
+            Voltar aos pedidos
           </Link>
         </div>
-      ) : situation === "novo" ? (
+      ) : status === "new" ? (
         <form
-          onSubmit={submitSituation}
+          onSubmit={submitStatus}
           aria-busy={pending}
           className="admin-contact-change-form"
         >
-          <input type="hidden" name="codigo" value={contact.codigo} />
+          <input type="hidden" name="publicCode" value={contact.publicCode} />
           <label className="form-field" htmlFor={fieldId}>
             <span>Marcar situação</span>
             <select
@@ -185,19 +185,19 @@ function AdminContactCard({ contact }: { contact: AdminContact }) {
               aria-invalid={changeState.kind === "error"}
               disabled={pending}
               id={fieldId}
-              name="situacao"
+              name="status"
               required
-              value={selectedSituation}
+              value={selectedStatus}
               onChange={(event) =>
-                setSelectedSituation(
-                  event.currentTarget.value as AdminContactDestination | "",
+                setSelectedStatus(
+                  event.currentTarget.value as AdminContactOutcome | "",
                 )
               }
             >
               <option value="">Escolha uma situação</option>
-              <option value="atendido">Atendido</option>
-              <option value="sem_retorno">Sem retorno</option>
-              <option value="virou_emprestimo">Virou empréstimo</option>
+              <option value="answered">Já atendeu</option>
+              <option value="no_response">Não respondeu</option>
+              <option value="converted_to_loan">Empréstimo feito</option>
             </select>
           </label>
 
@@ -216,7 +216,7 @@ function AdminContactCard({ contact }: { contact: AdminContact }) {
 
           <button
             className="secondary-action"
-            disabled={pending || selectedSituation === ""}
+            disabled={pending || selectedStatus === ""}
             type="submit"
           >
             {pending

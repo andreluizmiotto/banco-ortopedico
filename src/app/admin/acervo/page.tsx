@@ -2,86 +2,86 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { PublicLayout } from "../../_components/public-layout";
-import { AdminAcervoManager } from "../_components/admin-acervo-manager";
+import { AdminInventoryManager } from "../_components/admin-inventory-manager";
 import { AdminNavigation } from "../_components/admin-navigation";
-import { getAdminAcervoPageData } from "../../../lib/acervo/admin-server";
+import { getAdminInventoryPageData } from "../../../lib/inventory/admin-server";
 
 export const instant = false;
 
-export default function AdminAcervoPage() {
+export default function AdminInventoryPage() {
   return (
-    <Suspense fallback={<AdminAcervoLoadingPage />}>
-      <AdminAcervoData />
+    <Suspense fallback={<AdminInventoryLoadingPage />}>
+      <AdminInventoryData />
     </Suspense>
   );
 }
 
-async function AdminAcervoData() {
-  const result = await getAdminAcervoPageData();
+async function AdminInventoryData() {
+  const result = await getAdminInventoryPageData();
 
   if (result.kind === "unauthenticated") redirect("/admin/entrar");
 
   if (result.kind === "forbidden") {
     return (
-      <AdminAcervoLayout
-        title="Acervo de equipamentos"
+      <AdminInventoryLayout
+        title="Equipamentos do banco"
         introduction="Acompanhe os equipamentos do seu banco."
       >
         <div
-          className="remote-state admin-acervo-state"
+          className="remote-state admin-inventory-state"
           role="status"
           aria-live="polite"
         >
           <p className="body-copy">
-            Você não tem permissão para acessar o acervo deste banco.
+            Você não tem permissão para acessar os equipamentos deste banco.
           </p>
           <Link className="secondary-action" href="/admin/entrar">
             Voltar à entrada
           </Link>
         </div>
-      </AdminAcervoLayout>
+      </AdminInventoryLayout>
     );
   }
 
   if (result.kind === "error") {
     return (
-      <AdminAcervoLayout
-        title="Acervo de equipamentos"
+      <AdminInventoryLayout
+        title="Equipamentos do banco"
         introduction="Acompanhe os equipamentos do seu banco."
       >
         <div
-          className="remote-state admin-acervo-state error-state"
+          className="remote-state admin-inventory-state error-state"
           role="alert"
           aria-live="assertive"
         >
           <p className="body-copy">
-            Não foi possível carregar o acervo. Tente novamente.
+            Não foi possível carregar os equipamentos. Tente novamente.
           </p>
           <Link className="secondary-action" href="/admin/acervo">
             Tentar novamente
           </Link>
         </div>
-      </AdminAcervoLayout>
+      </AdminInventoryLayout>
     );
   }
 
   return (
-    <AdminAcervoLayout
+    <AdminInventoryLayout
       eyebrow="Painel do banco"
-      title={`Acervo de ${result.bankName}`}
+      title={`Equipamentos de ${result.bankName}`}
       introduction="Confira a situação de cada equipamento e corrija o que a conferência encontrar."
     >
-      <AdminAcervoManager
+      <AdminInventoryManager
         bankName={result.bankName}
         locations={result.locations}
         types={result.types}
         units={result.units}
       />
-    </AdminAcervoLayout>
+    </AdminInventoryLayout>
   );
 }
 
-function AdminAcervoLayout({
+function AdminInventoryLayout({
   title,
   introduction,
   eyebrow,
@@ -105,16 +105,16 @@ function AdminAcervoLayout({
   );
 }
 
-function AdminAcervoLoadingPage() {
+function AdminInventoryLoadingPage() {
   return (
-    <AdminAcervoLayout
-      title="Acervo de equipamentos"
-      introduction="Aguarde enquanto carregamos o acervo do seu banco."
+    <AdminInventoryLayout
+      title="Equipamentos do banco"
+      introduction="Aguarde enquanto carregamos os equipamentos do seu banco."
     >
       <div className="remote-state" role="status" aria-live="polite">
         <span className="loading-indicator" aria-hidden="true" />
-        <p className="body-copy">Carregando o acervo...</p>
+        <p className="body-copy">Carregando os equipamentos...</p>
       </div>
-    </AdminAcervoLayout>
+    </AdminInventoryLayout>
   );
 }

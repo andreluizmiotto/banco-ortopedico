@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 const tasks = [
-  { href: "/admin/contatos", label: "Contatos recebidos" },
-  { href: "/admin/acervo", label: "Acervo de equipamentos" },
+  { href: "/admin/contatos", label: "Pedidos de contato" },
+  { href: "/admin/acervo", label: "Equipamentos do banco" },
 ] as const;
 
 export function AdminNavigation({

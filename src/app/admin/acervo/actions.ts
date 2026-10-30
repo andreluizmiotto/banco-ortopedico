@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import {
   createAdminEquipmentUnit,
   updateAdminEquipmentUnit,
-} from "../../../lib/acervo/admin-server";
-import type { EquipmentMutationState } from "../../../lib/acervo/types";
+} from "../../../lib/inventory/admin-server";
+import type { EquipmentMutationState } from "../../../lib/inventory/types";
 
 function formText(formData: FormData, key: string): string | null {
   const value = formData.get(key);
@@ -16,11 +16,11 @@ export async function createEquipmentUnitAction(
   formData: FormData,
 ): Promise<EquipmentMutationState> {
   const result = await createAdminEquipmentUnit({
-    typeCode: formText(formData, "tipo"),
-    visibleCode: formText(formData, "identificador"),
-    storageLocationId: formText(formData, "ponto"),
-    situation: formText(formData, "situacao"),
-    entryOrigin: formText(formData, "origem"),
+    typeCode: formText(formData, "type"),
+    visibleCode: formText(formData, "visibleCode"),
+    storageLocationId: formText(formData, "location"),
+    status: formText(formData, "status"),
+    entryOrigin: formText(formData, "entryOrigin"),
   });
 
   if (result.kind === "success") revalidatePath("/admin/acervo");
@@ -32,10 +32,10 @@ export async function updateEquipmentUnitAction(
   formData: FormData,
 ): Promise<EquipmentMutationState> {
   const result = await updateAdminEquipmentUnit({
-    unitId: formText(formData, "unidade"),
-    visibleCode: formText(formData, "identificador"),
-    storageLocationId: formText(formData, "ponto"),
-    situation: formText(formData, "situacao"),
+    unitId: formText(formData, "unitId"),
+    visibleCode: formText(formData, "visibleCode"),
+    storageLocationId: formText(formData, "location"),
+    status: formText(formData, "status"),
   });
 
   if (result.kind === "success") revalidatePath("/admin/acervo");
