@@ -18,7 +18,7 @@ Proof: bash scripts/acervo-test-db.sh # C1 acervo collection returns the canonic
 **C2** - O painel deriva as contagens das seis situações a partir das unidades e mostra zero quando não há unidade naquela situação (AC 2)
 Proof: bash scripts/acervo-test-db.sh # C2 situation counts cover all six values including zero, C2 situation values stay within the canonical enum
 
-**C3** - A coleção é agrupada por tipo e ordenada por identificador crescente, com nulos por último (AC 3)
+**C3** - A coleção é agrupada por tipo e ordenada por número do equipamento crescente, com nulos por último (AC 3)
 Proof: bash scripts/acervo-test-db.sh # C3 units are ordered by type then identifier with nulls last
 
 **C4** - Sem unidades, a tela mostra estado vazio com explicação e exatamente um próximo passo para cadastrar a primeira unidade (AC 4)
@@ -27,12 +27,12 @@ Proof: walk - entrar com a identidade sintética de uma entidade sem unidades e 
 **C5** - Falha de leitura mostra mensagem compreensível e ação para tentar novamente, sem erro bruto do banco (AC 5)
 Proof: walk - interromper a leitura local e reabrir /admin/acervo
 
-**C6** - Sem sessão a rota redireciona para `/admin/entrar`; sem vínculo `admin_banco` ativo a tela mostra falta de permissão sem revelar banco, unidade ou contagem (AC 6)
+**C6** - Sem sessão a rota redireciona para `/admin/entrar`; sem vínculo `bank_admin` ativo a tela mostra falta de permissão sem revelar banco, unidade ou contagem (AC 6)
 Proof: bash scripts/acervo-test-db.sh # C6 acervo RPCs reject anon, C6 acervo RPCs reject a session without an active admin_banco, C6 acervo RPCs reject an inactive admin_banco, C6 acervo RPCs reject an admin_banco from another entity
 Proof: walk - abrir /admin/acervo sem sessão e com a identidade sintética sem vínculo ativo
 
-**C7** - A navegação administrativa oferece `Acervo de equipamentos` para `/admin/acervo`, sem menu escondido (AC 7)
-Proof: walk - abrir /admin/contatos com a identidade sintética e acionar Acervo de equipamentos
+**C7** - A navegação administrativa oferece `Equipamentos do banco` para `/admin/acervo`, sem menu escondido (AC 7)
+Proof: walk - abrir /admin/contatos com a identidade sintética e acionar Equipamentos do banco
 
 ### S2 - Cadastrar uma unidade física
 
@@ -57,10 +57,10 @@ Proof: bash scripts/acervo-test-db.sh # C13 creation writes one unit_created aud
 
 ### S3 - Editar uma unidade existente
 
-**C14** - A edição altera somente identificador, ponto de guarda e situação, mantendo tipo e proprietário (AC 14)
+**C14** - A edição altera somente identificador, onde está guardado e situação, mantendo tipo e proprietário (AC 14)
 Proof: bash scripts/acervo-test-db.sh # C14 update changes only visible code, storage location and situation
 
-**C15** - Qualquer uma das seis situações pode ir para qualquer outra, inclusive a partir de `doado` e `baixado`, com uma auditoria `unit_updated` contendo antes e depois (AC 15)
+**C15** - Qualquer uma das seis situações pode ir para qualquer outra, inclusive a partir de `donated` e `written_off`, com uma auditoria `unit_updated` contendo antes e depois (AC 15)
 Proof: bash scripts/acervo-test-db.sh # C15 every situation can transition to every other situation with audit
 Proof: bash scripts/acervo-test-db.sh # C15 doado and baixado are no longer terminal for the inventory panel
 
@@ -79,7 +79,7 @@ Proof: walk - alterar a situação de uma unidade sintética em /admin/acervo e 
 
 ### S4 - Isolamento, estados e acessibilidade
 
-**C20** - `anon`, sessão sem `admin_banco`, sessão de outra entidade e papel/entidade forjados pelo navegador não leem nem gravam; as roles da Data API não acessam as tabelas diretamente (AC 20)
+**C20** - `anon`, sessão sem `bank_admin`, sessão de outra entidade e papel/entidade forjados pelo navegador não leem nem gravam; as roles da Data API não acessam as tabelas diretamente (AC 20)
 Proof: bash scripts/acervo-test-db.sh # C20 client and service roles cannot read or write units and audit directly, C20 client and service roles cannot call the acervo RPCs, C20 forged browser role and entity claims do not change the bank scope, C20 another entity cannot update a unit
 
 **C21** - Enquanto criação ou edição aguarda resposta, a tela mostra indicador e texto e impede envio duplicado (AC 21)
@@ -91,7 +91,7 @@ Proof: walk - provocar identificador repetido e interrupção de rede no formul�
 **C23** - A tela a 360 px não tem rolagem horizontal; botões ≥56 px e negrito ≥20 px; texto ≥18 px; títulos ≥26 px; foco e informação não dependem só de cor/ícone; uma ação principal; paleta oficial; linguagem cotidiana (AC 23)
 Proof: walk - revisar /admin/acervo a 360 px com dados sintéticos
 
-**C24** - O formulário oferece somente tipos ativos, todos os pontos, as seis situações com `Disponível no depósito` pré-selecionada e as quatro origens; identificador e ponto podem ficar vazios (AC 24)
+**C24** - O formulário oferece somente tipos ativos, todos os pontos, as seis situações com `Disponível para empréstimo` pré-selecionada e as quatro origens; identificador e ponto podem ficar vazios (AC 24)
 Proof: bash scripts/acervo-test-db.sh # C24 options return active types and every storage location
 Proof: walk - abrir o cadastro e conferir as opções e os campos vazios
 
@@ -107,13 +107,13 @@ Proof: bash scripts/acervo-test-db.sh # C25 an inactive type remains readable an
 | `admin_bank_equipment_options` statuses (3) | `200` C24 · `401` C20 · `403` C20 | - |
 | `admin_create_equipment_unit` statuses (4) | `200` C8 · `400` C11/C12 · `401` C20 · `403` C20 | - |
 | `admin_update_equipment_unit` statuses (4) | `200` C14 · `400` C17 · `401` C20 · `403` C20 | - |
-| situações (6) | `disponivel` C2/C15 · `reservado` C2/C15 · `emprestado` C2/C15 · `manutencao` C2/C15 · `doado` C2/C15 · `baixado` C2/C15 | - |
-| origens (4) | `doacao` C12 · `compra` C12 · `retorno_conserto` C12 · `devolucao_outro_banco` C12 | - |
+| situações (6) | `available` C2/C15 · `reserved` C2/C15 · `on_loan` C2/C15 · `under_maintenance` C2/C15 · `donated` C2/C15 · `written_off` C2/C15 | - |
+| origens (4) | `donation` C12 · `purchase` C12 · `repair_return` C12 · `return_from_other_bank` C12 | - |
 | portas unidirecionais (4) | identificador C11 · origem C8/C12 · auditoria C13/C15 · caminho privado C6/C20 | - |
 | telas e estados (6) | carregando C21 · vazio C4 · falha C5/C22 · falta de permissão C6 · sucesso de cadastro C9 · sucesso de edição C19 | - |
-| controles da tela (5) | link `Acervo de equipamentos` C7 · enviar cadastro C8 · enviar edição C14 · tentar novamente C5 · próximo passo do vazio C4 | - |
+| controles da tela (5) | link `Equipamentos do banco` C7 · enviar cadastro C8 · enviar edição C14 · tentar novamente C5 · próximo passo do vazio C4 | - |
 | entradas inválidas de criação (5) | tipo inexistente C12 · tipo inativo C12 · ponto inexistente C12 · situação inválida C12 · origem inválida C12 | - |
-| autorizações (4) | `anon` C20 · sem `admin_banco` C20 · `admin_banco` de outra entidade C20 · papel/entidade forjados C20 | - |
+| autorizações (4) | `anon` C20 · sem `bank_admin` C20 · `bank_admin` de outra entidade C20 · papel/entidade forjados C20 | - |
 
 ## Swept
 
@@ -129,8 +129,8 @@ Proof: bash scripts/acervo-test-db.sh # C25 an inactive type remains readable an
 
 ## Handoff
 
-- **Settled mid-build:** origem obrigatória e um dos quatro valores de FR-018; qualquer situação para qualquer situação, com auditoria; identificador livre, nulo e único por banco; tipo fixo e situação inicial escolhida com `disponivel` pré-selecionada; todos os pontos cadastrados; lista agrupada por tipo sem filtros; rótulo `Acervo de equipamentos`; seis situações sempre visíveis; estoque mínimo fora do recorte; sem paginação por enquanto; auditoria registrada e consultada diretamente no banco pelos desenvolvedores.
+- **Settled mid-build:** origem obrigatória e um dos quatro valores de FR-018; qualquer situação para qualquer situação, com auditoria; identificador livre, nulo e único por banco; tipo fixo e situação inicial escolhida com `available` pré-selecionada; todos os pontos cadastrados; lista agrupada por tipo sem filtros; rótulo `Equipamentos do banco`; seis situações sempre visíveis; estoque mínimo fora do recorte; sem paginação por enquanto; auditoria registrada e consultada diretamente no banco pelos desenvolvedores.
 - **Boundary:** C1-C25 implementados em `dbdd14f`; `npm run build`, `npx eslint src/app/admin src/lib/acervo` e `bash scripts/acervo-test-db.sh` (que aplica as migrations e roda `supabase test db`) passam.
 - **Dispatched:** Verifier em `f5b9610`; retornou com 6 achados, todos fechados em `dbdd14f`.
 - **Abandoned:** none
-- **Walked:** caminhada HTTP local em 2026-10-27 com o admin sintético do Rotary Boa Vista: `/admin/acervo` mostrou o banco, as seis contagens iguais a 1, a lista com `BVCR0001` e o formulário com 13 tipos ativos, ponto sintético, seis situações e quatro origens; `/admin/contatos` mostrou o link `Acervo de equipamentos`. Estado vazio confirmado com entidade sintética sem unidades; falta de permissão confirmada com sessão autenticada sem papel; falha de leitura confirmada com o serviço REST parado e ação `Tentar novamente`. A rota sem sessão executa `redirect("/admin/entrar")` no servidor, conforme o código. Concorrência manual: duas sessões SQL locais atualizaram a mesma unidade sintética; a sessão B aguardou o travamento da sessão A, a situação final foi `manutencao` e a auditoria registrou `unit_created`, `disponivel>reservado` e `reservado>manutencao`; os registros temporários foram removidos. A submissão interativa dos formulários e a revisão visual a 360 px ainda dependem da conferência manual do desenvolvedor, conforme `AGENTS.md`; não foi usado Playwright, Cypress ou Puppeteer.
+- **Walked:** caminhada HTTP local em 2026-10-27 com o admin sintético do Rotary Boa Vista: `/admin/acervo` mostrou o banco, as seis contagens iguais a 1, a lista com `BVCR0001` e o formulário com 13 tipos ativos, ponto sintético, seis situações e quatro origens; `/admin/contatos` mostrou o link `Equipamentos do banco`. Estado vazio confirmado com entidade sintética sem unidades; falta de permissão confirmada com sessão autenticada sem papel; falha de leitura confirmada com o serviço REST parado e ação `Tentar novamente`. A rota sem sessão executa `redirect("/admin/entrar")` no servidor, conforme o código. Concorrência manual: duas sessões SQL locais atualizaram a mesma unidade sintética; a sessão B aguardou o travamento da sessão A, a situação final foi `under_maintenance` e a auditoria registrou `unit_created`, `disponivel>reservado` e `reservado>manutencao`; os registros temporários foram removidos. A submissão interativa dos formulários e a revisão visual a 360 px ainda dependem da conferência manual do desenvolvedor, conforme `AGENTS.md`; não foi usado Playwright, Cypress ou Puppeteer.
