@@ -61,7 +61,7 @@ function retryRemote<T>(
 export function PublicAvailabilityLoading() {
   return (
     <PublicLayout
-      title="Disponibilidade por banco"
+      title="Onde tem equipamento"
       introduction="Consulte os equipamentos dos bancos comunitários."
     >
       <LoadingMessage />
@@ -109,7 +109,7 @@ export function EquipmentCatalog() {
   return (
     <PublicLayout
       title="Equipamentos ortopédicos"
-      introduction="Encontre um equipamento e consulte a disponibilidade nos bancos comunitários."
+      introduction="Encontre um equipamento e consulte onde ele está disponível nos bancos comunitários."
     >
       {state.kind === "loading" ? (
         <LoadingMessage />
@@ -129,19 +129,20 @@ export function EquipmentCatalog() {
                   {availableQuantity > 0 ? (
                     <>
                       <p className="availability-label">
-                        Disponível no depósito
+                        Disponível para empréstimo
                       </p>
                       <p
                         className="availability-count"
                         aria-label={`Quantidade disponível: ${availableQuantity}`}
                       >
-                        {availableQuantity} equipamento
-                        {availableQuantity === 1 ? "" : "s"}
+                        {availableQuantity === 1
+                          ? "1 disponível"
+                          : `${availableQuantity} disponíveis`}
                       </p>
                     </>
                   ) : (
                     <p className="availability-empty">
-                      Todos emprestados no momento
+                      Nenhum disponível no momento
                     </p>
                   )}
                 </div>
@@ -149,7 +150,7 @@ export function EquipmentCatalog() {
                   className="primary-action"
                   href={`/equipamentos/${encodeURIComponent(equipment.code)}`}
                 >
-                  Ver disponibilidade
+                  Ver onde tem
                 </Link>
               </article>
             </li>

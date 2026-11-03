@@ -4,12 +4,12 @@ grant admin_contact_manager to current_user with set true;
 grant usage, create on schema public to admin_contact_manager;
 set role admin_contact_manager;
 
-create function public.admin_bank_contacts(p_codigo text)
+create function public.admin_bank_contacts(p_public_code text)
 returns table (
   bank_name text,
-  codigo text,
-  situacao text,
-  destaque_48_horas boolean
+  public_code text,
+  status text,
+  overdue_48h boolean
 )
 language plpgsql
 stable
@@ -27,10 +27,10 @@ begin
   return query
   select
     entity.public_name,
-    contact.codigo,
-    contact.situacao::text,
+    contact.public_code,
+    contact.status::text,
     coalesce(
-      contact.situacao = 'novo'::catalog.contact_situation
+      contact.status = 'new'::catalog.contact_status
         and contact.created_at <= statement_timestamp() - interval '48 hours',
       false
     )
@@ -38,10 +38,10 @@ begin
   left join catalog.community_contacts as contact
     on contact.entity_id = entity.id
     and (
-      p_codigo is null
+      p_public_code is null
       or (
-        p_codigo ~ '^[A-F0-9]{12}$'
-        and contact.codigo = p_codigo
+        p_public_code ~ '^[A-F0-9]{12}$'
+        and contact.public_code = p_public_code
       )
     )
   where entity.id = v_entity_id;

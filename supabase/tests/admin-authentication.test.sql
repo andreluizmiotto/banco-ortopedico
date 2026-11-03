@@ -23,10 +23,10 @@ select ok(
     where idx.indexrelid =
       'catalog.user_roles_admin_banco_one_active_entity_idx'::regclass
       and idx.indisunique
-      and pg_get_expr(idx.indpred, idx.indrelid) ilike '%admin_banco%'
+      and pg_get_expr(idx.indpred, idx.indrelid) ilike '%bank_admin%'
       and pg_get_expr(idx.indpred, idx.indrelid) ilike '%is_active%'
   ),
-  'C7 database uniquely limits each user to one active admin_banco entity'
+  'C7 database uniquely limits each user to one active bank_admin entity'
 );
 select ok(
   (
@@ -114,12 +114,12 @@ values
 
 insert into catalog.user_roles (user_id, role, entity_id, is_active)
 values
-  ('91000000-0000-4000-8000-000000000001', 'admin_banco', '92000000-0000-4000-8000-000000000001', true),
-  ('91000000-0000-4000-8000-000000000002', 'admin_banco', '92000000-0000-4000-8000-000000000002', true),
-  ('91000000-0000-4000-8000-000000000003', 'comunidade', null, true),
-  ('91000000-0000-4000-8000-000000000004', 'companheiro', null, true),
-  ('91000000-0000-4000-8000-000000000005', 'admin_geral', null, true),
-  ('91000000-0000-4000-8000-000000000006', 'admin_banco', '92000000-0000-4000-8000-000000000003', false);
+  ('91000000-0000-4000-8000-000000000001', 'bank_admin', '92000000-0000-4000-8000-000000000001', true),
+  ('91000000-0000-4000-8000-000000000002', 'bank_admin', '92000000-0000-4000-8000-000000000002', true),
+  ('91000000-0000-4000-8000-000000000003', 'community', null, true),
+  ('91000000-0000-4000-8000-000000000004', 'rotarian', null, true),
+  ('91000000-0000-4000-8000-000000000005', 'general_admin', null, true),
+  ('91000000-0000-4000-8000-000000000006', 'bank_admin', '92000000-0000-4000-8000-000000000003', false);
 
 select is(
   (
@@ -135,11 +135,11 @@ select is(
     select count(*)::integer
     from catalog.user_roles
     where user_id = '91000000-0000-4000-8000-000000000001'
-      and role = 'admin_banco'
+      and role = 'bank_admin'
       and is_active
   ),
   1,
-  'C7 authorized test identity has exactly one active admin_banco entity'
+  'C7 authorized test identity has exactly one active bank_admin entity'
 );
 
 set local role authenticated;
@@ -151,8 +151,8 @@ select is(
   '92000000-0000-4000-8000-000000000001'::uuid,
   'C6 resolver derives entity A from the authenticated uid'
 );
-select set_config('request.jwt.claims', '{"sub":"91000000-0000-4000-8000-000000000001","role":"admin_geral","entity_id":"forged"}', true);
-select set_config('request.jwt.claim.role', 'admin_geral', true);
+select set_config('request.jwt.claims', '{"sub":"91000000-0000-4000-8000-000000000001","role":"general_admin","entity_id":"forged"}', true);
+select set_config('request.jwt.claim.role', 'general_admin', true);
 select set_config(
   'request.jwt.claim.entity_id',
   '92000000-0000-4000-8000-000000000002',
@@ -175,13 +175,13 @@ select throws_ok(
   $$insert into catalog.user_roles (user_id, role, entity_id, is_active)
     values (
       '91000000-0000-4000-8000-000000000001',
-      'admin_banco',
+      'bank_admin',
       '92000000-0000-4000-8000-000000000002',
       true
     )$$,
   '23505',
   null,
-  'C7 second active admin_banco entity is rejected'
+  'C7 second active bank_admin entity is rejected'
 );
 
 set local role authenticated;
@@ -196,25 +196,25 @@ select set_config('request.jwt.claim.sub', '91000000-0000-4000-8000-000000000003
 select is(
   public.current_admin_bank_entity_id(),
   null::uuid,
-  'C9 Community without admin_banco resolves no entity'
+  'C9 Community without bank_admin resolves no entity'
 );
 select set_config('request.jwt.claim.sub', '91000000-0000-4000-8000-000000000004', true);
 select is(
   public.current_admin_bank_entity_id(),
   null::uuid,
-  'C9 Companion without admin_banco resolves no entity'
+  'C9 Companion without bank_admin resolves no entity'
 );
 select set_config('request.jwt.claim.sub', '91000000-0000-4000-8000-000000000005', true);
 select is(
   public.current_admin_bank_entity_id(),
   null::uuid,
-  'C9 admin_geral without admin_banco resolves no entity'
+  'C9 general_admin without bank_admin resolves no entity'
 );
 select set_config('request.jwt.claim.sub', '91000000-0000-4000-8000-000000000006', true);
 select is(
   public.current_admin_bank_entity_id(),
   null::uuid,
-  'C9 inactive admin_banco resolves no entity'
+  'C9 inactive bank_admin resolves no entity'
 );
 select set_config('request.jwt.claim.sub', '91000000-0000-4000-8000-000000000007', true);
 select is(
@@ -250,7 +250,7 @@ select is(
 update catalog.user_roles
 set is_active = false
 where user_id = '91000000-0000-4000-8000-000000000001'
-  and role = 'admin_banco'
+  and role = 'bank_admin'
   and entity_id = '92000000-0000-4000-8000-000000000001';
 
 set local role authenticated;
@@ -259,7 +259,7 @@ select set_config('request.jwt.claim.sub', '91000000-0000-4000-8000-000000000001
 select is(
   public.current_admin_bank_entity_id(),
   null::uuid,
-  'C8 revoked admin_banco has no resolved entity on the next database request'
+  'C8 revoked bank_admin has no resolved entity on the next database request'
 );
 
 select * from finish();

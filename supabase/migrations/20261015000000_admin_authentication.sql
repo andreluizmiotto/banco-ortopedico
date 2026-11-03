@@ -1,6 +1,6 @@
 create unique index user_roles_admin_banco_one_active_entity_idx
   on catalog.user_roles (user_id)
-  where role = 'admin_banco' and is_active;
+  where role = 'bank_admin' and is_active;
 
 create role admin_bank_authorization_checker nologin noinherit nobypassrls;
 
@@ -10,7 +10,7 @@ create policy "Admin bank checker reads its own active bank role"
   to admin_bank_authorization_checker
   using (
     user_id = catalog.current_auth_uid()
-    and role = 'admin_banco'
+    and role = 'bank_admin'
     and is_active
   );
 
@@ -35,7 +35,7 @@ as $function$
   select (array_agg(user_role.entity_id))[1]
   from catalog.user_roles as user_role
   where user_role.user_id = catalog.current_auth_uid()
-    and user_role.role = 'admin_banco'
+    and user_role.role = 'bank_admin'
     and user_role.is_active
   having count(*) = 1
 $function$;

@@ -2,17 +2,17 @@ import "server-only";
 import { resolveAdminBankAccess } from "../auth/admin-bank";
 import type {
   AdminContact,
-  AdminContactDestination,
-  AdminContactSituation,
+  AdminContactOutcome,
+  AdminContactStatus,
 } from "./admin-types";
 
 const contactCodePattern = /^[A-F0-9]{12}$/;
 
 type AdminContactRow = {
   bank_name: unknown;
-  codigo: unknown;
-  situacao: unknown;
-  destaque_48_horas: unknown;
+  public_code: unknown;
+  status: unknown;
+  overdue_48h: unknown;
 };
 
 export type AdminContactsPageData =
@@ -30,20 +30,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isContactSituation(value: unknown): value is AdminContactSituation {
+function isContactStatus(value: unknown): value is AdminContactStatus {
   return (
-    value === "novo" ||
-    value === "atendido" ||
-    value === "virou_emprestimo" ||
-    value === "sem_retorno"
+    value === "new" ||
+    value === "answered" ||
+    value === "converted_to_loan" ||
+    value === "no_response"
   );
 }
 
-function isContactDestination(value: string): value is AdminContactDestination {
+function isContactOutcome(value: string): value is AdminContactOutcome {
   return (
-    value === "atendido" ||
-    value === "sem_retorno" ||
-    value === "virou_emprestimo"
+    value === "answered" ||
+    value === "no_response" ||
+    value === "converted_to_loan"
   );
 }
 
@@ -60,7 +60,7 @@ export async function getAdminContactsPageData(
 
   try {
     const { data, error } = await access.client.rpc("admin_bank_contacts", {
-      p_codigo: searchCode,
+      p_public_code: searchCode,
     });
 
     if (error || !Array.isArray(data) || data.length === 0) {
@@ -80,20 +80,20 @@ export async function getAdminContactsPageData(
       }
       bankName = row.bank_name;
 
-      if (row.codigo === null) continue;
+      if (row.public_code === null) continue;
       if (
-        typeof row.codigo !== "string" ||
-        !contactCodePattern.test(row.codigo) ||
-        !isContactSituation(row.situacao) ||
-        typeof row.destaque_48_horas !== "boolean"
+        typeof row.public_code !== "string" ||
+        !contactCodePattern.test(row.public_code) ||
+        !isContactStatus(row.status) ||
+        typeof row.overdue_48h !== "boolean"
       ) {
         return { kind: "error" };
       }
 
       contacts.push({
-        codigo: row.codigo,
-        situacao: row.situacao,
-        destaque48Horas: row.destaque_48_horas,
+        publicCode: row.public_code,
+        status: row.status,
+        overdue48Hours: row.overdue_48h,
       });
     }
 
@@ -110,19 +110,16 @@ export async function getAdminContactsPageData(
   }
 }
 
-export async function changeAdminContactSituation(
-  codigo: string,
-  situation: string,
+export async function changeAdminContactStatus(
+  publicCode: string,
+  status: string,
 ): Promise<
-  | { kind: "success"; situation: AdminContactDestination }
+  | { kind: "success"; status: AdminContactOutcome }
   | { kind: "forbidden" }
   | { kind: "conflict" }
   | { kind: "error" }
 > {
-  if (
-    !contactCodePattern.test(codigo) ||
-    !isContactDestination(situation)
-  ) {
+  if (!contactCodePattern.test(publicCode) || !isContactOutcome(status)) {
     return { kind: "forbidden" };
   }
 
@@ -134,10 +131,10 @@ export async function changeAdminContactSituation(
 
   try {
     const { data, error } = await access.client.rpc(
-      "admin_set_contact_situation",
+      "admin_set_contact_status",
       {
-        p_codigo: codigo,
-        p_new_situation: situation,
+        p_public_code: publicCode,
+        p_new_status: status,
       },
     );
 
@@ -149,9 +146,9 @@ export async function changeAdminContactSituation(
       return { kind: "error" };
     }
 
-    if (data !== situation) return { kind: "error" };
+    if (data !== status) return { kind: "error" };
 
-    return { kind: "success", situation };
+    return { kind: "success", status };
   } catch {
     return { kind: "error" };
   }

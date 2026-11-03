@@ -1,7 +1,7 @@
 # acervo-unidades-fisicas-fr-018-fr-025-fr-029 proofs
 
-**HEAD**: dbdd14f
-**Tree**: dirty - docs/arquitetura/autenticacao-e-autorizacao.md, docs/arquitetura/decisoes/0001-nextjs-supabase.md, docs/arquitetura/visao-geral.md, docs/produto/regras-de-negocio.md, docs/produto/requisitos.md
+**HEAD**: 8cb9e30
+**Tree**: clean
 **Result**: 32 pass, 0 fail; mutations 3 killed, 0 not
 
 | Check | Proof | Ran | Passed | Result |
@@ -23,7 +23,7 @@
 | C13 | `bash scripts/acervo-test-db.sh # C13 creation writes one unit_created audit with the complete actor and values` | count unknown | - | pass |
 | C14 | `bash scripts/acervo-test-db.sh # C14 update changes only visible code, storage location and situation` | count unknown | - | pass |
 | C15 | `bash scripts/acervo-test-db.sh # C15 every situation can transition to every other situation with audit` | count unknown | - | pass |
-| C15 | `bash scripts/acervo-test-db.sh # C15 doado and baixado are no longer terminal for the inventory panel` | count unknown | - | pass |
+| C15 | `bash scripts/acervo-test-db.sh # C15 donated and written_off are no longer terminal for the inventory panel` | count unknown | - | pass |
 | C16 | `bash scripts/acervo-test-db.sh # C16 repeating the same update creates no extra audit row` | count unknown | - | pass |
 | C17 | `bash scripts/acervo-test-db.sh # C17 foreign and unknown unit identifiers receive the same generic denial` | count unknown | - | pass |
 | C18 | `bash scripts/acervo-test-db.sh # C18 effective updates are serialized and each leaves one audit` | count unknown | - | pass |
@@ -43,6 +43,6 @@
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| identifier length bound 64 -> 63 (64 must still be accepted) | `supabase/migrations/20261028000000_acervo_unidades_fisicas.sql:310` | yes |
-| collection order: null identifiers last -> first | `supabase/migrations/20261028000000_acervo_unidades_fisicas.sql:215` | yes |
-| idempotency guard: unchanged values still write a new audit | `supabase/migrations/20261028000000_acervo_unidades_fisicas.sql:437` | yes |
+| identifier length bound 64 -> 63 (64 must still be accepted) | `supabase/migrations/20261028000000_equipment_inventory.sql:310` | yes |
+| collection order: null identifiers last -> first | `supabase/migrations/20261028000000_equipment_inventory.sql:215` | yes |
+| idempotency guard: unchanged values still write a new audit | `supabase/migrations/20261028000000_equipment_inventory.sql:437` | yes |

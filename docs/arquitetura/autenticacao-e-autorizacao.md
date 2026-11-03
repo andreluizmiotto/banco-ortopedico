@@ -2,28 +2,64 @@
 
 ## 1. Requisitos de autenticacao
 
-- Entrada por CPF e senha, sem escolha manual de perfil.
-- Aceitar senhas com pelo menos oito caracteres e frases-senha; nao exigir apenas numeros nem combinacoes obrigatorias de tipos de caracteres.
-- CPF pode ser digitado com ou sem pontuacao e deve ser normalizado antes da validacao.
-- O cadastro deve confirmar o telefone por codigo.
-- Recuperacao de senha deve usar codigo de uso unico e nao depender do administrador no fluxo normal.
-- O codigo proposto tem seis digitos, validade de dez minutos, espera de 60 segundos entre reenvios e limite de tres envios por hora. Os limites finais dependem do provedor e devem ser aplicados no servidor.
-- Apos cinco tentativas de senha invalidas, aplicar bloqueio temporario e protecao contra abuso. A duracao de 15 minutos nao e decisao fechada; definir a politica no servidor sem criar um mecanismo facil de bloqueio malicioso de contas.
-- Sessao longa em celular e saida voluntaria sao requisitos de produto. A duracao de 90 dias nao e um valor aprovado; duracao e renovacao devem ser validadas na implementacao.
+- A Comunidade entra com CPF e senha, sem escolher manualmente o papel. O
+  servidor valida e normaliza o CPF, localiza o telefone confirmado associado
+  ao perfil e autentica pelo Supabase Auth usando `phone/password`.
+- A entrada do administrador do banco e separada: `/admin/entrar` usa e-mail e
+  senha do Supabase Auth, sem cadastro administrativo na aplicacao.
+- Aceitar senhas com pelo menos oito caracteres e frases-senha; nao exigir
+  apenas numeros nem combinacoes obrigatorias de tipos de caracteres.
+- CPF pode ser digitado com ou sem pontuacao e deve ser normalizado antes da
+  validacao.
+- O cadastro da Comunidade confirma o telefone por codigo antes de provisionar
+  o perfil e o papel `community`.
+- Recuperacao de senha deve usar codigo de uso unico e nao depender do
+  administrador no fluxo normal; esse fluxo ainda nao esta implementado.
+- O codigo proposto tem seis digitos, validade de dez minutos, espera de 60
+  segundos entre reenvios e limite de tres envios por hora. Os limites finais
+  dependem do provedor e devem ser aplicados no servidor.
+- Apos cinco tentativas de senha invalidas consecutivas, a entrada da
+  Comunidade bloqueia temporariamente a origem por 15 minutos. A duracao esta
+  implementada no servidor; os limites de envio e a confiabilidade da origem
+  em producao ainda dependem da configuracao operacional.
+- Sessao longa em celular e saida voluntaria sao requisitos de produto. A
+  duracao de 90 dias nao e um valor aprovado; duracao e renovacao devem ser
+  validadas na implementacao.
 
-## 2. Decisao de implementacao ainda necessaria
+## 2. Fluxos decididos e implementados
 
-Supabase Auth gerencia credenciais e sessoes, mas CPF nao deve ser tratado automaticamente como um email inventado ou como uma senha. Antes de implementar, documentar e testar uma estrategia que:
+### Comunidade — DECIDIDO E IMPLEMENTADO
 
-- evite revelar se um CPF esta cadastrado;
-- valide CPF no servidor e aplique rate limit;
-- nao exponha CPF em URL, log, resposta de erro ou token legivel pelo cliente;
-- mantenha a unicidade do CPF no banco;
-- associe o perfil de negocio a `auth.users.id`;
-- deixe o hash e a verificacao da senha exclusivamente com o Supabase Auth;
-- permita operacao de recuperacao com codigo enviado ao telefone confirmado.
+O CPF e o identificador de negocio, nao uma credencial do Supabase Auth. Na
+entrada, o servidor valida o CPF e usa a funcao privada
+`public.community_phone_for_cpf(text)` para localizar o telefone confirmado do
+perfil. Em seguida, autentica com o Supabase Auth usando `phone/password`. A
+senha e validada e armazenada pelo Supabase Auth; o perfil privado liga-se a
+`auth.users.id` e guarda o CPF normalizado com unicidade no banco.
 
-Nao criar autenticação paralela com senha ou hash mantidos na tabela de perfil.
+No cadastro, a pessoa confirma o telefone por codigo. Depois da confirmacao, o
+servidor provisiona o perfil, registra a versao e a data do aviso aceito e
+concede o papel `community`. O fluxo nao pede endereco residencial e nao
+permite escolher o papel na tela.
+
+### Administrador do banco — DECIDIDO E IMPLEMENTADO
+
+O administrador entra por `/admin/entrar` com e-mail e senha do Supabase Auth.
+Essa rota e separada de `/entrar` e nao oferece cadastro administrativo. A
+aplicacao deriva o acesso de `auth.uid()` e do vinculo ativo `bank_admin` no
+banco; cada administrador tem um unico escopo de entidade.
+A entrada autorizada encaminha para `/admin/contatos`.
+
+Os dois fluxos delegam credenciais ao Supabase Auth e nao armazenam senha ou
+hash de senha nas tabelas de perfil.
+
+### Pendencias operacionais
+
+Os fluxos de entrada estao decididos e implementados, mas isso nao fecha todos
+os requisitos de autenticacao para producao. Ainda dependem de decisao ou
+configuracao: provedor e limites de SMS, texto de privacidade aprovado,
+provisionamento da identidade administrativa e senha inicial, recuperacao de
+senha administrativa e duracao/renovacao da sessao administrativa.
 
 ## 3. Papeis
 

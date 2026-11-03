@@ -18,7 +18,7 @@ export function PublicLayout({
   introduction,
   eyebrow = "Consulta pública",
   backLink,
-  footerNote = "A disponibilidade é atualizada a partir do acervo de cada banco.",
+  footerNote = "A disponibilidade é atualizada a partir dos equipamentos de cada banco.",
   headerNavigation,
   children,
 }: PublicLayoutProps) {
@@ -35,7 +35,7 @@ export function PublicLayout({
             <span className="brand-mark" aria-hidden="true" />
             <span>Banco Ortopédico</span>
           </Link>
-          {headerNavigation ?? <p className="brand-note">Acervo comunitário</p>}
+          {headerNavigation ?? <p className="brand-note">Equipamentos da comunidade</p>}
         </header>
         <main id="conteudo-principal">
           {backLink ? (

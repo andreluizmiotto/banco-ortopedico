@@ -1,8 +1,8 @@
 create type catalog.equipment_entry_origin as enum (
-  'doacao',
-  'compra',
-  'retorno_conserto',
-  'devolucao_outro_banco'
+  'donation',
+  'purchase',
+  'repair_return',
+  'return_from_other_bank'
 );
 
 alter table catalog.equipment_units
@@ -28,12 +28,12 @@ create table catalog.equipment_unit_change_audit (
   entity_id uuid not null references catalog.entities (id) on delete restrict,
   unit_id uuid not null references catalog.equipment_units (id) on delete restrict,
   action text not null check (action in ('unit_created', 'unit_updated')),
-  previous_situation catalog.equipment_situation,
-  new_situation catalog.equipment_situation not null,
+  previous_status catalog.equipment_status,
+  new_status catalog.equipment_status not null,
   previous_storage_location_id uuid
-    references catalog.pontos_atendimento (id) on delete restrict,
+    references catalog.storage_locations (id) on delete restrict,
   new_storage_location_id uuid
-    references catalog.pontos_atendimento (id) on delete restrict,
+    references catalog.storage_locations (id) on delete restrict,
   previous_visible_code text,
   new_visible_code text,
   entry_origin catalog.equipment_entry_origin,
@@ -41,7 +41,7 @@ create table catalog.equipment_unit_change_audit (
   constraint equipment_unit_change_audit_created_shape check (
     action <> 'unit_created'
     or (
-      previous_situation is null
+      previous_status is null
       and previous_storage_location_id is null
       and previous_visible_code is null
       and entry_origin is not null
@@ -49,7 +49,7 @@ create table catalog.equipment_unit_change_audit (
   ),
   constraint equipment_unit_change_audit_updated_shape check (
     action <> 'unit_updated'
-    or (previous_situation is not null and entry_origin is null)
+    or (previous_status is not null and entry_origin is null)
   )
 );
 
@@ -72,7 +72,7 @@ grant select (
   equipment_type_code,
   owner_entity_id,
   storage_location_id,
-  situacao,
+  status,
   visible_code,
   entry_origin
 ) on catalog.equipment_units to admin_equipment_manager;
@@ -80,24 +80,24 @@ grant insert (
   equipment_type_code,
   owner_entity_id,
   storage_location_id,
-  situacao,
+  status,
   visible_code,
   entry_origin
 ) on catalog.equipment_units to admin_equipment_manager;
-grant update (visible_code, storage_location_id, situacao)
+grant update (visible_code, storage_location_id, status)
   on catalog.equipment_units to admin_equipment_manager;
 grant select (code, name, is_active, display_order)
   on catalog.equipment_types to admin_equipment_manager;
 grant select (id, public_name) on catalog.entities to admin_equipment_manager;
-grant select (id, code, name) on catalog.pontos_atendimento
+grant select (id, code, name) on catalog.storage_locations
   to admin_equipment_manager;
 grant insert (
   actor_user_id,
   entity_id,
   unit_id,
   action,
-  previous_situation,
-  new_situation,
+  previous_status,
+  new_status,
   previous_storage_location_id,
   new_storage_location_id,
   previous_visible_code,
@@ -141,7 +141,7 @@ create policy "Admin equipment manager reads its own bank entity"
   using (id = public.current_admin_bank_entity_id());
 
 create policy "Admin equipment manager reads storage locations"
-  on catalog.pontos_atendimento
+  on catalog.storage_locations
   for select
   to admin_equipment_manager
   using (true);
@@ -176,7 +176,7 @@ returns table (
   storage_location_id uuid,
   storage_location_name text,
   entry_origin text,
-  situacao text
+  status text
 )
 language plpgsql
 stable
@@ -188,7 +188,7 @@ declare
   v_entity_id uuid := public.current_admin_bank_entity_id();
 begin
   if v_entity_id is null then
-    raise exception 'Acervo indisponível' using errcode = '42501';
+    raise exception 'Inventory unavailable' using errcode = '42501';
   end if;
 
   return query
@@ -201,13 +201,13 @@ begin
     unit.storage_location_id,
     location.name,
     unit.entry_origin::text,
-    unit.situacao::text
+    unit.status::text
   from catalog.entities as entity
   left join catalog.equipment_units as unit
     on unit.owner_entity_id = entity.id
   left join catalog.equipment_types as equipment_type
     on equipment_type.code = unit.equipment_type_code
-  left join catalog.pontos_atendimento as location
+  left join catalog.storage_locations as location
     on location.id = unit.storage_location_id
   where entity.id = v_entity_id
   order by
@@ -234,7 +234,7 @@ declare
   v_entity_id uuid := public.current_admin_bank_entity_id();
 begin
   if v_entity_id is null then
-    raise exception 'Acervo indisponível' using errcode = '42501';
+    raise exception 'Inventory unavailable' using errcode = '42501';
   end if;
 
   return query
@@ -243,7 +243,7 @@ begin
   where equipment_type.is_active
   union all
   select 'storage_location'::text, location.id::text, location.name
-  from catalog.pontos_atendimento as location
+  from catalog.storage_locations as location
   order by 1, 2;
 end
 $function$;
@@ -268,24 +268,24 @@ declare
   v_unit_id uuid;
 begin
   if v_actor_id is null or v_entity_id is null then
-    raise exception 'Acervo indisponível' using errcode = '42501';
+    raise exception 'Inventory unavailable' using errcode = '42501';
   end if;
 
   if p_situation is null
     or p_situation not in (
-      'disponivel',
-      'reservado',
-      'emprestado',
-      'manutencao',
-      'doado',
-      'baixado'
+      'available',
+      'reserved',
+      'on_loan',
+      'under_maintenance',
+      'donated',
+      'written_off'
     )
     or p_entry_origin is null
     or p_entry_origin not in (
-      'doacao',
-      'compra',
-      'retorno_conserto',
-      'devolucao_outro_banco'
+      'donation',
+      'purchase',
+      'repair_return',
+      'return_from_other_bank'
     )
     or not exists (
       select 1
@@ -297,25 +297,25 @@ begin
       p_storage_location_id is not null
       and not exists (
         select 1
-        from catalog.pontos_atendimento as location
+        from catalog.storage_locations as location
         where location.id = p_storage_location_id
       )
     )
   then
-    raise exception 'Dados da unidade inválidos' using errcode = 'P0002';
+    raise exception 'Invalid unit data' using errcode = 'P0002';
   end if;
 
   v_visible_code := nullif(btrim(coalesce(p_visible_code, '')), '');
 
   if v_visible_code is not null and char_length(v_visible_code) > 64 then
-    raise exception 'Dados da unidade inválidos' using errcode = 'P0002';
+    raise exception 'Invalid unit data' using errcode = 'P0002';
   end if;
 
   insert into catalog.equipment_units (
     equipment_type_code,
     owner_entity_id,
     storage_location_id,
-    situacao,
+    status,
     visible_code,
     entry_origin
   )
@@ -323,7 +323,7 @@ begin
     p_equipment_type_code,
     v_entity_id,
     p_storage_location_id,
-    p_situation::catalog.equipment_situation,
+    p_situation::catalog.equipment_status,
     v_visible_code,
     p_entry_origin::catalog.equipment_entry_origin
   )
@@ -334,8 +334,8 @@ begin
     entity_id,
     unit_id,
     action,
-    previous_situation,
-    new_situation,
+    previous_status,
+    new_status,
     previous_storage_location_id,
     new_storage_location_id,
     previous_visible_code,
@@ -348,7 +348,7 @@ begin
     v_unit_id,
     'unit_created',
     null,
-    p_situation::catalog.equipment_situation,
+    p_situation::catalog.equipment_status,
     null,
     p_storage_location_id,
     null,
@@ -359,7 +359,7 @@ begin
   return v_unit_id;
 exception
   when unique_violation then
-    raise exception 'Identificador já usado' using errcode = 'P0003';
+    raise exception 'Identifier already in use' using errcode = 'P0003';
 end
 $function$;
 
@@ -381,69 +381,69 @@ declare
   v_visible_code text;
   v_previous_visible_code text;
   v_previous_storage_location_id uuid;
-  v_previous_situation catalog.equipment_situation;
+  v_previous_status catalog.equipment_status;
 begin
   if v_actor_id is null or v_entity_id is null then
-    raise exception 'Acervo indisponível' using errcode = '42501';
+    raise exception 'Inventory unavailable' using errcode = '42501';
   end if;
 
   if p_unit_id is null
     or p_situation is null
     or p_situation not in (
-      'disponivel',
-      'reservado',
-      'emprestado',
-      'manutencao',
-      'doado',
-      'baixado'
+      'available',
+      'reserved',
+      'on_loan',
+      'under_maintenance',
+      'donated',
+      'written_off'
     )
     or (
       p_storage_location_id is not null
       and not exists (
         select 1
-        from catalog.pontos_atendimento as location
+        from catalog.storage_locations as location
         where location.id = p_storage_location_id
       )
     )
   then
-    raise exception 'Dados da unidade inválidos' using errcode = 'P0002';
+    raise exception 'Invalid unit data' using errcode = 'P0002';
   end if;
 
   v_visible_code := nullif(btrim(coalesce(p_visible_code, '')), '');
 
   if v_visible_code is not null and char_length(v_visible_code) > 64 then
-    raise exception 'Dados da unidade inválidos' using errcode = 'P0002';
+    raise exception 'Invalid unit data' using errcode = 'P0002';
   end if;
 
   select
     unit.visible_code,
     unit.storage_location_id,
-    unit.situacao
+    unit.status
   into
     v_previous_visible_code,
     v_previous_storage_location_id,
-    v_previous_situation
+    v_previous_status
   from catalog.equipment_units as unit
   where unit.id = p_unit_id
     and unit.owner_entity_id = v_entity_id
   for update;
 
   if not found then
-    raise exception 'Unidade indisponível' using errcode = 'P0001';
+    raise exception 'Unit unavailable' using errcode = 'P0001';
   end if;
 
   if v_previous_visible_code is not distinct from v_visible_code
     and v_previous_storage_location_id is not distinct from p_storage_location_id
-    and v_previous_situation = p_situation::catalog.equipment_situation
+    and v_previous_status = p_situation::catalog.equipment_status
   then
-    return v_previous_situation::text;
+    return v_previous_status::text;
   end if;
 
   update catalog.equipment_units as unit
   set
     visible_code = v_visible_code,
     storage_location_id = p_storage_location_id,
-    situacao = p_situation::catalog.equipment_situation
+    status = p_situation::catalog.equipment_status
   where unit.id = p_unit_id
     and unit.owner_entity_id = v_entity_id;
 
@@ -452,8 +452,8 @@ begin
     entity_id,
     unit_id,
     action,
-    previous_situation,
-    new_situation,
+    previous_status,
+    new_status,
     previous_storage_location_id,
     new_storage_location_id,
     previous_visible_code,
@@ -465,8 +465,8 @@ begin
     v_entity_id,
     p_unit_id,
     'unit_updated',
-    v_previous_situation,
-    p_situation::catalog.equipment_situation,
+    v_previous_status,
+    p_situation::catalog.equipment_status,
     v_previous_storage_location_id,
     p_storage_location_id,
     v_previous_visible_code,
@@ -477,7 +477,7 @@ begin
   return p_situation;
 exception
   when unique_violation then
-    raise exception 'Identificador já usado' using errcode = 'P0003';
+    raise exception 'Identifier already in use' using errcode = 'P0003';
 end
 $function$;
 

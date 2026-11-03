@@ -2,11 +2,11 @@ import "server-only";
 import { resolveAdminBankAccess } from "../auth/admin-bank";
 import {
   equipmentEntryOrigins,
-  equipmentSituations,
-  type AdminAcervoData,
+  equipmentStatuses,
+  type AdminInventoryData,
   type EquipmentEntryOrigin,
   type EquipmentMutationState,
-  type EquipmentSituation,
+  type EquipmentStatus,
   type EquipmentTypeOption,
   type EquipmentUnit,
   type StorageLocationOption,
@@ -24,7 +24,7 @@ type UnitRow = {
   storage_location_id: unknown;
   storage_location_name: unknown;
   entry_origin: unknown;
-  situacao: unknown;
+  status: unknown;
 };
 
 type OptionRow = {
@@ -33,22 +33,20 @@ type OptionRow = {
   option_label: unknown;
 };
 
-export type AdminAcervoPageData =
+export type AdminInventoryPageData =
   | { kind: "unauthenticated" }
   | { kind: "forbidden" }
   | { kind: "error" }
-  | ({ kind: "ready" } & AdminAcervoData);
+  | ({ kind: "ready" } & AdminInventoryData);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-export function isEquipmentSituation(
-  value: unknown,
-): value is EquipmentSituation {
+export function isEquipmentStatus(value: unknown): value is EquipmentStatus {
   return (
     typeof value === "string" &&
-    (equipmentSituations as readonly string[]).includes(value)
+    (equipmentStatuses as readonly string[]).includes(value)
   );
 }
 
@@ -69,7 +67,7 @@ function isUuid(value: string): boolean {
   return uuidPattern.test(value);
 }
 
-export async function getAdminAcervoPageData(): Promise<AdminAcervoPageData> {
+export async function getAdminInventoryPageData(): Promise<AdminInventoryPageData> {
   const access = await resolveAdminBankAccess();
 
   if (access.kind !== "authorized") {
@@ -117,7 +115,7 @@ export async function getAdminAcervoPageData(): Promise<AdminAcervoPageData> {
         !isNullableString(row.storage_location_name) ||
         (row.entry_origin !== null &&
           !isEquipmentEntryOrigin(row.entry_origin)) ||
-        !isEquipmentSituation(row.situacao) ||
+        !isEquipmentStatus(row.status) ||
         seenUnitIds.has(row.unit_id)
       ) {
         return { kind: "error" };
@@ -132,7 +130,7 @@ export async function getAdminAcervoPageData(): Promise<AdminAcervoPageData> {
         storageLocationId: row.storage_location_id,
         storageLocationName: row.storage_location_name,
         entryOrigin: row.entry_origin,
-        situation: row.situacao,
+        status: row.status,
       });
     }
 
@@ -182,7 +180,7 @@ export async function createAdminEquipmentUnit(input: {
   typeCode: string | null;
   visibleCode: string | null;
   storageLocationId: string | null;
-  situation: string | null;
+  status: string | null;
   entryOrigin: string | null;
 }): Promise<EquipmentMutationState> {
   const typeCode = input.typeCode?.trim() ?? "";
@@ -192,7 +190,7 @@ export async function createAdminEquipmentUnit(input: {
   if (
     typeCode === "" ||
     typeCode.length > 32 ||
-    !isEquipmentSituation(input.situation) ||
+    !isEquipmentStatus(input.status) ||
     !isEquipmentEntryOrigin(input.entryOrigin) ||
     (storageLocationId !== null && !isUuid(storageLocationId)) ||
     (visibleCode !== null && visibleCode.length > 64)
@@ -213,7 +211,7 @@ export async function createAdminEquipmentUnit(input: {
         p_equipment_type_code: typeCode,
         p_visible_code: visibleCode,
         p_storage_location_id: storageLocationId,
-        p_situation: input.situation,
+        p_situation: input.status,
         p_entry_origin: input.entryOrigin,
       },
     );
@@ -223,7 +221,7 @@ export async function createAdminEquipmentUnit(input: {
       return { kind: "error", message: errorMessage };
     }
 
-    return { kind: "success", situation: input.situation };
+    return { kind: "success", status: input.status };
   } catch {
     return { kind: "error", message: errorMessage };
   }
@@ -233,7 +231,7 @@ export async function updateAdminEquipmentUnit(input: {
   unitId: string | null;
   visibleCode: string | null;
   storageLocationId: string | null;
-  situation: string | null;
+  status: string | null;
 }): Promise<EquipmentMutationState> {
   const unitId = input.unitId?.trim() ?? "";
   const visibleCode = input.visibleCode?.trim() || null;
@@ -241,7 +239,7 @@ export async function updateAdminEquipmentUnit(input: {
 
   if (
     !isUuid(unitId) ||
-    !isEquipmentSituation(input.situation) ||
+    !isEquipmentStatus(input.status) ||
     (storageLocationId !== null && !isUuid(storageLocationId)) ||
     (visibleCode !== null && visibleCode.length > 64)
   ) {
@@ -261,34 +259,34 @@ export async function updateAdminEquipmentUnit(input: {
         p_unit_id: unitId,
         p_visible_code: visibleCode,
         p_storage_location_id: storageLocationId,
-        p_situation: input.situation,
+        p_situation: input.status,
       },
     );
 
     if (error) return mapMutationError(error.code);
-    if (!isEquipmentSituation(data)) {
+    if (!isEquipmentStatus(data)) {
       return { kind: "error", message: errorMessage };
     }
 
-    return { kind: "success", situation: data };
+    return { kind: "success", status: data };
   } catch {
     return { kind: "error", message: errorMessage };
   }
 }
 
 const invalidUnitMessage =
-  "Confira os dados da unidade e tente novamente.";
+  "Confira os dados do equipamento e tente novamente.";
 const forbiddenMessage =
-  "Você não tem permissão para alterar o acervo deste banco.";
+  "Você não tem permissão para alterar os equipamentos deste banco.";
 const errorMessage =
-  "Não foi possível salvar a unidade. Tente novamente.";
+  "Não foi possível salvar o equipamento. Tente novamente.";
 
 function mapMutationError(code: string | undefined): EquipmentMutationState {
   if (code === "P0003") {
     return {
       kind: "conflict",
       message:
-        "Já existe uma unidade com este identificador neste banco. Confira o tombo e tente novamente.",
+        "Já existe um equipamento com este número neste banco. Confira o número e tente novamente.",
     };
   }
   if (code === "P0002") {

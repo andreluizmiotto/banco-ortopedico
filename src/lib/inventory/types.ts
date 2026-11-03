@@ -1,37 +1,37 @@
-export const equipmentSituations = [
-  "disponivel",
-  "reservado",
-  "emprestado",
-  "manutencao",
-  "doado",
-  "baixado",
+export const equipmentStatuses = [
+  "available",
+  "reserved",
+  "on_loan",
+  "under_maintenance",
+  "donated",
+  "written_off",
 ] as const;
 
-export type EquipmentSituation = (typeof equipmentSituations)[number];
+export type EquipmentStatus = (typeof equipmentStatuses)[number];
 
-export const equipmentSituationLabels: Record<EquipmentSituation, string> = {
-  disponivel: "Disponível no depósito",
-  reservado: "Aguardando retirada",
-  emprestado: "Emprestado",
-  manutencao: "Em manutenção",
-  doado: "Doado",
-  baixado: "Retirado do acervo",
+export const equipmentStatusLabels: Record<EquipmentStatus, string> = {
+  available: "Disponível para empréstimo",
+  reserved: "Reservado para retirada",
+  on_loan: "Emprestado",
+  under_maintenance: "Em conserto",
+  donated: "Doado",
+  written_off: "Fora de uso",
 };
 
 export const equipmentEntryOrigins = [
-  "doacao",
-  "compra",
-  "retorno_conserto",
-  "devolucao_outro_banco",
+  "donation",
+  "purchase",
+  "repair_return",
+  "return_from_other_bank",
 ] as const;
 
 export type EquipmentEntryOrigin = (typeof equipmentEntryOrigins)[number];
 
 export const equipmentEntryOriginLabels: Record<EquipmentEntryOrigin, string> = {
-  doacao: "Doação",
-  compra: "Compra",
-  retorno_conserto: "Retorno de conserto",
-  devolucao_outro_banco: "Devolução de outro banco",
+  donation: "Doado",
+  purchase: "Comprado",
+  repair_return: "Voltou do conserto",
+  return_from_other_bank: "Veio de outro banco",
 };
 
 export type EquipmentUnit = {
@@ -42,7 +42,7 @@ export type EquipmentUnit = {
   storageLocationId: string | null;
   storageLocationName: string | null;
   entryOrigin: EquipmentEntryOrigin | null;
-  situation: EquipmentSituation;
+  status: EquipmentStatus;
 };
 
 export type EquipmentTypeOption = {
@@ -55,7 +55,7 @@ export type StorageLocationOption = {
   name: string;
 };
 
-export type AdminAcervoData = {
+export type AdminInventoryData = {
   bankName: string;
   units: EquipmentUnit[];
   types: EquipmentTypeOption[];
@@ -64,7 +64,7 @@ export type AdminAcervoData = {
 
 export type EquipmentMutationState =
   | { kind: "idle" }
-  | { kind: "success"; situation: EquipmentSituation }
+  | { kind: "success"; status: EquipmentStatus }
   | { kind: "invalid"; message: string }
   | { kind: "conflict"; message: string }
   | { kind: "forbidden"; message: string }

@@ -20,21 +20,32 @@ set
   is_active = excluded.is_active,
   display_order = excluded.display_order;
 
--- Synthetic development fixtures only; no production inventory is loaded.
+-- Development fixtures only. Club names come from the product documentation;
+-- every address, phone and e-mail below is fictional and no real inventory,
+-- person or CPF is loaded. E-mails use the reserved .test domain.
 insert into catalog.entities (code, public_name, is_bank, is_active)
 values
-  ('SYN-A', 'Entidade Sintética A', true, true),
-  ('SYN-B', 'Entidade Sintética B', true, true),
-  ('SYN-C', 'Entidade Sintética C', true, true),
-  ('SYN-ROTARY-BOA-VISTA', 'Rotary Boa Vista (sintético)', true, true)
+  ('ROTARY-BOA-VISTA', 'Banco Ortopédico Rotary Boa Vista', true, true),
+  ('ROTARY-TRES-VENDAS', 'Banco Ortopédico Três Vendas', true, true),
+  ('ROTARY-CASA-AMIZADE', 'Casa da Amizade — Banco Ortopédico', true, true),
+  ('ROTARY-ERECHIM', 'Banco Ortopédico Rotary Erechim', true, true)
 on conflict (code) do update
 set
   public_name = excluded.public_name,
   is_bank = excluded.is_bank,
   is_active = excluded.is_active;
 
+insert into catalog.storage_locations (code, name)
+values
+  ('SEDE-BOA-VISTA', 'Sede do Rotary Boa Vista'),
+  ('SEDE-TRES-VENDAS', 'Salão comunitário de Três Vendas'),
+  ('SEDE-CASA-AMIZADE', 'Casa da Amizade'),
+  ('APOIO-ERECHIM', 'Ponto de apoio — Erechim')
+on conflict (code) do update
+set name = excluded.name;
+
 -- GoTrue's email/password lookup uses the zero instance UUID.
--- Local-only synthetic credentials; do not use this identity outside local development.
+-- Local-only fixture credentials; do not use this identity outside local development.
 insert into auth.users (
   instance_id,
   id,
@@ -57,7 +68,7 @@ values (
   '90000000-0000-4000-8000-000000000001',
   'authenticated',
   'authenticated',
-  'admin-rotary-boa-vista@banco-ortopedico.test',
+  'admin.boavista@rotary.test',
   clock_timestamp(),
   '',
   '',
@@ -92,11 +103,11 @@ insert into catalog.user_roles (id, user_id, role, entity_id, is_active)
 select
   '90000000-0000-4000-8000-000000000002',
   '90000000-0000-4000-8000-000000000001',
-  'admin_banco',
+  'bank_admin',
   entity.id,
   true
 from catalog.entities as entity
-where entity.code = 'SYN-ROTARY-BOA-VISTA'
+where entity.code = 'ROTARY-BOA-VISTA'
 on conflict (id) do update
 set
   user_id = excluded.user_id,
@@ -104,54 +115,52 @@ set
   entity_id = excluded.entity_id,
   is_active = excluded.is_active;
 
-insert into catalog.pontos_atendimento (code, name)
-values ('SYN-SHARED', 'Ponto Sintetico Compartilhado')
-on conflict (code) do update
-set name = excluded.name;
-
+-- Units without a label yet: they exercise the public availability aggregate
+-- across the three clubs that share equipment.
 insert into catalog.equipment_units (
   id,
   equipment_type_code,
   owner_entity_id,
   storage_location_id,
-  situacao
+  status
 )
 select
   fixture.id::uuid,
   fixture.equipment_type_code,
   entity.id,
   location.id,
-  fixture.situacao::catalog.equipment_situation
+  fixture.status::catalog.equipment_status
 from (
   values
-    ('00000000-0000-4000-8000-000000000001', 'CR', 'SYN-A', 'disponivel'),
-    ('00000000-0000-4000-8000-000000000002', 'CR', 'SYN-A', 'disponivel'),
-    ('00000000-0000-4000-8000-000000000003', 'CR', 'SYN-A', 'disponivel'),
-    ('00000000-0000-4000-8000-000000000004', 'CR', 'SYN-A', 'reservado'),
-    ('00000000-0000-4000-8000-000000000005', 'CR', 'SYN-A', 'emprestado'),
-    ('00000000-0000-4000-8000-000000000006', 'CR', 'SYN-A', 'manutencao'),
-    ('00000000-0000-4000-8000-000000000007', 'CR', 'SYN-A', 'doado'),
-    ('00000000-0000-4000-8000-000000000008', 'CR', 'SYN-A', 'baixado'),
-    ('00000000-0000-4000-8000-000000000009', 'CR', 'SYN-B', 'disponivel'),
-    ('00000000-0000-4000-8000-000000000010', 'CR', 'SYN-B', 'disponivel'),
-    ('00000000-0000-4000-8000-000000000011', 'CR', 'SYN-C', 'reservado')
-) as fixture(id, equipment_type_code, entity_code, situacao)
+    ('00000000-0000-4000-8000-000000000001', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'available'),
+    ('00000000-0000-4000-8000-000000000002', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'available'),
+    ('00000000-0000-4000-8000-000000000003', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'available'),
+    ('00000000-0000-4000-8000-000000000004', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'reserved'),
+    ('00000000-0000-4000-8000-000000000005', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'on_loan'),
+    ('00000000-0000-4000-8000-000000000006', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'under_maintenance'),
+    ('00000000-0000-4000-8000-000000000007', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'donated'),
+    ('00000000-0000-4000-8000-000000000008', 'CR', 'ROTARY-BOA-VISTA', 'SEDE-BOA-VISTA', 'written_off'),
+    ('00000000-0000-4000-8000-000000000009', 'CR', 'ROTARY-TRES-VENDAS', 'SEDE-TRES-VENDAS', 'available'),
+    ('00000000-0000-4000-8000-000000000010', 'CR', 'ROTARY-TRES-VENDAS', 'SEDE-TRES-VENDAS', 'available'),
+    ('00000000-0000-4000-8000-000000000011', 'CR', 'ROTARY-CASA-AMIZADE', 'SEDE-CASA-AMIZADE', 'reserved')
+) as fixture(id, equipment_type_code, entity_code, location_code, status)
 join catalog.entities as entity on entity.code = fixture.entity_code
-join catalog.pontos_atendimento as location on location.code = 'SYN-SHARED'
+join catalog.storage_locations as location on location.code = fixture.location_code
 on conflict (id) do update
 set
   equipment_type_code = excluded.equipment_type_code,
   owner_entity_id = excluded.owner_entity_id,
   storage_location_id = excluded.storage_location_id,
-  situacao = excluded.situacao;
+  status = excluded.status;
 
--- Synthetic acervo for the administrative inventory panel; no real inventory data.
+-- Labelled inventory with entry origin for the administrative panel of the
+-- local fixture administrator (Boa Vista). No real inventory data.
 insert into catalog.equipment_units (
   id,
   equipment_type_code,
   owner_entity_id,
   storage_location_id,
-  situacao,
+  status,
   visible_code,
   entry_origin
 )
@@ -160,25 +169,25 @@ select
   fixture.equipment_type_code,
   entity.id,
   location.id,
-  fixture.situacao::catalog.equipment_situation,
+  fixture.status::catalog.equipment_status,
   fixture.visible_code,
   fixture.entry_origin::catalog.equipment_entry_origin
 from (
   values
-    ('10000000-0000-4000-8000-000000000001', 'CR', 'disponivel', 'BVCR0001', 'doacao'),
-    ('10000000-0000-4000-8000-000000000002', 'CR', 'reservado', 'BVCR0002', 'compra'),
-    ('10000000-0000-4000-8000-000000000003', 'CM', 'emprestado', 'BVCM0001', 'retorno_conserto'),
-    ('10000000-0000-4000-8000-000000000004', 'AN', 'manutencao', null, 'devolucao_outro_banco'),
-    ('10000000-0000-4000-8000-000000000005', 'MU', 'doado', 'BVMU0001', 'doacao'),
-    ('10000000-0000-4000-8000-000000000006', 'CB', 'baixado', null, 'compra')
-) as fixture(id, equipment_type_code, situacao, visible_code, entry_origin)
-join catalog.entities as entity on entity.code = 'SYN-ROTARY-BOA-VISTA'
-left join catalog.pontos_atendimento as location on location.code = 'SYN-SHARED'
+    ('10000000-0000-4000-8000-000000000001', 'CR', 'available', 'BVCR0001', 'donation'),
+    ('10000000-0000-4000-8000-000000000002', 'CR', 'reserved', 'BVCR0002', 'purchase'),
+    ('10000000-0000-4000-8000-000000000003', 'CM', 'on_loan', 'BVCM0001', 'repair_return'),
+    ('10000000-0000-4000-8000-000000000004', 'AN', 'under_maintenance', null, 'return_from_other_bank'),
+    ('10000000-0000-4000-8000-000000000005', 'MU', 'donated', 'BVMU0001', 'donation'),
+    ('10000000-0000-4000-8000-000000000006', 'CB', 'written_off', null, 'purchase')
+) as fixture(id, equipment_type_code, status, visible_code, entry_origin)
+join catalog.entities as entity on entity.code = 'ROTARY-BOA-VISTA'
+left join catalog.storage_locations as location on location.code = 'SEDE-BOA-VISTA'
 on conflict (id) do update
 set
   equipment_type_code = excluded.equipment_type_code,
   owner_entity_id = excluded.owner_entity_id,
   storage_location_id = excluded.storage_location_id,
-  situacao = excluded.situacao,
+  status = excluded.status,
   visible_code = excluded.visible_code,
   entry_origin = excluded.entry_origin;

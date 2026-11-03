@@ -60,9 +60,9 @@ Requisitos funcionais descrevem o comportamento esperado. A arquitetura descreve
 ## Nomenclatura tecnica e da interface
 
 Use fonte monoespacada para nomes tecnicos do banco e do codigo, como
-`catalog.pontos_atendimento` e `catalog.equipment_units.situacao`. A interface
+`catalog.storage_locations` e `catalog.equipment_units.status`. A interface
 usa rotulos cotidianos e nao deve mostrar nomes de tabelas ou valores de enum.
-O mapeamento dos valores de situacao para os rotulos de tela esta em
+O mapeamento dos valores de status para os rotulos de tela esta em
 [Regras de Negocio](produto/regras-de-negocio.md#4-situacao-tecnica-e-rotulos-de-tela).
 
 ## Politica para repositorio publico

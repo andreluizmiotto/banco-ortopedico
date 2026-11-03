@@ -5,49 +5,56 @@ select plan(27);
 insert into catalog.equipment_types (code, name, is_active, display_order)
 values ('SYN-AVAIL-C1', 'Equipamento sintetico C1', true, 901);
 
-insert into catalog.pontos_atendimento (code, name)
-values ('SYN-C1-A', 'Ponto Sintetico A');
+insert into catalog.entities (code, public_name, is_bank, is_active)
+values
+  ('SYN-A', 'Entidade Sintética A', true, true),
+  ('SYN-B', 'Entidade Sintética B', true, true);
+
+insert into catalog.storage_locations (code, name)
+values
+  ('SYN-C1-A', 'Ponto Sintetico A'),
+  ('SYN-SHARED', 'Ponto Sintetico Compartilhado');
 
 insert into catalog.equipment_units (
   equipment_type_code,
   owner_entity_id,
   storage_location_id,
-  situacao
+  status
 )
 select
   'SYN-AVAIL-C1',
   entity.id,
   location.id,
-  unit.situacao::catalog.equipment_situation
+  unit.status::catalog.equipment_status
 from (
   values
-    ('SYN-A', 'SYN-C1-A', 'disponivel'),
-    ('SYN-A', 'SYN-C1-A', 'disponivel'),
-    ('SYN-A', 'SYN-C1-A', 'disponivel'),
-    ('SYN-A', 'SYN-C1-A', 'reservado'),
-    ('SYN-A', 'SYN-C1-A', 'emprestado'),
-    ('SYN-A', 'SYN-C1-A', 'manutencao'),
-    ('SYN-A', 'SYN-C1-A', 'doado'),
-    ('SYN-A', 'SYN-C1-A', 'baixado'),
-    ('SYN-B', 'SYN-SHARED', 'disponivel'),
-    ('SYN-B', 'SYN-SHARED', 'disponivel')
-) as unit(entity_code, point_code, situacao)
+    ('SYN-A', 'SYN-C1-A', 'available'),
+    ('SYN-A', 'SYN-C1-A', 'available'),
+    ('SYN-A', 'SYN-C1-A', 'available'),
+    ('SYN-A', 'SYN-C1-A', 'reserved'),
+    ('SYN-A', 'SYN-C1-A', 'on_loan'),
+    ('SYN-A', 'SYN-C1-A', 'under_maintenance'),
+    ('SYN-A', 'SYN-C1-A', 'donated'),
+    ('SYN-A', 'SYN-C1-A', 'written_off'),
+    ('SYN-B', 'SYN-SHARED', 'available'),
+    ('SYN-B', 'SYN-SHARED', 'available')
+) as unit(entity_code, point_code, status)
 join catalog.entities as entity on entity.code = unit.entity_code
-join catalog.pontos_atendimento as location on location.code = unit.point_code;
+join catalog.storage_locations as location on location.code = unit.point_code;
 
 select is(
   (
     select array_agg(status::text order by ordinal)
-    from unnest(enum_range(null::catalog.equipment_situation))
+    from unnest(enum_range(null::catalog.equipment_status))
       with ordinality as status_values(status, ordinal)
   ),
   array[
-    'disponivel',
-    'reservado',
-    'emprestado',
-    'manutencao',
-    'doado',
-    'baixado'
+    'available',
+    'reserved',
+    'on_loan',
+    'under_maintenance',
+    'donated',
+    'written_off'
   ]::text[],
   'C1 database situation enum uses exactly the six normalized values'
 );
@@ -63,7 +70,7 @@ select results_eq(
       ('Entidade Sintética A'::text, 3),
       ('Entidade Sintética B'::text, 2)
   $$,
-  'C1 counts only disponivel units: A=3 and B=2'
+  'C1 counts only available units: A=3 and B=2'
 );
 
 select results_eq(
@@ -83,7 +90,7 @@ select results_eq(
 update catalog.equipment_units
 set storage_location_id = (
   select id
-  from catalog.pontos_atendimento
+  from catalog.storage_locations
   where code = 'SYN-SHARED'
 )
 where id = (
@@ -93,7 +100,7 @@ where id = (
   select id from catalog.entities where code = 'SYN-A'
   )
     and equipment_type_code = 'SYN-AVAIL-C1'
-    and situacao = 'disponivel'
+    and status = 'available'
   order by id
   limit 1
 );
@@ -103,12 +110,12 @@ select is(
     select entity.code || ':' || location.code
     from catalog.equipment_units as unit
     join catalog.entities as entity on entity.id = unit.owner_entity_id
-    join catalog.pontos_atendimento as location
+    join catalog.storage_locations as location
       on location.id = unit.storage_location_id
     where entity.code = 'SYN-A'
       and location.code = 'SYN-SHARED'
       and unit.equipment_type_code = 'SYN-AVAIL-C1'
-      and unit.situacao = 'disponivel'
+      and unit.status = 'available'
     order by unit.id
     limit 1
   ),
@@ -147,11 +154,11 @@ select ok(
   'C4 RLS is forced on owning entities'
 );
 select ok(
-  (select relrowsecurity from pg_class where oid = 'catalog.pontos_atendimento'::regclass),
+  (select relrowsecurity from pg_class where oid = 'catalog.storage_locations'::regclass),
   'C4 RLS is enabled on service points'
 );
 select ok(
-  (select relforcerowsecurity from pg_class where oid = 'catalog.pontos_atendimento'::regclass),
+  (select relforcerowsecurity from pg_class where oid = 'catalog.storage_locations'::regclass),
   'C4 RLS is forced on service points'
 );
 select ok(
@@ -181,13 +188,13 @@ select ok(
 select ok(
   not has_table_privilege('anon', 'catalog.equipment_units', 'SELECT')
     and not has_table_privilege('anon', 'catalog.entities', 'SELECT')
-    and not has_table_privilege('anon', 'catalog.pontos_atendimento', 'SELECT'),
+    and not has_table_privilege('anon', 'catalog.storage_locations', 'SELECT'),
   'C4 anon has no direct SELECT on private inventory, owner, or location tables'
 );
 select ok(
   not has_table_privilege('authenticated', 'catalog.equipment_units', 'SELECT')
     and not has_table_privilege('authenticated', 'catalog.entities', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.pontos_atendimento', 'SELECT'),
+    and not has_table_privilege('authenticated', 'catalog.storage_locations', 'SELECT'),
   'C4 authenticated has no direct SELECT on private inventory, owner, or location tables'
 );
 select ok(
@@ -247,7 +254,7 @@ select throws_ok(
   'C4 anon cannot select entity records'
 );
 select throws_ok(
-  $$select * from catalog.pontos_atendimento$$,
+  $$select * from catalog.storage_locations$$,
   '42501',
   null,
   'C4 anon cannot select service points or addresses'
@@ -268,7 +275,7 @@ select throws_ok(
   'C4 authenticated cannot select entity records'
 );
 select throws_ok(
-  $$select * from catalog.pontos_atendimento$$,
+  $$select * from catalog.storage_locations$$,
   '42501',
   null,
   'C4 authenticated cannot select service points or addresses'

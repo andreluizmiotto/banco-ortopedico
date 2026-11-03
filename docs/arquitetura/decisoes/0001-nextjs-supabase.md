@@ -17,6 +17,8 @@ O sistema precisa funcionar primeiro no celular, ter controle de acesso por banc
 - Usar Supabase Storage para fotos e documentos, sempre com buckets privados quando o arquivo nao for publico.
 - Usar rotas de servidor, Server Actions ou Edge Functions para operacoes que exigem segredo, geracao de PDF ou integracao com provedores externos.
 - Usar links externos para mapa e WhatsApp no MVP, sem integrar conversas ou mapa embutido.
+- **Autenticacao da Comunidade — DECIDIDO E IMPLEMENTADO:** o servidor valida e normaliza o CPF, resolve o telefone confirmado associado ao perfil e autentica pelo Supabase Auth usando `phone/password`. O perfil de negocio se associa a `auth.users.id`; a aplicacao nao armazena senha nem hash proprio.
+- **Autenticacao do `bank_admin` — DECIDIDO E IMPLEMENTADO:** `/admin/entrar` usa e-mail e senha do Supabase Auth, separado do fluxo da Comunidade. O acesso e derivado de `auth.uid()` e de um vinculo ativo com uma unica entidade.
 
 ## Limites da decisao
 
@@ -29,6 +31,7 @@ Esta ADR nao escolhe:
 - estrategia final de observabilidade;
 - formato de assinatura eletronica;
 - modelo juridico de controlador conjunto ou controladores independentes.
+- provisionamento em producao das identidades administrativas, senha inicial e recuperacao de senha administrativa.
 
 Esses pontos precisam de ADR ou decisao operacional antes da producao.
 
@@ -43,7 +46,7 @@ Esses pontos precisam de ADR ou decisao operacional antes da producao.
 
 - Politicas RLS incorretas podem vazar dados; elas precisam de testes negativos por papel e por entidade.
 - A chave `service_role` nunca pode ser enviada ao navegador, registrada em log ou commitada.
-- O login por CPF nao deve levar a armazenamento manual de senha. A estrategia de mapeamento entre CPF e identidade do Supabase precisa ser implementada no servidor e documentada.
+- Os fluxos de autenticacao estao decididos e implementados sem armazenamento proprio de senha. O uso em producao ainda depende da configuracao do provedor de SMS e da aprovacao dos processos de provisionamento e recuperacao das contas administrativas.
 - Funcionalidades muito dependentes de fornecedor devem ficar atras de uma interface de servico para permitir troca de SMS, PDF ou mapas.
 - Custos de mensagens, armazenamento e hospedagem precisam ser monitorados.
 

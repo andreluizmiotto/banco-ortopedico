@@ -1,8 +1,8 @@
-create type catalog.contact_situation as enum (
-  'novo',
-  'atendido',
-  'virou_emprestimo',
-  'sem_retorno'
+create type catalog.contact_status as enum (
+  'new',
+  'answered',
+  'converted_to_loan',
+  'no_response'
 );
 
 create table catalog.entity_contact_settings (
@@ -14,7 +14,7 @@ create table catalog.entity_contact_settings (
 create table catalog.contact_destinations (
   entity_id uuid not null references catalog.entities (id) on delete cascade,
   recipient_role catalog.user_role not null
-    check (recipient_role in ('responsavel', 'substituto')),
+    check (recipient_role in ('responsible', 'substitute')),
   recipient_user_id uuid not null references auth.users (id) on delete restrict,
   whatsapp_phone text,
   call_phone text,
@@ -37,19 +37,19 @@ create table catalog.contact_destinations (
 
 create table catalog.community_contacts (
   id uuid primary key default gen_random_uuid(),
-  codigo text not null unique
+  public_code text not null unique
     default upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))
-    check (codigo ~ '^[A-F0-9]{12}$'),
+    check (public_code ~ '^[A-F0-9]{12}$'),
   user_id uuid not null references auth.users (id) on delete restrict,
   entity_id uuid not null references catalog.entities (id) on delete restrict,
   equipment_type_code text not null
     references catalog.equipment_types (code) on delete restrict,
   recipient_user_id uuid not null references auth.users (id) on delete restrict,
   recipient_role catalog.user_role not null
-    check (recipient_role in ('responsavel', 'substituto')),
-  origem text not null default 'detalhe_equipamento'
-    check (origem = 'detalhe_equipamento'),
-  situacao catalog.contact_situation not null default 'novo',
+    check (recipient_role in ('responsible', 'substitute')),
+  source text not null default 'equipment_detail'
+    check (source = 'equipment_detail'),
+  status catalog.contact_status not null default 'new',
   created_at timestamptz not null default clock_timestamp()
 );
 
@@ -102,11 +102,11 @@ create policy "Contact processor checks active community and recipients"
   using (
     (
       user_id = catalog.current_auth_uid()
-      and role = 'comunidade'
+      and role = 'community'
       and is_active
     )
     or (
-      role in ('responsavel', 'substituto')
+      role in ('responsible', 'substitute')
       and is_active
     )
   );
@@ -139,7 +139,7 @@ create policy "Community contact processor inserts own contacts"
       select 1
       from catalog.user_roles as user_role
       where user_role.user_id = catalog.current_auth_uid()
-        and user_role.role = 'comunidade'
+        and user_role.role = 'community'
         and user_role.is_active
     )
   );
@@ -151,12 +151,12 @@ create policy "Community contact processor refreshes own effective recipient"
   using (user_id = catalog.current_auth_uid())
   with check (
     user_id = catalog.current_auth_uid()
-    and recipient_role in ('responsavel', 'substituto')
+    and recipient_role in ('responsible', 'substitute')
     and exists (
       select 1
       from catalog.user_roles as user_role
       where user_role.user_id = catalog.current_auth_uid()
-        and user_role.role = 'comunidade'
+        and user_role.role = 'community'
         and user_role.is_active
     )
   );
@@ -213,7 +213,7 @@ begin
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = v_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.is_active
   ) then
     return 'unavailable';
@@ -244,8 +244,8 @@ begin
   where settings.entity_id = v_entity_id;
 
   v_recipient_role := case
-    when v_substitute_mode then 'substituto'::catalog.user_role
-    else 'responsavel'::catalog.user_role
+    when v_substitute_mode then 'substitute'::catalog.user_role
+    else 'responsible'::catalog.user_role
   end;
 
   select destination.whatsapp_phone, destination.call_phone
@@ -304,10 +304,10 @@ begin
     select 1
     from catalog.user_roles as user_role
     where user_role.user_id = v_user_id
-      and user_role.role = 'comunidade'
+      and user_role.role = 'community'
       and user_role.is_active
   ) then
-    raise exception 'Contato indisponivel' using errcode = '42501';
+    raise exception 'Contact unavailable' using errcode = '42501';
   end if;
 
   select entity.id
@@ -336,8 +336,8 @@ begin
   where settings.entity_id = v_entity_id;
 
   v_recipient_role := case
-    when v_substitute_mode then 'substituto'::catalog.user_role
-    else 'responsavel'::catalog.user_role
+    when v_substitute_mode then 'substitute'::catalog.user_role
+    else 'responsible'::catalog.user_role
   end;
 
   select
@@ -382,7 +382,7 @@ begin
 
   v_now := clock_timestamp();
 
-  select contact.codigo
+  select contact.public_code
   into v_contact_code
   from catalog.community_contacts as contact
   where contact.user_id = v_user_id
@@ -399,8 +399,8 @@ begin
       equipment_type_code,
       recipient_user_id,
       recipient_role,
-      origem,
-      situacao,
+      source,
+      status,
       created_at
     )
     values (
@@ -409,17 +409,17 @@ begin
       p_equipment_type_code,
       v_recipient_user_id,
       v_recipient_role,
-      'detalhe_equipamento',
-      'novo',
+      'equipment_detail',
+      'new',
       v_now
     )
-    returning codigo into v_contact_code;
+    returning public_code into v_contact_code;
   else
     update catalog.community_contacts as contact
     set
       recipient_user_id = v_recipient_user_id,
       recipient_role = v_recipient_role
-    where contact.codigo = v_contact_code
+    where contact.public_code = v_contact_code
       and contact.user_id = v_user_id;
   end if;
 

@@ -6,13 +6,13 @@ import { useRef, useState, useTransition, type FormEvent } from "react";
 import {
   equipmentEntryOriginLabels,
   equipmentEntryOrigins,
-  equipmentSituationLabels,
-  equipmentSituations,
-  type AdminAcervoData,
+  equipmentStatuses,
+  equipmentStatusLabels,
+  type AdminInventoryData,
   type EquipmentMutationState,
-  type EquipmentSituation,
+  type EquipmentStatus,
   type EquipmentUnit,
-} from "../../../lib/acervo/types";
+} from "../../../lib/inventory/types";
 import {
   createEquipmentUnitAction,
   updateEquipmentUnitAction,
@@ -24,14 +24,14 @@ type UnitGroup = {
   units: EquipmentUnit[];
 };
 
-export function AdminAcervoManager({
+export function AdminInventoryManager({
   bankName,
   units,
   types,
   locations,
-}: AdminAcervoData) {
+}: AdminInventoryData) {
   const groups = groupUnitsByType(units);
-  const counts = countSituations(units);
+  const counts = countStatuses(units);
   const [createState, setCreateState] = useState<EquipmentMutationState>({
     kind: "idle",
   });
@@ -54,7 +54,7 @@ export function AdminAcervoManager({
     createSubmitting.current = true;
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const typeCode = formData.get("tipo");
+    const typeCode = formData.get("type");
     const typeName =
       typeof typeCode === "string"
         ? types.find((type) => type.code === typeCode)?.name ?? null
@@ -86,37 +86,39 @@ export function AdminAcervoManager({
   }
 
   return (
-    <div className="admin-acervo">
-      <section aria-labelledby="acervo-resumo" className="acervo-summary">
-        <h2 id="acervo-resumo">Resumo do acervo de {bankName}</h2>
-        <ul className="acervo-summary-list">
-          {equipmentSituations.map((situation) => (
-            <li key={situation}>
-              <span className="acervo-summary-label">
-                {equipmentSituationLabels[situation]}
+    <div className="admin-inventory">
+      <section aria-labelledby="inventory-summary" className="inventory-summary">
+        <h2 id="inventory-summary">
+          Como estão os equipamentos de {bankName}
+        </h2>
+        <ul className="inventory-summary-list">
+          {equipmentStatuses.map((status) => (
+            <li key={status}>
+              <span className="inventory-summary-label">
+                {equipmentStatusLabels[status]}
               </span>
-              <strong className="acervo-summary-value">
-                {counts[situation]}
+              <strong className="inventory-summary-value">
+                {counts[status]}
               </strong>
             </li>
           ))}
         </ul>
       </section>
 
-      <section aria-labelledby="acervo-cadastro" className="acervo-card">
-        <h2 id="acervo-cadastro">Cadastrar equipamento</h2>
+      <section aria-labelledby="inventory-form" className="inventory-card">
+        <h2 id="inventory-form">Cadastrar equipamento</h2>
 
         {createState.kind === "success" ? (
           <div
             aria-live="polite"
-            className="acervo-confirmation"
+            className="inventory-confirmation"
             role="status"
           >
             <p className="body-copy">
               {createdTypeName === null
                 ? "Equipamento cadastrado como "
                 : `Equipamento ${createdTypeName} cadastrado como `}
-              <strong>{equipmentSituationLabels[createState.situation]}</strong>.
+              <strong>{equipmentStatusLabels[createState.status]}</strong>.
             </p>
             <button
               className="secondary-action"
@@ -129,16 +131,16 @@ export function AdminAcervoManager({
         ) : (
           <form
             aria-busy={createPending}
-            className="acervo-form"
+            className="inventory-form"
             onSubmit={submitCreate}
           >
-            <label className="form-field" htmlFor="acervo-tipo">
+            <label className="form-field" htmlFor="equipment-type">
               <span>Tipo de equipamento</span>
               <select
                 defaultValue=""
                 disabled={createPending}
-                id="acervo-tipo"
-                name="tipo"
+                id="equipment-type"
+                name="type"
                 required
               >
                 <option value="">Escolha o tipo</option>
@@ -150,32 +152,33 @@ export function AdminAcervoManager({
               </select>
             </label>
 
-            <label className="form-field" htmlFor="acervo-identificador">
-              <span>Identificador, tombo ou patrimônio</span>
+            <label className="form-field" htmlFor="equipment-number">
+              <span>Número do equipamento</span>
               <input
                 autoCapitalize="off"
                 autoComplete="off"
                 disabled={createPending}
-                id="acervo-identificador"
+                id="equipment-number"
                 maxLength={64}
-                name="identificador"
+                name="visibleCode"
                 type="text"
-                aria-describedby="acervo-identificador-dica"
+                aria-describedby="equipment-number-hint"
               />
-              <span className="field-hint" id="acervo-identificador-dica">
-                Pode ficar vazio ou ser preenchido depois, na conferência.
+              <span className="field-hint" id="equipment-number-hint">
+                Pode ser o número da etiqueta ou do tombo. Se não tiver, deixe
+                em branco.
               </span>
             </label>
 
-            <label className="form-field" htmlFor="acervo-ponto">
-              <span>Ponto de guarda</span>
+            <label className="form-field" htmlFor="equipment-location">
+              <span>Onde está guardado</span>
               <select
                 defaultValue=""
                 disabled={createPending}
-                id="acervo-ponto"
-                name="ponto"
+                id="equipment-location"
+                name="location"
               >
-                <option value="">Sem ponto de guarda</option>
+                <option value="">Não sabemos onde está</option>
                 {locations.map((location) => (
                   <option key={location.id} value={location.id}>
                     {location.name}
@@ -184,33 +187,33 @@ export function AdminAcervoManager({
               </select>
             </label>
 
-            <label className="form-field" htmlFor="acervo-situacao">
+            <label className="form-field" htmlFor="equipment-status">
               <span>Situação</span>
               <select
-                defaultValue="disponivel"
+                defaultValue="available"
                 disabled={createPending}
-                id="acervo-situacao"
-                name="situacao"
+                id="equipment-status"
+                name="status"
                 required
               >
-                {equipmentSituations.map((situation) => (
-                  <option key={situation} value={situation}>
-                    {equipmentSituationLabels[situation]}
+                {equipmentStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {equipmentStatusLabels[status]}
                   </option>
                 ))}
               </select>
             </label>
 
-            <label className="form-field" htmlFor="acervo-origem">
-              <span>Como o equipamento entrou</span>
+            <label className="form-field" htmlFor="equipment-origin">
+              <span>De onde veio o equipamento</span>
               <select
                 defaultValue=""
                 disabled={createPending}
-                id="acervo-origem"
-                name="origem"
+                id="equipment-origin"
+                name="entryOrigin"
                 required
               >
-                <option value="">Escolha a origem</option>
+                <option value="">Escolha de onde veio</option>
                 {equipmentEntryOrigins.map((origin) => (
                   <option key={origin} value={origin}>
                     {equipmentEntryOriginLabels[origin]}
@@ -231,7 +234,7 @@ export function AdminAcervoManager({
 
             {createPending ? (
               <div
-                className="acervo-pending"
+                className="inventory-pending"
                 role="status"
                 aria-live="polite"
               >
@@ -257,40 +260,40 @@ export function AdminAcervoManager({
         )}
       </section>
 
-      <section aria-labelledby="acervo-lista" id="lista-de-equipamentos">
-        <h2 className="acervo-section-heading" id="acervo-lista">
-          Equipamentos do acervo
+      <section aria-labelledby="inventory-list" id="inventory-list">
+        <h2 className="inventory-section-heading" id="inventory-list">
+          Equipamentos do banco
         </h2>
 
         {units.length === 0 ? (
-          <div className="acervo-empty empty-state">
+          <div className="inventory-empty empty-state">
             <h3>Ainda não há equipamentos cadastrados</h3>
             <p className="body-copy">
-              Cadastre o primeiro equipamento para acompanhar o acervo e a
-              situação de cada peça.
+              Cadastre o primeiro equipamento para acompanhar o que o banco tem
+              e a situação de cada peça.
             </p>
-            <Link className="secondary-action" href="#acervo-cadastro">
+            <Link className="secondary-action" href="#inventory-form">
               Cadastrar o primeiro equipamento
             </Link>
           </div>
         ) : (
-          <div className="acervo-groups">
+          <div className="inventory-groups">
             {groups.map((group) => (
               <section
-                aria-labelledby={`acervo-grupo-${group.typeCode}`}
-                className="acervo-group"
+                aria-labelledby={`inventory-group-${group.typeCode}`}
+                className="inventory-group"
                 key={group.typeCode}
               >
                 <h3
-                  className="acervo-group-heading"
-                  id={`acervo-grupo-${group.typeCode}`}
+                  className="inventory-group-heading"
+                  id={`inventory-group-${group.typeCode}`}
                 >
                   {group.typeName}
                 </h3>
-                <ul className="acervo-unit-list">
+                <ul className="inventory-unit-list">
                   {group.units.map((unit) => (
                     <li key={unit.id}>
-                      <AdminAcervoUnitCard
+                      <AdminInventoryUnitCard
                         locations={locations}
                         unit={unit}
                       />
@@ -306,20 +309,20 @@ export function AdminAcervoManager({
   );
 }
 
-function AdminAcervoUnitCard({
+function AdminInventoryUnitCard({
   unit,
   locations,
 }: {
   unit: EquipmentUnit;
-  locations: AdminAcervoData["locations"];
+  locations: AdminInventoryData["locations"];
 }) {
   const [editing, setEditing] = useState(false);
   const [state, setState] = useState<EquipmentMutationState>({ kind: "idle" });
   const [pending, startUpdate] = useTransition();
   const submitting = useRef(false);
   const router = useRouter();
-  const fieldId = `unidade-${unit.id}`;
-  const errorId = `${fieldId}-erro`;
+  const fieldId = `unit-${unit.id}`;
+  const errorId = `${fieldId}-error`;
 
   function submitUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -344,83 +347,82 @@ function AdminAcervoUnitCard({
     });
   }
 
-  const situation =
-    state.kind === "success" ? state.situation : unit.situation;
+  const status = state.kind === "success" ? state.status : unit.status;
 
   return (
-    <article className="acervo-unit-card">
-      <header className="acervo-unit-heading">
-        <h4 className="acervo-unit-code">
-          {unit.visibleCode ?? "Sem identificador"}
+    <article className="inventory-unit-card">
+      <header className="inventory-unit-heading">
+        <h4 className="inventory-unit-code">
+          {unit.visibleCode ?? "Sem número"}
         </h4>
-        <p className="acervo-unit-situation">
-          Situação: <strong>{equipmentSituationLabels[situation]}</strong>
+        <p className="inventory-unit-status">
+          Situação: <strong>{equipmentStatusLabels[status]}</strong>
         </p>
       </header>
 
-      <dl className="acervo-unit-details">
+      <dl className="inventory-unit-details">
         <div>
-          <dt>Ponto de guarda</dt>
-          <dd>{unit.storageLocationName ?? "Sem ponto de guarda"}</dd>
+          <dt>Onde está guardado</dt>
+          <dd>{unit.storageLocationName ?? "Não sabemos onde está"}</dd>
         </div>
         <div>
-          <dt>Como entrou</dt>
+          <dt>De onde veio</dt>
           <dd>
             {unit.entryOrigin === null
-              ? "Origem não registrada"
+              ? "Não sabemos de onde veio"
               : equipmentEntryOriginLabels[unit.entryOrigin]}
           </dd>
         </div>
       </dl>
 
       {state.kind === "success" ? (
-        <div aria-live="polite" className="acervo-confirmation" role="status">
+        <div aria-live="polite" className="inventory-confirmation" role="status">
           <p className="body-copy">
             Situação atualizada para{" "}
-            <strong>{equipmentSituationLabels[state.situation]}</strong>.
+            <strong>{equipmentStatusLabels[state.status]}</strong>.
           </p>
           <Link
             className="secondary-action"
-            href="#lista-de-equipamentos"
+            href="#inventory-list"
             onClick={() => {
               setEditing(false);
               setState({ kind: "idle" });
             }}
           >
-            Continuar no acervo
+            Continuar nos equipamentos
           </Link>
         </div>
       ) : editing ? (
         <form
           aria-busy={pending}
-          className="acervo-form acervo-edit-form"
+          className="inventory-form inventory-edit-form"
           onSubmit={submitUpdate}
         >
-          <input name="unidade" type="hidden" value={unit.id} />
+          <input name="unitId" type="hidden" value={unit.id} />
 
-          <label className="form-field" htmlFor={`${fieldId}-identificador`}>
-            <span>Identificador, tombo ou patrimônio</span>
+          <label className="form-field" htmlFor={`${fieldId}-number`}>
+            <span>Número do equipamento</span>
             <input
               autoCapitalize="off"
               autoComplete="off"
               defaultValue={unit.visibleCode ?? ""}
               disabled={pending}
-              id={`${fieldId}-identificador`}
+              id={`${fieldId}-number`}
               maxLength={64}
-              name="identificador"
+              name="visibleCode"
               type="text"
             />
           </label>
 
-          <label className="form-field" htmlFor={`${fieldId}-ponto`}>
-            <span>Ponto de guarda</span>
+          <label className="form-field" htmlFor={`${fieldId}-location`}>
+            <span>Onde está guardado</span>
             <select
               defaultValue={unit.storageLocationId ?? ""}
               disabled={pending}
-              id={`${fieldId}-ponto`}
-              name="ponto"
+              id={`${fieldId}-location`}
+              name="location"
             >
-              <option value="">Sem ponto de guarda</option>
+              <option value="">Não sabemos onde está</option>
               {locations.map((location) => (
                 <option key={location.id} value={location.id}>
                   {location.name}
@@ -429,18 +431,18 @@ function AdminAcervoUnitCard({
             </select>
           </label>
 
-          <label className="form-field" htmlFor={`${fieldId}-situacao`}>
+          <label className="form-field" htmlFor={`${fieldId}-status`}>
             <span>Situação</span>
             <select
-              defaultValue={unit.situation}
+              defaultValue={unit.status}
               disabled={pending}
-              id={`${fieldId}-situacao`}
-              name="situacao"
+              id={`${fieldId}-status`}
+              name="status"
               required
             >
-              {equipmentSituations.map((option) => (
+              {equipmentStatuses.map((option) => (
                 <option key={option} value={option}>
-                  {equipmentSituationLabels[option]}
+                  {equipmentStatusLabels[option]}
                 </option>
               ))}
             </select>
@@ -458,13 +460,13 @@ function AdminAcervoUnitCard({
           )}
 
           {pending ? (
-            <div className="acervo-pending" role="status" aria-live="polite">
+            <div className="inventory-pending" role="status" aria-live="polite">
               <span className="loading-indicator" aria-hidden="true" />
               <p className="body-copy">Aguarde enquanto salvamos.</p>
             </div>
           ) : null}
 
-          <div className="acervo-edit-actions">
+          <div className="inventory-edit-actions">
             <button
               className="secondary-action"
               disabled={pending}
@@ -473,7 +475,7 @@ function AdminAcervoUnitCard({
               {pending ? "Aguarde..." : "Salvar alterações"}
             </button>
             <button
-              className="acervo-close-action"
+              className="inventory-close-action"
               disabled={pending}
               onClick={() => {
                 setEditing(false);
@@ -518,14 +520,14 @@ function groupUnitsByType(units: EquipmentUnit[]): UnitGroup[] {
   return groups;
 }
 
-function countSituations(
+function countStatuses(
   units: EquipmentUnit[],
-): Record<EquipmentSituation, number> {
+): Record<EquipmentStatus, number> {
   const counts = Object.fromEntries(
-    equipmentSituations.map((situation) => [situation, 0]),
-  ) as Record<EquipmentSituation, number>;
+    equipmentStatuses.map((status) => [status, 0]),
+  ) as Record<EquipmentStatus, number>;
 
-  for (const unit of units) counts[unit.situation] += 1;
+  for (const unit of units) counts[unit.status] += 1;
 
   return counts;
 }

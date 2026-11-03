@@ -52,7 +52,7 @@ O controle operacional e individual desde a Fase 1: cada peca fisica tem seu pro
 - A carga inicial deve preservar o saldo informado e registrar divergencias observadas na conferencia, nunca apagar ou corrigir silenciosamente o saldo anterior.
 - A regra operacional para tratar a diferenca entre N informado e a quantidade fisica encontrada permanece em aberto, inclusive quando houver itens associados a emprestimos abertos.
 
-A disponibilidade publica e agregada para consulta, mas derivada da contagem das unidades por tipo, entidade proprietaria e situacao. Somente unidades cuja coluna `catalog.equipment_units.situacao` tenha o valor `disponivel` contam como disponiveis; `reservado` nao conta.
+A disponibilidade publica e agregada para consulta, mas derivada da contagem das unidades por tipo, entidade proprietaria e status. Somente unidades cuja coluna `catalog.equipment_units.status` tenha o valor `available` contam como disponiveis; `reserved` nao conta.
 
 Cada banco pode definir um minimo opcional de unidades disponiveis por tipo. O painel indica um tipo como indisponivel quando nenhum banco tem unidades disponiveis e indica estoque baixo para o banco cuja quantidade esteja abaixo do proprio minimo. Sem minimo configurado, so se aplica o alerta de indisponibilidade total.
 
@@ -60,27 +60,30 @@ Formato sugerido para codigo individual: `SIGLA_ENTIDADE + SIGLA_TIPO + SEQUENCI
 
 ## 4. Situacao tecnica e rotulos de tela
 
-O banco grava a situacao no campo `catalog.equipment_units.situacao`, do tipo
-`catalog.equipment_situation`. A interface apresenta os rotulos amigaveis abaixo,
+O banco grava a situacao no campo `catalog.equipment_units.status`, do tipo
+`catalog.equipment_status`. A interface apresenta os rotulos amigaveis abaixo,
 sem exibir os identificadores tecnicos.
 
 | Valor tecnico | Rotulo de tela | Significado | Conta como disponivel? |
 |---|---|---|---|
-| `disponivel` | **Disponível no depósito** | Pronto para emprestimo no ponto de atendimento do banco | Sim |
-| `reservado` | **Aguardando retirada** | Em espera informal; nao e reserva automatica nem define um ciclo de reservas | Nao |
-| `emprestado` | **Emprestado** | Em posse de um responsavel | Nao |
-| `manutencao` | **Em manutenção** | Quebrado, incompleto ou aguardando reparo | Nao |
-| `doado` | **Doado** | Saiu definitivamente do acervo, sem previsao de retorno | Nao |
-| `baixado` | **Retirado do acervo** | Perdido, inutilizado ou nao devolvido | Nao |
+| `available` | **Disponível para empréstimo** | Pronto para emprestimo no ponto de atendimento do banco | Sim |
+| `reserved` | **Reservado para retirada** | Em espera informal; nao e reserva automatica nem define um ciclo de reservas | Nao |
+| `on_loan` | **Emprestado** | Em posse de um responsavel | Nao |
+| `under_maintenance` | **Em conserto** | Quebrado, incompleto ou aguardando reparo | Nao |
+| `donated` | **Doado** | Saiu definitivamente do acervo, sem previsao de retorno | Nao |
+| `written_off` | **Fora de uso** | Perdido, inutilizado ou nao devolvido | Nao |
+
+Na consulta pública, `available` aparece como **Disponível para empréstimo** e a
+ausência de unidades disponíveis aparece como **Nenhum disponível no momento**.
 
 Transicoes normais:
 
-- `disponivel` -> `reservado`, `emprestado`, `manutencao`, `doado` ou `baixado`;
-- `reservado` -> `disponivel` ou `emprestado`;
-- `emprestado` -> `disponivel`, `manutencao` ou `baixado`;
-- `manutencao` -> `disponivel` ou `baixado`.
+- `available` -> `reserved`, `on_loan`, `under_maintenance`, `donated` ou `written_off`;
+- `reserved` -> `available` ou `on_loan`;
+- `on_loan` -> `available`, `under_maintenance` ou `written_off`;
+- `under_maintenance` -> `available` ou `written_off`.
 
-`doado` e `baixado` sao estados terminais para administradores de banco. Correcao posterior exige administrador geral, justificativa e auditoria.
+`donated` e `written_off` sao estados terminais para administradores de banco. Correcao posterior exige administrador geral, justificativa e auditoria.
 
 Toda transicao deve registrar ator, data, situacao anterior, situacao nova e motivo quando aplicavel.
 
@@ -105,7 +108,7 @@ Toda transicao deve registrar ator, data, situacao anterior, situacao nova e mot
 ## 6. Contato por WhatsApp
 
 - A consulta anonima de disponibilidade retorna somente o nome publico do banco e a quantidade disponivel para o tipo consultado. Nao retorna endereco, telefone, link/destino de WhatsApp, identificador de unidade, movimentacao, emprestimo ou dados pessoais.
-- O detalhe do tipo mostra cartao para cada banco que possui o tipo, mesmo quando a quantidade de unidades com `situacao = 'disponivel'` e zero. Nesse caso, o cartao exibe exatamente `Todos emprestados no momento`.
+- O detalhe do tipo mostra cartao para cada banco que possui o tipo, mesmo quando a quantidade de unidades com `status = 'available'` e zero. Nesse caso, o cartao exibe exatamente `Nenhum disponível no momento`.
 - Bancos com disponibilidade aparecem primeiro, em ordem aleatoria a cada consulta; os cartoes sem disponibilidade aparecem depois.
 - A acao para conversar continua visivel com disponibilidade zero. Visitante sem sessao ve `Entrar para conversar`, direcionado a `/entrar`; pessoa autenticada com papel Comunidade ve `Conversar no WhatsApp`. A acao direta do WhatsApp exige esse papel autenticado.
 - Quando a quantidade disponivel e zero, o responsavel ainda pode orientar sobre alternativa ou fila informal.
@@ -118,7 +121,21 @@ Toda transicao deve registrar ator, data, situacao anterior, situacao nova e mot
 - Contato sem acao por 48 horas deve ser destacado ao administrador.
 - Contatos que nao viraram emprestimo devem ser eliminados conforme a politica de retencao.
 
-Situacoes permitidas: `novo`, `atendido`, `virou_emprestimo` e `sem_retorno`.
+Situacoes permitidas para um contato:
+
+| Valor tecnico | Rotulo de tela | Significado |
+|---|---|---|
+| `new` | **Novo pedido** | Contato recebido e ainda sem desfecho registrado. |
+| `answered` | **Já atendeu** | O administrador registrou que o contato foi atendido. |
+| `converted_to_loan` | **Empréstimo feito** | O administrador registrou esse desfecho para o contato. |
+| `no_response` | **Não respondeu** | O administrador registrou que nao houve retorno. |
+
+A situacao pode mudar uma unica vez de `new` para `answered`,
+`converted_to_loan` ou `no_response`. Repetir o mesmo destino nao cria outra
+transicao. Marcar **Empréstimo feito** altera somente a situacao do contato:
+nao cria nem converte automaticamente um registro de emprestimo ou de saida de
+equipamento. O administrador deve registrar o emprestimo no fluxo operacional
+proprio.
 
 ## 7. Lembretes
 
@@ -135,7 +152,7 @@ Os textos iniciais e os campos permitidos estao em [mensagens padrao](mensagens-
 
 ## 8. Pontos de atendimento e mapa
 
-O nome tecnico da tabela e `catalog.pontos_atendimento`; na interface, use **Ponto de atendimento**. Cada ponto possui nome, endereco, referencia textual, coordenadas fixadas manualmente, horario e foto opcional da fachada.
+O nome tecnico da tabela e `catalog.storage_locations`; na interface, use **Ponto de atendimento**. Cada ponto possui nome, endereco, referencia textual, coordenadas fixadas manualmente, horario e foto opcional da fachada.
 
 - O mapa deve usar as coordenadas salvas, nao uma nova geocodificacao do endereco a cada acesso.
 - No MVP, o botao de rota pode abrir um link externo para o mapa.
@@ -155,14 +172,14 @@ O nome tecnico da tabela e `catalog.pontos_atendimento`; na interface, use **Pon
 
 ### Situacao dos equipamentos
 
-Colunas de tela: **Disponível no depósito**, **Aguardando retirada**,
-**Emprestado**, **Em manutenção**, **Doado** e **Retirado do acervo**.
+Colunas de tela: **Disponível para empréstimo**, **Reservado para retirada**,
+**Emprestado**, **Em conserto**, **Doado** e **Fora de uso**.
 
-Selecionar **Emprestado** abre o fluxo de emprestimo; selecionar **Disponível no depósito** abre o fluxo de devolucao. Esses rotulos correspondem aos valores tecnicos `emprestado` e `disponivel`. Os demais movimentos podem ser feitos diretamente, com confirmacao e motivo quando necessario.
+Selecionar **Emprestado** abre o fluxo de emprestimo; selecionar **Disponível para empréstimo** abre o fluxo de devolucao. Esses rotulos correspondem aos valores tecnicos `on_loan` e `available`. Os demais movimentos podem ser feitos diretamente, com confirmacao e motivo quando necessario.
 
 ### Propriedade e ponto de guarda
 
-O administrador geral pode transferir propriedade com motivo. O administrador do banco pode solicitar ou registrar troca de ponto de guarda conforme sua permissao, sem alterar o dono. O campo tecnico `catalog.equipment_units.storage_location_id` referencia `catalog.pontos_atendimento` e nao deve ser exibido na interface.
+O administrador geral pode transferir propriedade com motivo. O administrador do banco pode solicitar ou registrar troca de ponto de guarda conforme sua permissao, sem alterar o dono. Na tela, esse conceito aparece como **Onde está guardado**; o campo tecnico `catalog.equipment_units.storage_location_id` referencia `catalog.storage_locations` e nao deve ser exibido.
 
 ### Acessos
 
@@ -172,9 +189,9 @@ Retirar acesso nao exclui a conta de comunidade nem o historico legalmente neces
 
 ## 11. Integridade
 
-- A disponibilidade e uma contagem derivada de unidades com `situacao = 'disponivel'`, nao um saldo editavel separado.
+- A disponibilidade e uma contagem derivada de unidades com `status = 'available'`, nao um saldo editavel separado.
 - Uma unidade fisica so pode estar em um emprestimo ativo.
-- Devolucao parcial deve deixar o emprestimo com situacao `parcial` ate encerramento.
+- Devolucao parcial deve deixar o emprestimo com a situacao `parcial` ate encerramento.
 - Uma entidade inativa nao pode receber novos emprestimos, mas seu historico deve permanecer consultavel por perfis autorizados.
 - Alteracoes de situacao, dono, ponto de guarda, permissao e documento devem ser auditaveis.
 - Regras de escopo entre bancos devem ser reforcadas pelo banco de dados com RLS.
