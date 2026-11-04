@@ -19,80 +19,80 @@ visual feita pelo desenvolvedor.
 ### S1 - Localizar a pessoa e segurar os equipamentos
 
 **C1** - A busca por 3 ou mais letras do nome devolve as contas da comunidade cujo nome contém o texto, sem diferenciar maiúsculas nem acentos (AC 1)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C1"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C1"`
 
 **C2** - Com 11 pessoas correspondentes, a busca devolve 10 em ordem de nome e sinaliza que há mais (AC 6)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C2"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C2"`
 
 **C3** - A busca por CPF aceita o valor com e sem pontuação e devolve a mesma pessoa (AC 2)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C3"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C3"`
 
 **C4** - Busca com 2 letras e busca com 10 dígitos são recusadas com `400` e nenhuma consulta é executada (AC 3)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C4"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C4"`
 
 **C5** - Cada resultado devolve o CPF como `***.***.***-25` e o telefone como `(54) *****-1234`, sem os valores completos (AC 4)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C5"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C5"`
 
 **C6** - Dois homônimos aparecem como dois resultados distintos, sem escolha automática de um deles (AC 5)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C6"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C6"`
 
 **C7** - A contagem de empréstimos em aberto de cada resultado conta apenas empréstimos do banco da sessão, com `0` para quem só tem empréstimo em outro banco (AC 7)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C7"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C7"`
 
 **C8** - Pessoa sem conta da comunidade não aparece em nenhum resultado e a tela mostra `Não encontramos ninguém com esse nome ou CPF.` com um único próximo passo (AC 8, AC 26)
-Proof: `supabase test db supabase/tests/emprestimo-busca.test.sql | grep -e "^ok [0-9]* - C8"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-busca.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C8"`
 Proof: walk - buscar um nome sintético sem conta e conferir a mensagem e o próximo passo
 
 **C9** - Escolher um resultado mostra `Pessoa escolhida` com nome completo e CPF mascarado e libera o passo de equipamentos (AC 9)
 Proof: walk - buscar a pessoa sintética, escolher o resultado e conferir o cartão e o próximo passo
 
 **C10** - A lista de equipamentos traz somente peças `available` do banco da sessão, agrupadas por tipo e ordenadas por número do equipamento crescente (AC 10)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C10"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C10"`
 
 **C11** - Banco sem peça `available` mostra estado vazio com explicação e um único próximo passo para `/admin/acervo` (AC 11)
 Proof: walk - abrir `/admin/emprestimos/novo` com um banco sintético sem peças disponíveis
 
 **C12** - Um envio com 3 peças de 2 tipos grava 1 empréstimo e 3 linhas, com a entidade derivada da sessão e sem aceitar entidade vinda do navegador (AC 12)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C12"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C12"`
 
 **C13** - O prazo sugerido vem de `catalog.entities.loan_suggested_days` da entidade: `90` na entidade A e `45` na entidade B configurada assim (AC 13)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C13"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C13"`
 
 **C14** - `Outra data` com 30 dias grava devolução igual a hoje mais 30 dias e revisão nula (AC 14)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C14"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C14"`
 
 **C15** - Prazo customizado com 0 dias, 366 dias ou sem número é recusado com `400` e nada é gravado (AC 15)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C15"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C15"`
 
 **C16** - `Sem data de devolução` com a revisão sugerida grava devolução nula e revisão igual a hoje mais 90 dias, e aceita revisão entre 1 e 365 dias (AC 16)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C16"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C16"`
 
 **C17** - `Sem data de devolução` sem revisão, com revisão 0 ou com revisão 366 é recusado com `400` e nada é gravado (AC 17)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C17"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C17"`
 
 **C18** - Paciente `Outra pessoa` grava o nome sem espaços nas extremidades; `A própria pessoa` grava paciente nulo (AC 18)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C18"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C18"`
 
 **C19** - Nome de paciente com 1 caractere e com 121 caracteres é recusado com `400` e nada é gravado (AC 19)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C19"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C19"`
 
 **C20** - Anotação de estado com 200 caracteres grava sem espaços nas extremidades; com 201 caracteres é recusada com `400` e nada é gravado (AC 20)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C20"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C20"`
 
 **C21** - Gravar o empréstimo aguardando retirada deixa cada peça `reserved` e cria uma auditoria `loan_draft_created` com ator, entidade, empréstimo, peças e datas (AC 21)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C21"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C21"`
 
 **C22** - Peça `under_maintenance` escolhida recusa a operação inteira com `409` e nada é gravado; a peça trazida manualmente para `available` em `/admin/acervo` mas com linha de empréstimo aberta também recusa com `409` (AC 22)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C22"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C22"`
 
 **C23** - Duas transações concorrentes na mesma peça deixam exatamente uma com `200` e a outra com `409` (AC 23)
 Proof: `bash scripts/loans-concurrency-test.sh --only C23`
 
 **C24** - Reenviar o mesmo empréstimo com a mesma pessoa, peças e datas devolve o mesmo código, sem segundo empréstimo e sem segunda auditoria (AC 24)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C24"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C24"`
 
 **C25** - Entidade inativa recusa o empréstimo com `403` e nada é gravado (AC 25)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C25"`
+Proof: `npx --yes supabase@latest test db supabase/tests/loan-draft.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C25"`
 
 **C26** - A página do empréstimo aguardando retirada mostra código, pessoa, peças seguradas, data de entrega e data de devolução ou de revisão (AC 27)
 Proof: walk - gravar um empréstimo aguardando retirada e abrir `/admin/emprestimos/<code>`
@@ -106,20 +106,20 @@ Proof: walk - abrir `/admin/emprestimos` com dois empréstimos aguardando retira
 Proof: walk - abrir um empréstimo aguardando retirada, gerar o termo e conferir o texto antes e depois
 
 **C29** - Gerar o termo usa o modelo ativo da entidade e registra no arquivo o modelo e a versão usados (AC 30)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C29"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C29"`
 
 **C30** - Entidade sem modelo ativo recusa a geração com `409` e não grava arquivo nem auditoria (AC 31)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C30"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C30"`
 
 **C31** - O arquivo é gravado no caminho `<entity_id>/<loan_id>/<version>.pdf`, sem nome, CPF ou telefone, e a auditoria `loan_term_generated` registra a versão do modelo e o hash; quando o envio ao bucket falha, nenhum arquivo nem auditoria é gravado (AC 34)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C31"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C31"`
 Proof: walk - remover a chave de serviço do ambiente, tentar gerar o termo e conferir que o empréstimo continua aguardando retirada e sem termo
 
 **C32** - Gerar de novo sem alteração mantém um único arquivo atual e não cria segunda auditoria (AC 35)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C32"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C32"`
 
 **C33** - Gerar de novo depois de alterar o empréstimo grava a versão seguinte, mantém a anterior e marca só a nova como atual (AC 36)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C33"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C33"`
 
 **C34** - O PDF traz banco cedente, nome e CPF formatado do responsável, paciente quando houver, cada equipamento com tipo e identificador, a anotação de estado, as datas, o código do empréstimo e as duas linhas de assinatura, sem telefone nem endereço (AC 32)
 Proof: walk - gerar o termo de um empréstimo aguardando retirada sintético, abrir o PDF e conferir campo por campo
@@ -131,32 +131,32 @@ Proof: walk - abrir o PDF gerado com o modelo sintético semeado e conferir o ro
 Proof: walk - usar `Baixar termo` e conferir o arquivo baixado
 
 **C37** - Empréstimo de outro banco, código inexistente e empréstimo sem termo recebem a mesma recusa: `400` na leitura do arquivo e `404` na rota de download (AC 38)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C37"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C37"`
 Proof: walk - abrir `/admin/emprestimos/<codigo-de-outro-banco>/termo` com sessão do banco A
 
 **C38** - Concluir a saída muda o empréstimo para `ativo`, cada peça segurada para `on_loan` e grava `loan_completed` mais uma auditoria `unit_updated` por peça (AC 39)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C38"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C38"`
 
 **C39** - Concluir sem termo atual recusa com `400` e não muda empréstimo nem peça (AC 40)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C39"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C39"`
 
 **C40** - Concluir com peça que saiu de `reserved` recusa com `409` e não muda empréstimo nem peça (AC 41)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C40"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C40"`
 
 **C41** - Gerar termo ou concluir em empréstimo que não está aguardando retirada recusa com `409`, sem arquivo, peça ou auditoria (AC 42)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C41"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C41"`
 
 **C42** - Depois de concluir, a tela mostra o código, a data de devolução ou de revisão e um único próximo passo, e o termo continua baixável (AC 43)
 Proof: walk - concluir um empréstimo aguardando retirada sintético e conferir a confirmação e o download
 
 **C43** - Desistir do empréstimo aguardando retirada muda o empréstimo para `cancelado`, marca `released_at`, devolve cada peça para `available` e grava `loan_draft_cancelled` (AC 44)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C43"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C43"`
 
 **C44** - Desistir de empréstimo que não está aguardando retirada recusa com `409` e não altera peça nem situação (AC 45)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C44"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C44"`
 
 **C45** - Depois de cancelar, a mesma pessoa e as mesmas peças aceitam um novo empréstimo (AC 46)
-Proof: `supabase test db supabase/tests/emprestimo-conclusao.test.sql | grep -e "^ok [0-9]* - C45"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-conclusao.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C45"`
 
 **C46** - Código de outro banco e código inexistente mostram a mesma recusa `Empréstimo não encontrado neste banco.`, sem nome nem dado (AC 47)
 Proof: walk - abrir `/admin/emprestimos/<codigo-de-outro-banco>` e um código inventado com sessão do banco A
@@ -164,16 +164,16 @@ Proof: walk - abrir `/admin/emprestimos/<codigo-de-outro-banco>` e um código in
 ### S3 - Isolamento, leitores, estados e acessibilidade
 
 **C47** - `anon`, sessão sem `bank_admin` ativo, sessão de outra entidade e papel forjado pelo navegador são negados pelo banco, e nenhuma role da Data API lê ou escreve as cinco tabelas novas nem `catalog.community_profiles` (AC 48)
-Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C47"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-isolamento.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C47"`
 
 **C48** - Peça segurada por empréstimo aguardando retirada aparece em `admin_bank_equipment_units` com a situação `reserved` (AC 49)
-Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C48"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-isolamento.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C48"`
 
 **C49** - `public.equipment_availability` deixa de contar a peça segurada por empréstimo aguardando retirada: 2 disponíveis caem para 1 (AC 50)
-Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C49"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-isolamento.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C49"`
 
 **C50** - Nenhuma resposta de busca ou detalhe traz CPF ou telefone completo, e o caminho das rotas, o `Referer` e as mensagens de erro não carregam nome, CPF ou telefone (AC 51)
-Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C50"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-isolamento.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C50"`
 Proof: walk - revisar a barra de endereço das quatro telas e as mensagens de erro do fluxo
 
 **C51** - Cada tela mostra carregamento com texto, falha com ação de tentar novamente, falta de permissão sem dado e impede envio duplicado enquanto grava (AC 52)
@@ -189,10 +189,10 @@ Proof: walk - percorrer os 4 passos com o teclado, provocar um erro de campo e v
 Proof: walk - abrir a navegação administrativa nas quatro telas e conferir o link e o anúncio da página atual
 
 **C55** - Um empréstimo aguardando retirada criado há 40 dias continua na lista e com as peças em `Reservado para retirada`, sem expiração automática (AC 56)
-Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C55"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-isolamento.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C55"`
 
 **C56** - A RPC do termo devolve o CPF completo apenas do responsável do próprio empréstimo do banco da sessão: o rascunho do banco devolve `11144477735` e o empréstimo de outro banco é recusado com `P0005` (AC 32, AC 51)
-Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C56"`
+Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.sql --debug 2>&1 | grep -e "^ok [0-9]* - C56"`
 
 ## Coverage
 
