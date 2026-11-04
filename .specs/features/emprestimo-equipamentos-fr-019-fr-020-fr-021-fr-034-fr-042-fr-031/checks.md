@@ -250,4 +250,4 @@ Proof: `bash scripts/loan-proof.sh supabase/tests/emprestimo-termo.test.sql --on
 - **Dispatched:** Verifier round 1 at `5a58014`, sent e devolvido em 2026-11-04 com 8 achados; round 2 a enviar depois do commit das correções.
 - **Boundary:** as 43 provas automatizadas passam; as 18 provas de `walk` continuam abertas até a conferência visual do desenvolvedor.
 - **Abandoned:** dblink dentro do pgTAP - o papel de teste não é superusuário e o dblink recusa a conexão; C23 passou a ser provada por `scripts/loans-concurrency-test.sh`, com duas sessões psql reais.
-- **Pending walk:** a conferência visual do desenvolvedor cobre C9, C11, C26, C27, C28, C31 (falha do bucket), C34, C35, C36, C37, C42, C46, C50, C51, C52, C53 e C54. Nenhuma foi feita ainda; por isso a linha `**Walked:**` não existe e `check_proofs.py` marca essas provas como abertas.
+- **Pending walk:** a conferência visual do desenvolvedor cobre C9, C11, C26, C27, C28, C31 (falha do bucket), C34, C35, C36, C37, C42, C46, C50, C51, C52, C53 e C54. Nenhuma foi feita ainda; por isso a linha de Walked não existe e `check_proofs.py` marca essas provas como abertas.
