@@ -77,46 +77,69 @@ values
   ('f5000000-0000-4000-8000-000000000011', 'e5000000-0000-4000-8000-000000000003');
 
 select ok(
-  not has_table_privilege('anon', 'catalog.loans', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.loans', 'SELECT')
-    and not has_table_privilege('service_role', 'catalog.loans', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.loans', 'INSERT')
-    and not has_table_privilege('authenticated', 'catalog.loans', 'UPDATE')
-    and not has_table_privilege('authenticated', 'catalog.loans', 'DELETE')
-    and not has_table_privilege('authenticated', 'catalog.loan_lines', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.loan_lines', 'INSERT')
-    and not has_table_privilege('authenticated', 'catalog.loan_documents', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.loan_documents', 'INSERT')
-    and not has_table_privilege('authenticated', 'catalog.loan_event_audit', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.loan_event_audit', 'INSERT')
-    and not has_table_privilege('authenticated', 'catalog.loan_event_audit', 'UPDATE')
-    and not has_table_privilege('authenticated', 'catalog.document_models', 'SELECT')
-    and not has_table_privilege('authenticated', 'catalog.document_models', 'INSERT')
-    and not has_table_privilege('authenticated', 'catalog.document_models', 'UPDATE')
-    and not has_table_privilege('service_role', 'catalog.loan_event_audit', 'INSERT')
-    and not has_table_privilege('authenticated', 'catalog.community_profiles', 'SELECT')
-    and not has_table_privilege('service_role', 'catalog.community_profiles', 'SELECT'),
-  'C47 no Data API role reads or writes the loan tables and the community profiles directly'
+  not exists (
+    select 1
+    from (
+      values
+        ('catalog.loans'),
+        ('catalog.loan_lines'),
+        ('catalog.loan_documents'),
+        ('catalog.loan_event_audit'),
+        ('catalog.document_models'),
+        ('catalog.community_profiles')
+    ) as target(name)
+    cross join (
+      values ('anon'), ('authenticated'), ('service_role')
+    ) as actor(role_name)
+    cross join (
+      values ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE')
+    ) as privilege(kind)
+    where has_table_privilege(actor.role_name, target.name, privilege.kind)
+  ),
+  'C47 no Data API role holds any privilege on the six tables, for every role, table and privilege'
 );
 
 select ok(
-  has_function_privilege('authenticated', 'public.admin_search_people(text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_loan_available_units()', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_create_loan_draft(uuid,uuid[],text,text,text,integer,integer)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_bank_loans()', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_loan_detail(text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_loan_term_data(text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_record_loan_term(text,integer,text,text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_loan_term_file(text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_complete_loan(text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.admin_cancel_loan_draft(text)', 'EXECUTE')
-    and not has_function_privilege('anon', 'public.admin_loan_detail(text)', 'EXECUTE')
-    and not has_function_privilege('anon', 'public.admin_loan_term_file(text)', 'EXECUTE')
-    and not has_function_privilege('anon', 'public.admin_cancel_loan_draft(text)', 'EXECUTE')
-    and not has_function_privilege('service_role', 'public.admin_loan_term_data(text)', 'EXECUTE')
-    and not has_function_privilege('service_role', 'public.admin_complete_loan(text)', 'EXECUTE')
-    and not has_function_privilege('service_role', 'public.admin_bank_loans()', 'EXECUTE'),
-  'C47 only authenticated may call the loan RPCs'
+  (
+    select count(*) = 10
+      and bool_and(
+        has_function_privilege('authenticated', signature, 'EXECUTE')
+      )
+    from (
+      values
+        ('public.admin_search_people(text)'),
+        ('public.admin_loan_available_units()'),
+        ('public.admin_create_loan_draft(uuid,uuid[],text,text,text,integer,integer)'),
+        ('public.admin_bank_loans()'),
+        ('public.admin_loan_detail(text)'),
+        ('public.admin_loan_term_data(text)'),
+        ('public.admin_record_loan_term(text,integer,text,text)'),
+        ('public.admin_loan_term_file(text)'),
+        ('public.admin_complete_loan(text)'),
+        ('public.admin_cancel_loan_draft(text)')
+    ) as loan_rpc(signature)
+  )
+    and not exists (
+    select 1
+    from (
+      values
+        ('public.admin_search_people(text)'),
+        ('public.admin_loan_available_units()'),
+        ('public.admin_create_loan_draft(uuid,uuid[],text,text,text,integer,integer)'),
+        ('public.admin_bank_loans()'),
+        ('public.admin_loan_detail(text)'),
+        ('public.admin_loan_term_data(text)'),
+        ('public.admin_record_loan_term(text,integer,text,text)'),
+        ('public.admin_loan_term_file(text)'),
+        ('public.admin_complete_loan(text)'),
+        ('public.admin_cancel_loan_draft(text)')
+    ) as loan_rpc(signature)
+    cross join (
+      values ('anon'), ('service_role')
+    ) as actor(role_name)
+    where has_function_privilege(actor.role_name, loan_rpc.signature, 'EXECUTE')
+  ),
+  'C47 all ten loan RPCs are executable by authenticated and by no other Data API role'
 );
 
 set local role anon;
