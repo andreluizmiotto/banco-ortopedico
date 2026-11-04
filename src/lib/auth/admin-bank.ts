@@ -30,7 +30,14 @@ export async function resolveAdminBankAccess(
       error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError) return { kind: "unavailable" };
+    if (userError) {
+      // A visitor without a session is not a failure: the caller redirects to the
+      // sign-in page. Any other auth error stays "unavailable".
+      if (userError.name === "AuthSessionMissingError") {
+        return { kind: "unauthenticated" };
+      }
+      return { kind: "unavailable" };
+    }
     if (!user) return { kind: "unauthenticated" };
 
     const { data: entityId, error: roleError } = await supabase.rpc(

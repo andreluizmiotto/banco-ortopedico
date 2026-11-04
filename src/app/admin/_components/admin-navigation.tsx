@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const tasks = [
   { href: "/admin/contatos", label: "Pedidos de contato" },
+  { href: "/admin/emprestimos", label: "Empréstimos" },
   { href: "/admin/acervo", label: "Equipamentos do banco" },
 ] as const;
 

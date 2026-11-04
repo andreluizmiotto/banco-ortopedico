@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run build`
 Plan: `.specs/features/emprestimo-equipamentos-fr-019-fr-020-fr-021-fr-034-fr-042-fr-031/plan.md`
 
-55 checks em 3 fatias · 7 portas unidirecionais · 0 perguntas abertas
+56 checks em 3 fatias · 7 portas unidirecionais · 0 perguntas abertas
 
 As provas SQL rodam os arquivos pgTAP de `supabase/tests/` com `supabase test db`.
 Cada asserção `ok(...)` recebe a descrição começando pelo identificador do check
@@ -86,7 +86,7 @@ Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]
 Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C22"`
 
 **C23** - Duas transações concorrentes na mesma peça deixam exatamente uma com `200` e a outra com `409` (AC 23)
-Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C23"`
+Proof: `bash scripts/loans-concurrency-test.sh --only C23`
 
 **C24** - Reenviar o mesmo empréstimo com a mesma pessoa, peças e datas devolve o mesmo código, sem segundo empréstimo e sem segunda auditoria (AC 24)
 Proof: `supabase test db supabase/tests/loan-draft.test.sql | grep -e "^ok [0-9]* - C24"`
@@ -113,6 +113,7 @@ Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok
 
 **C31** - O arquivo é gravado no caminho `<entity_id>/<loan_id>/<version>.pdf`, sem nome, CPF ou telefone, e a auditoria `loan_term_generated` registra a versão do modelo e o hash; quando o envio ao bucket falha, nenhum arquivo nem auditoria é gravado (AC 34)
 Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C31"`
+Proof: walk - remover a chave de serviço do ambiente, tentar gerar o termo e conferir que o empréstimo continua aguardando retirada e sem termo
 
 **C32** - Gerar de novo sem alteração mantém um único arquivo atual e não cria segunda auditoria (AC 35)
 Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C32"`
@@ -171,7 +172,7 @@ Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e
 **C49** - `public.equipment_availability` deixa de contar a peça segurada por empréstimo aguardando retirada: 2 disponíveis caem para 1 (AC 50)
 Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C49"`
 
-**C50** - Nenhuma resposta de busca, detalhe ou termo traz CPF ou telefone completo, e o caminho das rotas, o `Referer` e as mensagens de erro não carregam nome, CPF ou telefone (AC 51)
+**C50** - Nenhuma resposta de busca ou detalhe traz CPF ou telefone completo, e o caminho das rotas, o `Referer` e as mensagens de erro não carregam nome, CPF ou telefone (AC 51)
 Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C50"`
 Proof: walk - revisar a barra de endereço das quatro telas e as mensagens de erro do fluxo
 
@@ -189,6 +190,9 @@ Proof: walk - abrir a navegação administrativa nas quatro telas e conferir o l
 
 **C55** - Um empréstimo aguardando retirada criado há 40 dias continua na lista e com as peças em `Reservado para retirada`, sem expiração automática (AC 56)
 Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e "^ok [0-9]* - C55"`
+
+**C56** - A RPC do termo devolve o CPF completo apenas do responsável do próprio empréstimo do banco da sessão: o rascunho do banco devolve `11144477735` e o empréstimo de outro banco é recusado com `P0005` (AC 32, AC 51)
+Proof: `supabase test db supabase/tests/emprestimo-termo.test.sql | grep -e "^ok [0-9]* - C56"`
 
 ## Coverage
 
@@ -225,6 +229,7 @@ Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e
 | paciente, AC 18 e AC 19 (4 examples) | 2 caracteres C18 · 120 caracteres C18 · 1 caractere C19 · 121 caracteres C19 | - |
 | anotação de estado, AC 20 (2 examples) | 200 caracteres C20 · 201 caracteres C20 | - |
 | máscara de pessoa, AC 4 (2 fields) | CPF C5 · telefone C5 | - |
+| CPF completo no termo, AC 32 e AC 51 (2 cases) | próprio rascunho C56 · empréstimo de outro banco C56 | - |
 | captura de tela (0) | n/a - nenhuma fonte visual acompanhou o pedido | - |
 
 ## Swept
@@ -241,8 +246,8 @@ Proof: `supabase test db supabase/tests/emprestimo-isolamento.test.sql | grep -e
 
 ## Handoff
 
-- **Settled mid-build:** none
+- **Settled mid-build:** 2026-11-04 - o AC 32 manda imprimir o CPF completo e o AC 51 proíbe CPF completo em resposta de termo; o usuário escolheu "Termo imprime o CPF completo; AC 51 vale para busca e detalhe". C50 passou a cobrir busca e detalhe, e C56 foi acrescentado para provar o limite da RPC do termo.
 - **Dispatched:** none
 - **Boundary:** nenhum check fechado ainda
-- **Abandoned:** none
-- **Walked:** none
+- **Abandoned:** dblink dentro do pgTAP - o papel de teste não é superusuário e o dblink recusa a conexão; C23 passou a ser provada por `scripts/loans-concurrency-test.sh`, com duas sessões psql reais.
+- **Walked:** pendente - a conferência visual do desenvolvedor cobre C9, C11, C26, C27, C28, C31 (falha do bucket), C34, C35, C36, C37, C42, C46, C50, C51, C52, C53 e C54.
