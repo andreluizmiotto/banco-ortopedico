@@ -1,8 +1,8 @@
 # emprestimo-equipamentos-fr-019-fr-020-fr-021-fr-034-fr-042-fr-031 proofs
 
-**HEAD**: 54ef3ae
+**HEAD**: a0e830a
 **Tree**: clean
-**Result**: 43 pass, 18 fail; mutations 3 killed, 0 not
+**Result**: 43 pass, 18 fail; mutations 0 killed, 0 not
 
 | Check | Proof | Ran | Passed | Result |
 | --- | --- | --- | --- | --- |
@@ -67,11 +67,3 @@
 | C55 | `bash scripts/loan-proof.sh supabase/tests/emprestimo-isolamento.test.sql --only C55` | count unknown | - | pass |
 | C56 | `bash scripts/loan-proof.sh supabase/tests/emprestimo-termo.test.sql --only C56` | count unknown | - | pass |
 | Build | `npm run build` | - | - | pass |
-
-## Mutations
-
-| Mutation | Location | Killed |
-| --- | --- | --- |
-| C7 open loan count drops the active loan of the session bank | `supabase/migrations/20261104000000_loans.sql:591` | yes |
-| C22 open line guard removed, leaving only the unique index | `supabase/migrations/20261104000000_loans.sql:839` | yes |
-| C18 patient name bounds shifted from 2..120 to 3..119 | `supabase/migrations/20261104000000_loans.sql:723` | yes |
