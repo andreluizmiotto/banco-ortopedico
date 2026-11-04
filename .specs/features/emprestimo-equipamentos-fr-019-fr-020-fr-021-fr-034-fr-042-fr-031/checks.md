@@ -247,7 +247,7 @@ Proof: `npx --yes supabase@latest test db supabase/tests/emprestimo-termo.test.s
 ## Handoff
 
 - **Settled mid-build:** 2026-11-04 - o AC 32 manda imprimir o CPF completo e o AC 51 proíbe CPF completo em resposta de termo; o usuário escolheu "Termo imprime o CPF completo; AC 51 vale para busca e detalhe". C50 passou a cobrir busca e detalhe, e C56 foi acrescentado para provar o limite da RPC do termo.
-- **Dispatched:** none
-- **Boundary:** nenhum check fechado ainda
+- **Dispatched:** Verifier round 1 at `5a58014`, sent 2026-11-04
+- **Boundary:** C1-C56 com prova verde at `5a58014`; `check_proofs.py` 61 pass, 0 fail
 - **Abandoned:** dblink dentro do pgTAP - o papel de teste não é superusuário e o dblink recusa a conexão; C23 passou a ser provada por `scripts/loans-concurrency-test.sh`, com duas sessões psql reais.
 - **Walked:** pendente - a conferência visual do desenvolvedor cobre C9, C11, C26, C27, C28, C31 (falha do bucket), C34, C35, C36, C37, C42, C46, C50, C51, C52, C53 e C54.
