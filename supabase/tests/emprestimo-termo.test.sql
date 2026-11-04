@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(17);
 
 create function pg_temp.loan_login(p_sub text)
 returns void
@@ -162,6 +162,20 @@ select ok(
 );
 
 set local role authenticated;
+select pg_temp.loan_login('a5000000-0000-4000-8000-000000000001');
+
+select results_eq(
+  $$
+    select current_version, current_content_hash
+    from public.admin_loan_term_data('CCCC00000010')
+  $$,
+  $$ values (1, repeat('a', 64)) $$,
+  'C29 the term data reports the current file so an identical term is not uploaded again'
+);
+
+reset role;
+
+set local role authenticated;
 select pg_temp.loan_login('a5000000-0000-4000-8000-000000000002');
 
 select throws_ok(
@@ -297,21 +311,21 @@ select pg_temp.loan_login('a5000000-0000-4000-8000-000000000001');
 select throws_ok(
   $$ select public.admin_loan_term_file('CCCC00000012') $$,
   'P0005',
-  null,
+  'Empréstimo não encontrado',
   'C37 a loan of another bank is refused with the generic answer'
 );
 
 select throws_ok(
   $$ select public.admin_loan_term_file('ZZZZ00000000') $$,
   'P0005',
-  null,
+  'Empréstimo não encontrado',
   'C37 an unknown code is refused with the same generic answer'
 );
 
 select throws_ok(
   $$ select public.admin_loan_term_file('CCCC00000011') $$,
   'P0005',
-  null,
+  'Empréstimo não encontrado',
   'C37 a loan without a generated term is refused with the same generic answer'
 );
 

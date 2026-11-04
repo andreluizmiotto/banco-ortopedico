@@ -1,6 +1,6 @@
 begin;
 
-select plan(25);
+select plan(28);
 
 create function pg_temp.loan_login(p_sub text)
 returns void
@@ -53,7 +53,10 @@ values
   ('e2000000-0000-4000-8000-000000000006', 'CR', 'd2000000-0000-4000-8000-000000000001', null, 'available', 'BVCR0104'),
   ('e2000000-0000-4000-8000-000000000007', 'CR', 'd2000000-0000-4000-8000-000000000001', null, 'available', 'BVCR0105'),
   ('e2000000-0000-4000-8000-000000000008', 'CR', 'd2000000-0000-4000-8000-000000000001', null, 'available', 'BVCR0106'),
-  ('e2000000-0000-4000-8000-000000000009', 'CR', 'd2000000-0000-4000-8000-000000000002', null, 'available', 'TVCR0101');
+  ('e2000000-0000-4000-8000-000000000009', 'CR', 'd2000000-0000-4000-8000-000000000002', null, 'available', 'TVCR0101'),
+  ('e2000000-0000-4000-8000-000000000010', 'CR', 'd2000000-0000-4000-8000-000000000001', null, 'available', 'BVCR0107'),
+  ('e2000000-0000-4000-8000-000000000011', 'CR', 'd2000000-0000-4000-8000-000000000001', null, 'available', 'BVCR0108'),
+  ('e2000000-0000-4000-8000-000000000012', 'CR', 'd2000000-0000-4000-8000-000000000001', null, 'available', 'BVCR0109');
 
 set local role authenticated;
 select pg_temp.loan_login('a4000000-0000-4000-8000-000000000001');
@@ -70,6 +73,9 @@ select results_eq(
       ('BVCR0104'::text),
       ('BVCR0105'::text),
       ('BVCR0106'::text),
+      ('BVCR0107'::text),
+      ('BVCR0108'::text),
+      ('BVCR0109'::text),
       (null::text),
       ('BVAN0101'::text)
   $$,
@@ -368,8 +374,8 @@ select throws_ok(
        array['e2000000-0000-4000-8000-000000000007']::uuid[],
        null, null, 'custom', 30, null) $$,
   'P0003',
-  null,
-  'C22 a unit released by hand in the inventory but still held by an open loan is refused'
+  'O equipamento Cadeira de rodas BVCR0105 não está mais disponível. Atualize a lista e escolha outro.',
+  'C22 a unit released by hand in the inventory but still held by an open loan is refused, naming the equipment'
 );
 
 select results_eq(
@@ -402,6 +408,60 @@ select ok(
       where action = 'loan_draft_created'
     ) = 5,
   'C24 the resend creates no second loan and no second audit'
+);
+
+set local role authenticated;
+select pg_temp.loan_login('a4000000-0000-4000-8000-000000000001');
+
+create temp table boundary_short as
+select * from public.admin_create_loan_draft(
+  'a4000000-0000-4000-8000-000000000010',
+  array['e2000000-0000-4000-8000-000000000010']::uuid[],
+  'Al', null, 'suggested', null, null
+);
+
+create temp table boundary_long as
+select * from public.admin_create_loan_draft(
+  'a4000000-0000-4000-8000-000000000010',
+  array['e2000000-0000-4000-8000-000000000011']::uuid[],
+  repeat('a', 120), null, 'suggested', null, null
+);
+
+create temp table boundary_note as
+select * from public.admin_create_loan_draft(
+  'a4000000-0000-4000-8000-000000000010',
+  array['e2000000-0000-4000-8000-000000000012']::uuid[],
+  null, '  ' || repeat('n', 200) || '  ', 'suggested', null, null
+);
+
+reset role;
+
+select results_eq(
+  $$
+    select patient_name
+    from catalog.loans
+    where public_code = (select public_code from boundary_short)
+  $$,
+  $$ values ('Al'::text) $$,
+  'C18 a two character patient name is accepted'
+);
+
+select ok(
+  (
+    select char_length(patient_name) = 120
+    from catalog.loans
+    where public_code = (select public_code from boundary_long)
+  ),
+  'C18 a 120 character patient name is accepted'
+);
+
+select ok(
+  (
+    select char_length(condition_note) = 200
+    from catalog.loans
+    where public_code = (select public_code from boundary_note)
+  ),
+  'C20 a 200 character condition note is accepted and stored trimmed'
 );
 
 select * from finish();

@@ -85,6 +85,8 @@ type TermRow = {
   model_review_status: unknown;
   next_version: unknown;
   next_storage_path: unknown;
+  current_version: unknown;
+  current_content_hash: unknown;
 };
 
 export type AdminLoansPageData =
@@ -543,6 +545,8 @@ export async function generateAdminLoanTerm(
       (row.model_review_status !== "pending_legal_review" &&
         row.model_review_status !== "approved") ||
       typeof row.next_storage_path !== "string" ||
+      (row.current_version !== null && typeof row.current_version !== "number") ||
+      !isNullableString(row.current_content_hash) ||
       units === null
     ) {
       return { kind: "error", message: errorMessage };
@@ -578,6 +582,16 @@ export async function generateAdminLoanTerm(
     });
 
     const contentHash = createHash("sha256").update(bytes).digest("hex");
+
+    // The same term, already recorded: nothing is uploaded and no second version
+    // is asked for, so the bucket keeps no file the loan does not point to.
+    if (
+      row.current_content_hash === contentHash &&
+      typeof row.current_version === "number"
+    ) {
+      return { kind: "success", version: row.current_version };
+    }
+
     const storage = createSupabaseServiceClient().storage.from(bucketName);
     const upload = await storage.upload(row.next_storage_path, bytes, {
       contentType: "application/pdf",

@@ -128,6 +128,17 @@ values
     'active',
     'a3000000-0000-4000-8000-000000000002',
     clock_timestamp()
+  ),
+  (
+    'f1000000-0000-4000-8000-000000000003',
+    'BBBB00000003',
+    'd1000000-0000-4000-8000-000000000001',
+    'a3000000-0000-4000-8000-000000000010',
+    current_date,
+    current_date + 60,
+    'active',
+    'a3000000-0000-4000-8000-000000000001',
+    clock_timestamp()
   );
 
 set local role authenticated;
@@ -205,14 +216,14 @@ select ok(
 
 select results_eq(
   $$ select open_loan_count from public.admin_search_people('maria') $$,
-  $$ values (1) $$,
-  'C7 the open loan count only counts loans of the session bank'
+  $$ values (2) $$,
+  'C7 the open loan count sums drafts and active loans of the session bank'
 );
 
 select results_eq(
   $$ select open_loan_count from public.admin_search_people('11144477735') $$,
-  $$ values (1) $$,
-  'C7 the CPF search also counts only the session bank'
+  $$ values (2) $$,
+  'C7 the CPF search also counts the session bank only'
 );
 
 select results_eq(

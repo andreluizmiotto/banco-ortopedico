@@ -1085,7 +1085,9 @@ returns table (
   model_body text,
   model_review_status text,
   next_version integer,
-  next_storage_path text
+  next_storage_path text,
+  current_version integer,
+  current_content_hash text
 )
 language plpgsql
 stable
@@ -1179,7 +1181,19 @@ begin
     model.review_status::text,
     v_next_version,
     v_entity_id::text || '/' || v_loan_id::text || '/'
-      || v_next_version::text || '.pdf'
+      || v_next_version::text || '.pdf',
+    (
+      select document.version
+      from catalog.loan_documents as document
+      where document.loan_id = loan.id
+        and document.is_current
+    ),
+    (
+      select document.content_hash
+      from catalog.loan_documents as document
+      where document.loan_id = loan.id
+        and document.is_current
+    )
   from catalog.loans as loan
   join catalog.entities as entity on entity.id = loan.entity_id
   join catalog.community_profiles as profile
