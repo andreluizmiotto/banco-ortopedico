@@ -184,8 +184,16 @@ export async function getAdminLoansPageData(): Promise<AdminLoansPageData> {
       if (!isRecord(value)) return { kind: "error" };
       const row = value as LoanRow;
 
+      if (typeof row.bank_name !== "string") return { kind: "error" };
+      if (bankName !== null && bankName !== row.bank_name) {
+        return { kind: "error" };
+      }
+      bankName = row.bank_name;
+
+      // A bank with no draft comes back as one row carrying only its name; the
+      // page renders the empty state for it.
+      if (row.public_code === null) continue;
       if (
-        typeof row.bank_name !== "string" ||
         typeof row.public_code !== "string" ||
         !publicCodePattern.test(row.public_code) ||
         typeof row.borrower_name !== "string" ||
@@ -195,11 +203,6 @@ export async function getAdminLoansPageData(): Promise<AdminLoansPageData> {
       ) {
         return { kind: "error" };
       }
-
-      if (bankName !== null && bankName !== row.bank_name) {
-        return { kind: "error" };
-      }
-      bankName = row.bank_name;
 
       loans.push({
         publicCode: row.public_code,

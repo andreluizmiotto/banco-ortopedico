@@ -1,8 +1,8 @@
 # emprestimo-equipamentos-fr-019-fr-020-fr-021-fr-034-fr-042-fr-031 proofs
 
-**HEAD**: ec70639
+**HEAD**: 619ac3c
 **Tree**: dirty - src/lib/loans/admin-server.ts, supabase/tests/emprestimo-isolamento.test.sql, supabase/migrations/20261106000000_admin_bank_loans_empty_bank.sql
-**Result**: 43 pass, 18 fail; mutations 0 killed, 0 not
+**Result**: 44 pass, 18 fail; mutations 0 killed, 0 not
 
 | Check | Proof | Ran | Passed | Result |
 | --- | --- | --- | --- | --- |
@@ -66,4 +66,5 @@
 | C54 | `walk - abrir a navegação administrativa nas quatro telas e conferir o link e o anúncio da página atual` | - | - | **no Walked line** |
 | C55 | `bash scripts/loan-proof.sh supabase/tests/emprestimo-isolamento.test.sql --only C55` | count unknown | - | pass |
 | C56 | `bash scripts/loan-proof.sh supabase/tests/emprestimo-termo.test.sql --only C56` | count unknown | - | pass |
+| C57 | `bash scripts/loan-proof.sh supabase/tests/emprestimo-isolamento.test.sql --only C57` | count unknown | - | pass |
 | Build | `npm run build` | - | - | pass |

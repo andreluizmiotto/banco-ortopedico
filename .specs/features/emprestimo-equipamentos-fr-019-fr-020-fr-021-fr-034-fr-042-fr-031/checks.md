@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run build`
 Plan: `.specs/features/emprestimo-equipamentos-fr-019-fr-020-fr-021-fr-034-fr-042-fr-031/plan.md`
 
-56 checks em 3 fatias · 7 portas unidirecionais · 0 perguntas abertas
+57 checks em 3 fatias · 7 portas unidirecionais · 0 perguntas abertas
 
 As provas SQL rodam os arquivos pgTAP de `supabase/tests/` com `supabase test db`.
 Cada asserção `ok(...)` recebe a descrição começando pelo identificador do check
@@ -194,11 +194,15 @@ Proof: `bash scripts/loan-proof.sh supabase/tests/emprestimo-isolamento.test.sql
 **C56** - A RPC do termo devolve o CPF completo apenas do responsável do próprio empréstimo do banco da sessão: o rascunho do banco devolve `11144477735` e o empréstimo de outro banco é recusado com `P0005` (AC 32, AC 51)
 Proof: `bash scripts/loan-proof.sh supabase/tests/emprestimo-termo.test.sql --only C56`
 
+**C57** - Um banco sem empréstimo aguardando retirada recebe o próprio nome na lista, e a página mostra o estado vazio em vez da falha de carregamento (AC 28)
+Proof: `bash scripts/loan-proof.sh supabase/tests/emprestimo-isolamento.test.sql --only C57`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | `GET /admin/emprestimos` statuses (3) | `200` C27 · `307` C54 · `200` falta de permissão C51 | - |
+| vazio na lista de empréstimos (1) | banco sem rascunho C57 | - |
 | `GET /admin/emprestimos/novo` statuses (3) | `200` C10 · `307` C54 · `200` falta de permissão C51 | - |
 | `GET /admin/emprestimos/[code]` statuses (3) | `200` C26 · `307` C54 · recusa genérica C46 | - |
 | `GET /admin/emprestimos/[code]/termo` statuses (3) | `200` C36 · `307` C54 · `404` C37 | - |
@@ -248,7 +252,7 @@ Proof: `bash scripts/loan-proof.sh supabase/tests/emprestimo-termo.test.sql --on
 
 - **Settled mid-build:** 2026-11-04 - o AC 32 manda imprimir o CPF completo e o AC 51 proíbe CPF completo em resposta de termo; o usuário escolheu "Termo imprime o CPF completo; AC 51 vale para busca e detalhe". C50 passou a cobrir busca e detalhe, e C56 foi acrescentado para provar o limite da RPC do termo.
 - **Dispatched:** Verifier round 1 at `5a58014` (8 achados); round 2 at `54ef3ae` (fechou 2, 3, 4, 5, 7 e 8; manteve 1 como trabalho humano e reabriu 6, virando o achado 9).
-- **Boundary:** as 43 provas automatizadas passam; as 18 provas de `walk` continuam abertas até a conferência visual do desenvolvedor. C47 refeito depois da rodada 2 e as duas mutações do Verifier (`execute` para `anon` numa RPC, `delete` para `authenticated` em `catalog.loan_lines`) passaram a matar a prova.
+- **Boundary:** as 44 provas automatizadas passam; as 18 provas de `walk` continuam abertas até a conferência visual do desenvolvedor. C47 refeito depois da rodada 2 e as duas mutações do Verifier (`execute` para `anon` numa RPC, `delete` para `authenticated` em `catalog.loan_lines`) passaram a matar a prova.
 - **Abandoned:** dblink dentro do pgTAP - o papel de teste não é superusuário e o dblink recusa a conexão; C23 passou a ser provada por `scripts/loans-concurrency-test.sh`, com duas sessões psql reais.
 - **Walk findings:** 2026-11-06 - a primeira conferência visual encontrou que nenhum banco tinha modelo de termo: o `insert ... select from catalog.entities` morava na migration, que roda antes de `seed.sql` criar os bancos, então gravou zero linhas. O modelo passou para `seed.sql`, C29 ganhou a asserção "todo banco semeado começa com um modelo ativo", e as fixtures do seed deixaram de usar CPFs e UUIDs que os testes já usavam. Refazer C28, C34 e C35.
 - **Pending walk:** a conferência visual do desenvolvedor cobre C9, C11, C26, C27, C28, C31 (falha do bucket), C34, C35, C36, C37, C42, C46, C50, C51, C52, C53 e C54. Nenhuma foi feita ainda; por isso a linha de Walked não existe e `check_proofs.py` marca essas provas como abertas.

@@ -1,6 +1,6 @@
 begin;
 
-select plan(11);
+select plan(12);
 
 create function pg_temp.loan_login(p_sub text)
 returns void
@@ -15,7 +15,8 @@ $function$;
 insert into catalog.entities (id, code, public_name, is_bank, is_active, loan_suggested_days)
 values
   ('d5000000-0000-4000-8000-000000000001', 'BV', 'Banco Boa Vista', true, true, 90),
-  ('d5000000-0000-4000-8000-000000000002', 'TV', 'Banco Tres Vendas', true, true, 45);
+  ('d5000000-0000-4000-8000-000000000002', 'TV', 'Banco Tres Vendas', true, true, 45),
+  ('d5000000-0000-4000-8000-000000000003', 'EC', 'Banco Erechim', true, true, 60);
 
 insert into auth.users (
   id, aud, role, email, email_confirmed_at, encrypted_password,
@@ -24,6 +25,7 @@ insert into auth.users (
 values
   ('a7000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'bv.admin@example.test', clock_timestamp(), '', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, clock_timestamp(), clock_timestamp()),
   ('a7000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'tv.admin@example.test', clock_timestamp(), '', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, clock_timestamp(), clock_timestamp()),
+  ('a7000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'ec.admin@example.test', clock_timestamp(), '', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, clock_timestamp(), clock_timestamp()),
   ('a7000000-0000-4000-8000-000000000010', 'authenticated', 'authenticated', 'maria.oliveira@example.test', clock_timestamp(), '', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, clock_timestamp(), clock_timestamp());
 
 insert into catalog.community_profiles (id, name, cpf, phone, privacy_notice_version)
@@ -33,6 +35,7 @@ insert into catalog.user_roles (user_id, role, entity_id, is_active)
 values
   ('a7000000-0000-4000-8000-000000000001', 'bank_admin', 'd5000000-0000-4000-8000-000000000001', true),
   ('a7000000-0000-4000-8000-000000000002', 'bank_admin', 'd5000000-0000-4000-8000-000000000002', true),
+  ('a7000000-0000-4000-8000-000000000003', 'bank_admin', 'd5000000-0000-4000-8000-000000000003', true),
   ('a7000000-0000-4000-8000-000000000010', 'community', null, true);
 
 insert into catalog.equipment_units (
@@ -232,6 +235,16 @@ select ok(
     where id = 'e5000000-0000-4000-8000-000000000001'
   ),
   'C55 the unit of an old draft is still held, with no automatic expiry'
+);
+
+reset role;
+set local role authenticated;
+select pg_temp.loan_login('a7000000-0000-4000-8000-000000000003');
+
+select results_eq(
+  $$ select bank_name, public_code from public.admin_bank_loans() $$,
+  $$ values ('Banco Erechim'::text, null::text) $$,
+  'C57 a bank with no draft still receives its name, so the page shows the empty state'
 );
 
 select * from finish();
