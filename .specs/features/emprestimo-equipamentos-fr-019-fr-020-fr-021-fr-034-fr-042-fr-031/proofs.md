@@ -1,7 +1,7 @@
 # emprestimo-equipamentos-fr-019-fr-020-fr-021-fr-034-fr-042-fr-031 proofs
 
-**HEAD**: a0e830a
-**Tree**: clean
+**HEAD**: ec70639
+**Tree**: dirty - src/lib/loans/admin-server.ts, supabase/tests/emprestimo-isolamento.test.sql, supabase/migrations/20261106000000_admin_bank_loans_empty_bank.sql
 **Result**: 43 pass, 18 fail; mutations 0 killed, 0 not
 
 | Check | Proof | Ran | Passed | Result |
