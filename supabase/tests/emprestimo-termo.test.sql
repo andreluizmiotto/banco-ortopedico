@@ -1,6 +1,6 @@
 begin;
 
-select plan(17);
+select plan(18);
 
 create function pg_temp.loan_login(p_sub text)
 returns void
@@ -102,6 +102,23 @@ values
   ('f3000000-0000-4000-8000-000000000010', 'e3000000-0000-4000-8000-000000000002'),
   ('f3000000-0000-4000-8000-000000000011', 'e3000000-0000-4000-8000-000000000003'),
   ('f3000000-0000-4000-8000-000000000012', 'e3000000-0000-4000-8000-000000000004');
+
+select ok(
+  not exists (
+    select 1
+    from catalog.entities as entity
+    where entity.code like 'ROTARY-%'
+      and entity.is_active
+      and not exists (
+        select 1
+        from catalog.document_models as model
+        where model.entity_id = entity.id
+          and model.document_type = 'loan_term'
+          and model.is_active
+      )
+  ),
+  'C29 every seeded bank starts with an active term model'
+);
 
 set local role authenticated;
 select pg_temp.loan_login('a5000000-0000-4000-8000-000000000001');

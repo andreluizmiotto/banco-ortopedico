@@ -199,9 +199,28 @@ select throws_ok(
 reset role;
 
 select ok(
-  (select count(*) from catalog.loans) = 0
-    and (select count(*) from catalog.loan_lines) = 0
-    and (select count(*) from catalog.loan_event_audit) = 0
+  (select count(*) from catalog.loans where entity_id in (
+      'd2000000-0000-4000-8000-000000000001',
+      'd2000000-0000-4000-8000-000000000002',
+      'd2000000-0000-4000-8000-000000000003'
+    )) = 0
+    and (
+      select count(*) from catalog.loan_lines as line
+      join catalog.loans as loan on loan.id = line.loan_id
+      where loan.entity_id in (
+        'd2000000-0000-4000-8000-000000000001',
+        'd2000000-0000-4000-8000-000000000002',
+        'd2000000-0000-4000-8000-000000000003'
+      )
+    ) = 0
+    and (
+      select count(*) from catalog.loan_event_audit
+      where entity_id in (
+        'd2000000-0000-4000-8000-000000000001',
+        'd2000000-0000-4000-8000-000000000002',
+        'd2000000-0000-4000-8000-000000000003'
+      )
+    ) = 0
     and (
       select count(*) from catalog.equipment_units
       where status = 'reserved'
@@ -234,8 +253,20 @@ select * from public.admin_create_loan_draft(
 reset role;
 
 select ok(
-  (select count(*) from catalog.loans) = 1
-    and (select count(*) from catalog.loan_lines) = 3
+  (select count(*) from catalog.loans where entity_id in (
+      'd2000000-0000-4000-8000-000000000001',
+      'd2000000-0000-4000-8000-000000000002',
+      'd2000000-0000-4000-8000-000000000003'
+    )) = 1
+    and (
+      select count(*) from catalog.loan_lines as line
+      join catalog.loans as loan on loan.id = line.loan_id
+      where loan.entity_id in (
+        'd2000000-0000-4000-8000-000000000001',
+        'd2000000-0000-4000-8000-000000000002',
+        'd2000000-0000-4000-8000-000000000003'
+    )
+    ) = 3
     and (
       select count(*) from catalog.loans
       where entity_id = 'd2000000-0000-4000-8000-000000000001'
@@ -247,7 +278,7 @@ select results_eq(
   $$
     select due_date, review_date
     from catalog.loans
-    where id = (select id from catalog.loans limit 1)
+    where public_code = (select public_code from draft_a)
   $$,
   $$
     values (
@@ -259,7 +290,11 @@ select results_eq(
 );
 
 select results_eq(
-  $$ select patient_name, condition_note from catalog.loans $$,
+  $$
+    select patient_name, condition_note
+    from catalog.loans
+    where public_code = (select public_code from draft_a)
+  $$,
   $$ values ('Ana Souza'::text, 'bom estado'::text) $$,
   'C18 and C20 the patient name and the condition note are stored trimmed'
 );
@@ -287,6 +322,11 @@ select ok(
       and bool_and(entity_id = 'd2000000-0000-4000-8000-000000000001')
       and bool_and(due_date = (now() at time zone 'America/Sao_Paulo')::date + 30)
     from catalog.loan_event_audit
+    where entity_id in (
+        'd2000000-0000-4000-8000-000000000001',
+        'd2000000-0000-4000-8000-000000000002',
+        'd2000000-0000-4000-8000-000000000003'
+      )
   ),
   'C21 the draft writes one audit row with actor, bank, units and dates'
 );
@@ -402,10 +442,19 @@ select results_eq(
 reset role;
 
 select ok(
-  (select count(*) from catalog.loans) = 5
+  (select count(*) from catalog.loans where entity_id in (
+      'd2000000-0000-4000-8000-000000000001',
+      'd2000000-0000-4000-8000-000000000002',
+      'd2000000-0000-4000-8000-000000000003'
+    )) = 5
     and (
       select count(*) from catalog.loan_event_audit
       where action = 'loan_draft_created'
+        and entity_id in (
+          'd2000000-0000-4000-8000-000000000001',
+          'd2000000-0000-4000-8000-000000000002',
+          'd2000000-0000-4000-8000-000000000003'
+        )
     ) = 5,
   'C24 the resend creates no second loan and no second audit'
 );

@@ -462,51 +462,10 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('loan-terms', 'loan-terms', false, 5242880, array['application/pdf'])
 on conflict (id) do nothing;
 
-insert into catalog.document_models (
-  entity_id,
-  document_type,
-  version,
-  body,
-  review_status,
-  is_active
-)
-select
-  entity.id,
-  'loan_term',
-  1,
-  $body$TERMO DE EMPRÉSTIMO DE EQUIPAMENTO
-
-{bank_name}, neste ato cedente, entrega em empréstimo ao responsável abaixo identificado os equipamentos relacionados neste termo, para uso próprio ou de paciente informado, comprometendo-se o responsável a devolvê-los nas condições recebidas e nas datas aqui registradas.
-
-RESPONSÁVEL
-Nome: {borrower_name}
-CPF: {borrower_cpf}
-
-PACIENTE
-{patient_name}
-
-DATAS
-Entrega: {delivery_date}
-Devolução prevista: {due_date}
-Revisão: {review_date}
-
-EQUIPAMENTOS E ESTADO NA ENTREGA
-{equipment_list}
-
-ANOTAÇÃO DE ESTADO
-{condition_note}
-
-Código do empréstimo: {public_code}
-
-O responsável declara ter recebido os equipamentos em bom estado de conservação e assume a responsabilidade pela guarda e devolução. Este texto é um modelo provisório do banco e está pendente de revisão jurídica.
-
-Assinatura do responsável: ______________________________
-
-Assinatura do representante do banco: ______________________________$body$,
-  'pending_legal_review',
-  true
-from catalog.entities as entity
-on conflict (entity_id, document_type, version) do nothing;
+-- The loan term model is product content that belongs to each bank, and the
+-- banks are seeded in supabase/seed.sql. Seeding it here would run before the
+-- entities exist on a fresh database and insert nothing, so the model text
+-- travels with the fixtures instead (see the document_models block there).
 
 grant admin_loan_manager to current_user with set true;
 grant usage, create on schema public to admin_loan_manager;
