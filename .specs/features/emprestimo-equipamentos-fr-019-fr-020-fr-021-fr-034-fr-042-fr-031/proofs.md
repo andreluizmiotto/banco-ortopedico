@@ -1,6 +1,6 @@
 # emprestimo-equipamentos-fr-019-fr-020-fr-021-fr-034-fr-042-fr-031 proofs
 
-**HEAD**: 04d45f7
+**HEAD**: d7bb571
 **Tree**: clean
 **Result**: 62 pass, 0 fail; mutations 3 killed, 0 not
 
