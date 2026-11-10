@@ -1,0 +1,23 @@
+[
+  {
+    "file": "supabase/migrations/20261104000000_loans.sql",
+    "old": "        and loan.status in ('draft', 'active')",
+    "new": "        and loan.status = 'draft'",
+    "proof": "npx --yes supabase@latest db reset >/dev/null 2>&1 && bash scripts/loan-proof.sh supabase/tests/emprestimo-busca.test.sql --only C7",
+    "label": "C7 open loan count drops the active loan of the session bank"
+  },
+  {
+    "file": "supabase/migrations/20261104000000_loans.sql",
+    "old": "  select equipment_type.name, unit.visible_code\n  into v_type_name, v_visible_code\n  from catalog.loan_lines as line\n  join catalog.equipment_units as unit on unit.id = line.unit_id\n  join catalog.equipment_types as equipment_type\n    on equipment_type.code = unit.equipment_type_code\n  where line.unit_id = any(v_unit_ids)\n    and line.released_at is null\n  order by unit.id\n  limit 1;\n\n  if found then\n    raise exception\n      'O equipamento % % não está mais disponível. Atualize a lista e escolha outro.',\n      v_type_name,\n      coalesce(v_visible_code, 'sem número')\n      using errcode = 'P0003';\n  end if;\n",
+    "new": "  -- the open line guard was removed; only the unique index protects the unit\n",
+    "proof": "npx --yes supabase@latest db reset >/dev/null 2>&1 && bash scripts/loan-proof.sh supabase/tests/loan-draft.test.sql --only C22",
+    "label": "C22 open line guard removed, leaving only the unique index"
+  },
+  {
+    "file": "supabase/migrations/20261104000000_loans.sql",
+    "old": "    and char_length(v_patient_name) not between 2 and 120",
+    "new": "    and char_length(v_patient_name) not between 3 and 119",
+    "proof": "npx --yes supabase@latest db reset >/dev/null 2>&1 && bash scripts/loan-proof.sh supabase/tests/loan-draft.test.sql --only C18",
+    "label": "C18 patient name bounds shifted from 2..120 to 3..119"
+  }
+]

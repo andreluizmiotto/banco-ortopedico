@@ -44,3 +44,6 @@ next-env.d.ts
 
 # estado local de skills de agentes
 /.agents
+
+# jetBrains
+/.idea
